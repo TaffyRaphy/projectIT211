@@ -16,7 +16,13 @@ function db(): PDO
 
     $databaseUrl = app_env('DATABASE_URL');
     if ($databaseUrl === '') {
-        throw new RuntimeException('DATABASE_URL is not set.');
+        $databaseUrl = app_env('POSTGRES_URL');
+    }
+    if ($databaseUrl === '') {
+        $databaseUrl = app_env('POSTGRES_PRISMA_URL');
+    }
+    if ($databaseUrl === '') {
+        throw new RuntimeException('DATABASE_URL/POSTGRES_URL is not set.');
     }
 
     $parts = parse_url($databaseUrl);

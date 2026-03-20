@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require __DIR__ . '/includes/bootstrap.php';
+require dirname(__DIR__) . '/includes/bootstrap.php';
 
 $role = current_role('admin');
 $adminId = int_query_param('adminId', 1);
@@ -32,21 +32,21 @@ $rows = db()->query(
       <p>Request #<?= (int) $item['id'] ?> | Staff: <?= h((string) $item['staff_name']) ?> | Equipment: <?= h((string) $item['equipment_name']) ?> | Qty: <?= (int) $item['qty_requested'] ?> | Status: <?= h((string) $item['status']) ?></p>
       <p>Purpose: <?= h((string) $item['purpose']) ?></p>
       <?php if ((string) $item['status'] === 'pending'): ?>
-        <form action="actions/request_approve.php?<?= http_build_query(['as' => $role, 'id' => (int) $item['id']]) ?>" method="post">
+        <form action="/api/actions/request_approve.php?<?= http_build_query(['as' => $role, 'id' => (int) $item['id']]) ?>" method="post">
           <input type="hidden" name="admin_id" value="<?= $adminId ?>">
           <p><label for="due_date_<?= (int) $item['id'] ?>">Due Date (optional)</label></p>
           <p><input id="due_date_<?= (int) $item['id'] ?>" name="due_date" type="date"></p>
           <button type="submit">Approve and Allocate</button>
         </form>
-        <form action="actions/request_reject.php?<?= http_build_query(['as' => $role, 'id' => (int) $item['id']]) ?>" method="post">
+        <form action="/api/actions/request_reject.php?<?= http_build_query(['as' => $role, 'id' => (int) $item['id']]) ?>" method="post">
           <input type="hidden" name="admin_id" value="<?= $adminId ?>">
           <button type="submit" data-confirm="Reject this request?">Reject</button>
         </form>
       <?php endif; ?>
     </section>
   <?php endforeach; ?>
-  <p><a href="dashboard.php?<?= http_build_query(['as' => $role, 'userId' => $adminId]) ?>">Back to dashboard</a></p>
+  <p><a href="/api/dashboard.php?<?= http_build_query(['as' => $role, 'userId' => $adminId]) ?>">Back to dashboard</a></p>
 </main>
-<script src="assets/app.js"></script>
+<script src="/assets/app.js"></script>
 </body>
 </html>

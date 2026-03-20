@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require dirname(__DIR__) . '/includes/bootstrap.php';
+require dirname(__DIR__, 2) . '/includes/bootstrap.php';
 
 require_role(['admin']);
 $role = current_role('admin');
@@ -8,7 +8,7 @@ $requestId = int_query_param('id', 0);
 $adminId = post_int('admin_id');
 
 if ($requestId <= 0 || $adminId === null) {
-    redirect_to('admin_requests.php', ['as' => $role, 'error' => 'Invalid rejection input']);
+    redirect_to('api/admin_requests.php', ['as' => $role, 'error' => 'Invalid rejection input']);
 }
 
 $stmt = db()->prepare(
@@ -18,4 +18,4 @@ $stmt = db()->prepare(
 );
 $stmt->execute(['admin_id' => $adminId, 'id' => $requestId]);
 
-redirect_to('admin_requests.php', ['as' => $role, 'ok' => 'Request rejected']);
+redirect_to('api/admin_requests.php', ['as' => $role, 'ok' => 'Request rejected']);

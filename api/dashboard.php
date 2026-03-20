@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require __DIR__ . '/includes/bootstrap.php';
+require dirname(__DIR__) . '/includes/bootstrap.php';
 
 $role = query_param('as');
 $userId = int_query_param('userId', 0);
@@ -25,12 +25,12 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
 
   <hr>
   <h2>Workflow Links</h2>
-  <p><a href="equipment.php?<?= http_build_query(['as' => $role !== '' ? $role : 'admin']) ?>">Equipment Management (Admin)</a></p>
-  <p><a href="requests.php?<?= http_build_query(['as' => $role !== '' ? $role : 'staff', 'staffId' => $userId > 0 ? $userId : 2]) ?>">Equipment Request (Staff)</a></p>
-  <p><a href="admin_requests.php?<?= http_build_query(['as' => $role !== '' ? $role : 'admin', 'adminId' => $userId > 0 ? $userId : 1]) ?>">Request Approval and Allocation (Admin)</a></p>
-  <p><a href="maintenance.php?<?= http_build_query(['as' => $role !== '' ? $role : 'maintenance', 'maintenanceUserId' => $userId > 0 ? $userId : 3]) ?>">Maintenance Scheduling (Maintenance)</a></p>
-  <p><a href="reports.php">Reports</a></p>
-  <p><a href="index.php">Logout (workflow mode)</a></p>
+  <p><a href="/api/equipment.php?<?= http_build_query(['as' => $role !== '' ? $role : 'admin']) ?>">Equipment Management (Admin)</a></p>
+  <p><a href="/api/requests.php?<?= http_build_query(['as' => $role !== '' ? $role : 'staff', 'staffId' => $userId > 0 ? $userId : 2]) ?>">Equipment Request (Staff)</a></p>
+  <p><a href="/api/admin_requests.php?<?= http_build_query(['as' => $role !== '' ? $role : 'admin', 'adminId' => $userId > 0 ? $userId : 1]) ?>">Request Approval and Allocation (Admin)</a></p>
+  <p><a href="/api/maintenance.php?<?= http_build_query(['as' => $role !== '' ? $role : 'maintenance', 'maintenanceUserId' => $userId > 0 ? $userId : 3]) ?>">Maintenance Scheduling (Maintenance)</a></p>
+  <p><a href="/api/reports.php">Reports</a></p>
+  <p><a href="/api/index.php">Logout (workflow mode)</a></p>
 </main>
 </body>
 </html>

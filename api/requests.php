@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require __DIR__ . '/includes/bootstrap.php';
+require dirname(__DIR__) . '/includes/bootstrap.php';
 
 $role = current_role('staff');
 $staffId = int_query_param('staffId', 2);
@@ -33,7 +33,7 @@ $requestRows = $stmt->fetchAll();
   <?php if ($error !== ''): ?><p>Error: <?= h($error) ?></p><?php endif; ?>
 
   <h2>Create Request</h2>
-  <form action="actions/request_create.php?<?= http_build_query(['as' => $role]) ?>" method="post">
+  <form action="/api/actions/request_create.php?<?= http_build_query(['as' => $role]) ?>" method="post">
     <input type="hidden" name="staff_id" value="<?= $staffId ?>">
     <p><label for="equipment_id">Equipment</label></p>
     <p>
@@ -55,7 +55,7 @@ $requestRows = $stmt->fetchAll();
   <?php foreach ($requestRows as $item): ?>
     <p>Request #<?= (int) $item['id'] ?> | <?= h((string) $item['equipment_name']) ?> | qty: <?= (int) $item['qty_requested'] ?> | status: <?= h((string) $item['status']) ?> | requested_at: <?= h((string) $item['requested_at']) ?></p>
   <?php endforeach; ?>
-  <p><a href="dashboard.php?<?= http_build_query(['as' => $role, 'userId' => $staffId]) ?>">Back to dashboard</a></p>
+  <p><a href="/api/dashboard.php?<?= http_build_query(['as' => $role, 'userId' => $staffId]) ?>">Back to dashboard</a></p>
 </main>
 </body>
 </html>

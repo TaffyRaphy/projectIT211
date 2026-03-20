@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require __DIR__ . '/includes/bootstrap.php';
+require dirname(__DIR__) . '/includes/bootstrap.php';
 
 $role = current_role('maintenance');
 $maintenanceUserId = int_query_param('maintenanceUserId', 3);
@@ -30,7 +30,7 @@ $maintenanceRows = db()->query(
   <?php if ($error !== ''): ?><p>Error: <?= h($error) ?></p><?php endif; ?>
 
   <h2>Schedule Maintenance</h2>
-  <form action="actions/maintenance_create.php?<?= http_build_query(['as' => $role]) ?>" method="post">
+  <form action="/api/actions/maintenance_create.php?<?= http_build_query(['as' => $role]) ?>" method="post">
     <input type="hidden" name="maintenance_user_id" value="<?= $maintenanceUserId ?>">
     <p><label for="equipment_id">Equipment</label></p>
     <p><select id="equipment_id" name="equipment_id" required><?php foreach ($equipmentRows as $item): ?><option value="<?= (int) $item['id'] ?>"><?= h((string) $item['name']) ?> | status: <?= h((string) $item['status']) ?></option><?php endforeach; ?></select></p>
@@ -53,13 +53,13 @@ $maintenanceRows = db()->query(
       <p>Completed Date: <?= h((string) ($log['completed_date'] ?? '-')) ?></p>
       <p>Notes: <?= h((string) ($log['notes'] ?? '-')) ?></p>
       <?php if ((string) $log['status'] === 'scheduled'): ?>
-        <form action="actions/maintenance_complete.php?<?= http_build_query(['as' => $role, 'id' => (int) $log['id']]) ?>" method="post">
+        <form action="/api/actions/maintenance_complete.php?<?= http_build_query(['as' => $role, 'id' => (int) $log['id']]) ?>" method="post">
           <button type="submit">Mark Completed</button>
         </form>
       <?php endif; ?>
     </section>
   <?php endforeach; ?>
-  <p><a href="dashboard.php?<?= http_build_query(['as' => $role, 'userId' => $maintenanceUserId]) ?>">Back to dashboard</a></p>
+  <p><a href="/api/dashboard.php?<?= http_build_query(['as' => $role, 'userId' => $maintenanceUserId]) ?>">Back to dashboard</a></p>
 </main>
 </body>
 </html>

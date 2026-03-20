@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require __DIR__ . '/includes/bootstrap.php';
+require dirname(__DIR__) . '/includes/bootstrap.php';
 
 $inventoryRows = db()->query(
     'SELECT category, COUNT(*)::text AS items, COALESCE(SUM(quantity_total), 0)::text AS total_qty,
@@ -39,7 +39,7 @@ $maintenanceRows = db()->query(
   <hr>
   <h2>Maintenance History Summary</h2>
   <?php foreach ($maintenanceRows as $row): ?><p>Equipment: <?= h((string) $row['equipment_name']) ?> | Total Logs: <?= h((string) $row['total_logs']) ?> | Completed: <?= h((string) $row['completed_logs']) ?></p><?php endforeach; ?>
-  <p><a href="dashboard.php?as=admin&userId=1">Back to dashboard</a></p>
+  <p><a href="/api/dashboard.php?as=admin&userId=1">Back to dashboard</a></p>
 </main>
 </body>
 </html>

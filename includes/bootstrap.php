@@ -203,10 +203,10 @@ function users_password_column(): ?string
     $stmt = db()->prepare(
         "SELECT column_name
          FROM information_schema.columns
-         WHERE table_schema = current_schema()
-           AND table_name = 'users'
+                 WHERE table_name = 'users'
            AND column_name IN ('password_hash', 'password')
-         ORDER BY CASE WHEN column_name = 'password_hash' THEN 0 ELSE 1 END
+                 ORDER BY CASE WHEN table_schema = 'public' THEN 0 ELSE 1 END,
+                                    CASE WHEN column_name = 'password_hash' THEN 0 ELSE 1 END
          LIMIT 1"
     );
     $stmt->execute();
@@ -224,7 +224,7 @@ function validate_login(string $email, string $password): ?array
 
     $stmt = db()->prepare(
         "SELECT id, full_name, email, role, {$passwordColumn} AS password_value
-         FROM users
+            FROM public.users
          WHERE LOWER(email) = LOWER(:email)
          LIMIT 1"
     );
@@ -240,12 +240,38 @@ function validate_login(string $email, string $password): ?array
         return null;
     }
 
-    $passwordInfo = password_get_info($storedPassword);
+    $normalizedStoredPassword = trim($storedPassword);
+    if ($normalizedStoredPassword === '') {
+        return null;
+    }
+
+    $passwordInfo = password_get_info($normalizedStoredPassword);
     $isHashed = isset($passwordInfo['algo']) && (int) $passwordInfo['algo'] !== 0;
 
-    $isValid = $isHashed
-        ? password_verify($password, $storedPassword)
-        : hash_equals($storedPassword, $password);
+    $isValid = false;
+    if ($isHashed) {
+        $isValid = password_verify($password, $normalizedStoredPassword);
+
+        if (!$isValid && str_starts_with($normalizedStoredPassword, '$2b$')) {
+            $phpBcrypt = '$2y$' . substr($normalizedStoredPassword, 4);
+            $isValid = password_verify($password, $phpBcrypt);
+        }
+    } else {
+        $sha1 = sha1($password);
+        $md5 = md5($password);
+        $sha256 = hash('sha256', $password);
+        $cryptValue = crypt($password, $normalizedStoredPassword);
+        $isValid = hash_equals($normalizedStoredPassword, $password)
+            || hash_equals(strtolower($normalizedStoredPassword), strtolower($sha1))
+            || hash_equals(strtolower($normalizedStoredPassword), strtolower($md5))
+            || hash_equals(strtolower($normalizedStoredPassword), strtolower($sha256))
+            || ($cryptValue !== '' && hash_equals($normalizedStoredPassword, $cryptValue));
+
+        if (!$isValid && str_starts_with($normalizedStoredPassword, '$2b$')) {
+            $phpBcrypt = '$2y$' . substr($normalizedStoredPassword, 4);
+            $isValid = password_verify($password, $phpBcrypt);
+        }
+    }
 
     if (!$isValid) {
         return null;

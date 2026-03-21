@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 
+ini_set('session.cookie_path', '/');
+ini_set('session.cookie_samesite', 'Lax');
+
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
@@ -61,11 +64,104 @@ function parse_role(?string $value): ?string
     return in_array($value, ['admin', 'staff', 'maintenance'], true) ? $value : null;
 }
 
+function auth_cookie_secret(): string
+{
+    $secret = app_env('APP_KEY');
+    if ($secret !== '') {
+        return $secret;
+    }
+
+    $fallback = app_env('DATABASE_URL');
+    return $fallback !== '' ? hash('sha256', $fallback) : 'inventory-system-auth-fallback-key';
+}
+
+function set_auth_cookie(array $user): void
+{
+    $payload = base64_encode((string) json_encode([
+        'id' => (int) ($user['id'] ?? 0),
+        'full_name' => (string) ($user['full_name'] ?? ''),
+        'email' => (string) ($user['email'] ?? ''),
+        'role' => (string) ($user['role'] ?? ''),
+    ], JSON_UNESCAPED_SLASHES));
+    $sig = hash_hmac('sha256', $payload, auth_cookie_secret());
+    $value = $payload . '.' . $sig;
+
+    setcookie('auth_user', $value, [
+        'expires' => time() + (60 * 60 * 12),
+        'path' => '/',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
+
+function clear_auth_cookie(): void
+{
+    setcookie('auth_user', '', [
+        'expires' => time() - 3600,
+        'path' => '/',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
+
+function read_auth_cookie_user(): ?array
+{
+    $value = $_COOKIE['auth_user'] ?? '';
+    if (!is_string($value) || $value === '') {
+        return null;
+    }
+
+    $parts = explode('.', $value, 2);
+    if (count($parts) !== 2) {
+        return null;
+    }
+
+    [$payload, $sig] = $parts;
+    $expectedSig = hash_hmac('sha256', $payload, auth_cookie_secret());
+    if (!hash_equals($expectedSig, $sig)) {
+        return null;
+    }
+
+    $decoded = base64_decode($payload, true);
+    if (!is_string($decoded) || $decoded === '') {
+        return null;
+    }
+
+    $user = json_decode($decoded, true);
+    if (!is_array($user)) {
+        return null;
+    }
+
+    $id = isset($user['id']) ? (int) $user['id'] : 0;
+    $role = parse_role(isset($user['role']) ? (string) $user['role'] : null);
+    $email = isset($user['email']) ? (string) $user['email'] : '';
+    $fullName = isset($user['full_name']) ? (string) $user['full_name'] : '';
+
+    if ($id <= 0 || $role === null || $email === '' || $fullName === '') {
+        return null;
+    }
+
+    return [
+        'id' => $id,
+        'role' => $role,
+        'email' => $email,
+        'full_name' => $fullName,
+    ];
+}
+
 function current_user(): ?array
 {
     $user = $_SESSION['user'] ?? null;
     if (!is_array($user)) {
-        return null;
+        $cookieUser = read_auth_cookie_user();
+        if ($cookieUser === null) {
+            return null;
+        }
+
+        $_SESSION['user'] = $cookieUser;
+        return $cookieUser;
     }
 
     $id = isset($user['id']) ? (int) $user['id'] : 0;
@@ -94,11 +190,13 @@ function login_user(array $user): void
         'email' => (string) ($user['email'] ?? ''),
         'role' => (string) ($user['role'] ?? ''),
     ];
+    set_auth_cookie($_SESSION['user']);
 }
 
 function logout_user(): void
 {
     $_SESSION = [];
+    clear_auth_cookie();
     if (ini_get('session.use_cookies')) {
         $params = session_get_cookie_params();
         setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);

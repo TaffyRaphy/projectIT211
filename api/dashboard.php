@@ -23,7 +23,7 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
   <header class="page-header">
     <h1>Dashboard</h1>
     <div class="meta-row">
-      <span class="chip chip-role">Role: <?= h($role) ?></span>
+      <span class="chip chip-role">Roleeeeeee: <?= h($role) ?></span>
       <span class="chip chip-id">User ID: <?= $userId ?></span>
     </div>
   </header>

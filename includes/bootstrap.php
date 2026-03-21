@@ -193,38 +193,11 @@ function redirect_to(string $path, array $params = []): void
     exit;
 }
 
-function users_password_column(): ?string
-{
-    static $column = false;
-    if ($column !== false) {
-        return is_string($column) ? $column : null;
-    }
-
-    $stmt = db()->prepare(
-        "SELECT column_name
-         FROM information_schema.columns
-                 WHERE table_name = 'users'
-           AND column_name IN ('password_hash', 'password')
-                 ORDER BY CASE WHEN table_schema = 'public' THEN 0 ELSE 1 END,
-                                    CASE WHEN column_name = 'password_hash' THEN 0 ELSE 1 END
-         LIMIT 1"
-    );
-    $stmt->execute();
-    $value = $stmt->fetchColumn();
-    $column = is_string($value) ? $value : null;
-    return is_string($column) ? $column : null;
-}
-
 function validate_login(string $email, string $password): ?array
 {
-    $passwordColumn = users_password_column();
-    if ($passwordColumn === null) {
-        return null;
-    }
-
     $stmt = db()->prepare(
-        "SELECT id, full_name, email, role, {$passwordColumn} AS password_value
-            FROM public.users
+        "SELECT id, full_name, email, role, password_hash AS password_value
+         FROM public.users
          WHERE LOWER(email) = LOWER(:email)
          LIMIT 1"
     );
@@ -283,4 +256,13 @@ function validate_login(string $email, string $password): ?array
         'email' => (string) $user['email'],
         'role' => (string) $user['role'],
     ];
+}
+
+function user_exists_by_email(string $email): bool
+{
+    $stmt = db()->prepare(
+        'SELECT 1 FROM public.users WHERE LOWER(email) = LOWER(:email) LIMIT 1'
+    );
+    $stmt->execute(['email' => $email]);
+    return $stmt->fetchColumn() !== false;
 }

@@ -11,7 +11,8 @@ if ($email === '' || $password === '') {
 
 $user = validate_login($email, $password);
 if ($user === null) {
-    redirect_to('api/index.php', ['error' => 'Invalid email or password']);
+    $emailExists = user_exists_by_email($email);
+    redirect_to('api/index.php', ['error' => $emailExists ? 'Incorrect password' : 'Account not found']);
 }
 
 login_user($user);

@@ -39,10 +39,10 @@ try {
 
     $update = $pdo->prepare(
         "UPDATE equipment
-         SET status = 'maintenance', updated_at = NOW()
+         SET status = 'maintenance', next_maintenance_date = :schedule_date, updated_at = NOW()
          WHERE id = :equipment_id AND status <> 'retired'"
     );
-    $update->execute(['equipment_id' => $equipmentId]);
+    $update->execute(['equipment_id' => $equipmentId, 'schedule_date' => $scheduleDate]);
 
     $pdo->commit();
     redirect_to('api/maintenance.php', ['as' => $role, 'maintenanceUserId' => (string) $maintenanceUserId, 'ok' => 'Maintenance scheduled']);

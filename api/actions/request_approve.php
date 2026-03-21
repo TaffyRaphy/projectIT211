@@ -58,8 +58,8 @@ try {
     $updateRequest->execute(['admin_id' => $adminId, 'id' => $requestId]);
 
     $insertAllocation = $pdo->prepare(
-        'INSERT INTO allocations (request_id, equipment_id, staff_id, qty_allocated, allocated_by, due_date)
-         VALUES (:request_id, :equipment_id, :staff_id, :qty_allocated, :allocated_by, :due_date)'
+        'INSERT INTO allocations (request_id, equipment_id, staff_id, qty_allocated, allocated_by, checkout_date, expected_return_date)
+         VALUES (:request_id, :equipment_id, :staff_id, :qty_allocated, :allocated_by, NOW(), :expected_return_date)'
     );
     $insertAllocation->execute([
         'request_id' => $requestId,
@@ -67,7 +67,7 @@ try {
         'staff_id' => (int) $reqRow['staff_id'],
         'qty_allocated' => (int) $reqRow['qty_requested'],
         'allocated_by' => $adminId,
-        'due_date' => $dueDate !== '' ? $dueDate : null,
+        'expected_return_date' => $dueDate !== '' ? $dueDate : null,
     ]);
 
     $pdo->commit();

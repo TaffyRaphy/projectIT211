@@ -53,7 +53,7 @@ $requestRows = $stmt->fetchAll();
   <hr>
   <h2>Your Request History</h2>
   <?php foreach ($requestRows as $item): ?>
-    <p>Request #<?= (int) $item['id'] ?> | <?= h((string) $item['equipment_name']) ?> | qty: <?= (int) $item['qty_requested'] ?> | status: <?= h((string) $item['status']) ?> | requested_at: <?= h((string) $item['requested_at']) ?></p>
+    <p>Request #<?= (int) $item['id'] ?> | <?= h((string) $item['equipment_name']) ?> | qty: <?= (int) $item['qty_requested'] ?> | status: <?= h((string) $item['status']) ?> | requested_at: <?= h(utc_to_ph((string) $item['requested_at'])) ?></p>
   <?php endforeach; ?>
   <p><a href="/api/dashboard.php?<?= http_build_query(['as' => $role, 'userId' => $staffId]) ?>">Back to dashboard</a></p>
 </main>

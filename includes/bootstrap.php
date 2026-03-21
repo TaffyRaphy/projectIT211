@@ -86,6 +86,20 @@ function int_query_param(string $key, int $default = 0): int
     return $value === false || $value === null ? $default : $value;
 }
 
+function utc_to_ph(?string $value, string $format = 'Y-m-d h:i A'): string
+{
+    if ($value === null || trim($value) === '') {
+        return '-';
+    }
+
+    try {
+        $dt = new DateTimeImmutable($value, new DateTimeZone('UTC'));
+        return $dt->setTimezone(new DateTimeZone('Asia/Manila'))->format($format);
+    } catch (Throwable $e) {
+        return $value;
+    }
+}
+
 function post_string(string $key): string
 {
     $value = $_POST[$key] ?? '';

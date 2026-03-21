@@ -29,6 +29,7 @@ try {
     $updateEquipment = $pdo->prepare(
         "UPDATE equipment
          SET status = CASE WHEN quantity_available > 0 THEN 'available' ELSE 'allocated' END,
+             next_maintenance_date = (SELECT MIN(schedule_date) FROM maintenance_logs WHERE equipment_id = :equipment_id AND status = 'scheduled'),
              updated_at = NOW()
          WHERE id = :equipment_id AND status <> 'retired'"
     );

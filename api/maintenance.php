@@ -20,17 +20,22 @@ $maintenanceRows = db()->query(
 ?>
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><title>Maintenance Scheduling</title></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/style.css">
+  <title>Maintenance Scheduling</title>
+</head>
 <body>
-<main>
+<main class="page page-maintenance">
   <h1>Maintenance Scheduling</h1>
-  <p>Role in workflow mode: <?= h($role) ?></p>
-  <p>Maintenance User ID used for test workflow: <?= $maintenanceUserId ?></p>
-  <?php if ($ok !== ''): ?><p>Success: <?= h($ok) ?></p><?php endif; ?>
-  <?php if ($error !== ''): ?><p>Error: <?= h($error) ?></p><?php endif; ?>
+  <p class="meta-note">Role in workflow mode: <?= h($role) ?></p>
+  <p class="meta-note">Maintenance User ID used for test workflow: <?= $maintenanceUserId ?></p>
+  <?php if ($ok !== ''): ?><p class="alert alert-success">Success: <?= h($ok) ?></p><?php endif; ?>
+  <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 
   <h2>Schedule Maintenance</h2>
-  <form action="/api/actions/maintenance_create.php?<?= http_build_query(['as' => $role]) ?>" method="post">
+  <form class="panel" action="/api/actions/maintenance_create.php?<?= http_build_query(['as' => $role]) ?>" method="post">
     <input type="hidden" name="maintenance_user_id" value="<?= $maintenanceUserId ?>">
     <p><label for="equipment_id">Equipment</label></p>
     <p><select id="equipment_id" name="equipment_id" required><?php foreach ($equipmentRows as $item): ?><option value="<?= (int) $item['id'] ?>"><?= h((string) $item['name']) ?> | status: <?= h((string) $item['status']) ?></option><?php endforeach; ?></select></p>
@@ -47,19 +52,22 @@ $maintenanceRows = db()->query(
 
   <hr>
   <h2>Maintenance Logs</h2>
+  <div class="stack-grid">
   <?php foreach ($maintenanceRows as $log): ?>
-    <section>
-      <p>Log #<?= (int) $log['id'] ?> | Equipment: <?= h((string) $log['equipment_name']) ?> | Type: <?= h((string) $log['maintenance_type']) ?> | Schedule: <?= h((string) $log['schedule_date']) ?> | Status: <?= h((string) $log['status']) ?></p>
+    <section class="item-card">
+      <p class="item-title">Log #<?= (int) $log['id'] ?> | Equipment: <?= h((string) $log['equipment_name']) ?></p>
+      <p>Type: <?= h((string) $log['maintenance_type']) ?> | Schedule: <?= h((string) $log['schedule_date']) ?> | <span class="chip chip-status chip-<?= h((string) $log['status']) ?>"><?= h((string) $log['status']) ?></span></p>
       <p>Completed Date: <?= h((string) ($log['completed_date'] ?? '-')) ?></p>
       <p>Notes: <?= h((string) ($log['notes'] ?? '-')) ?></p>
       <?php if ((string) $log['status'] === 'scheduled'): ?>
-        <form action="/api/actions/maintenance_complete.php?<?= http_build_query(['as' => $role, 'id' => (int) $log['id']]) ?>" method="post">
+        <form class="inline-form" action="/api/actions/maintenance_complete.php?<?= http_build_query(['as' => $role, 'id' => (int) $log['id']]) ?>" method="post">
           <button type="submit">Mark Completed</button>
         </form>
       <?php endif; ?>
     </section>
   <?php endforeach; ?>
-  <p><a href="/api/dashboard.php?<?= http_build_query(['as' => $role, 'userId' => $maintenanceUserId]) ?>">Back to dashboard</a></p>
+  </div>
+  <p class="back-link"><a href="/api/dashboard.php?<?= http_build_query(['as' => $role, 'userId' => $maintenanceUserId]) ?>">Back to dashboard</a></p>
 </main>
 </body>
 </html>

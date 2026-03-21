@@ -23,17 +23,22 @@ $requestRows = $stmt->fetchAll();
 ?>
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><title>Equipment Request</title></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/style.css">
+  <title>Equipment Request</title>
+</head>
 <body>
-<main>
+<main class="page page-requests">
   <h1>Equipment Request</h1>
-  <p>Role in workflow mode: <?= h($role) ?></p>
-  <p>Staff ID used for test workflow: <?= $staffId ?></p>
-  <?php if ($ok !== ''): ?><p>Success: <?= h($ok) ?></p><?php endif; ?>
-  <?php if ($error !== ''): ?><p>Error: <?= h($error) ?></p><?php endif; ?>
+  <p class="meta-note">Role in workflow mode: <?= h($role) ?></p>
+  <p class="meta-note">Staff ID used for test workflow: <?= $staffId ?></p>
+  <?php if ($ok !== ''): ?><p class="alert alert-success">Success: <?= h($ok) ?></p><?php endif; ?>
+  <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 
   <h2>Create Request</h2>
-  <form action="/api/actions/request_create.php?<?= http_build_query(['as' => $role]) ?>" method="post">
+  <form class="panel" action="/api/actions/request_create.php?<?= http_build_query(['as' => $role]) ?>" method="post">
     <input type="hidden" name="staff_id" value="<?= $staffId ?>">
     <p><label for="equipment_id">Equipment</label></p>
     <p>
@@ -52,10 +57,16 @@ $requestRows = $stmt->fetchAll();
 
   <hr>
   <h2>Your Request History</h2>
+  <div class="stack-grid">
   <?php foreach ($requestRows as $item): ?>
-    <p>Request #<?= (int) $item['id'] ?> | <?= h((string) $item['equipment_name']) ?> | qty: <?= (int) $item['qty_requested'] ?> | status: <?= h((string) $item['status']) ?> | requested_at: <?= h(utc_to_ph((string) $item['requested_at'])) ?></p>
+    <section class="item-card">
+      <p class="item-title">Request #<?= (int) $item['id'] ?> | <?= h((string) $item['equipment_name']) ?></p>
+      <p>qty: <?= (int) $item['qty_requested'] ?> | <span class="chip chip-status chip-<?= h((string) $item['status']) ?>"><?= h((string) $item['status']) ?></span></p>
+      <p>requested_at: <?= h(utc_to_ph((string) $item['requested_at'])) ?></p>
+    </section>
   <?php endforeach; ?>
-  <p><a href="/api/dashboard.php?<?= http_build_query(['as' => $role, 'userId' => $staffId]) ?>">Back to dashboard</a></p>
+  </div>
+  <p class="back-link"><a href="/api/dashboard.php?<?= http_build_query(['as' => $role, 'userId' => $staffId]) ?>">Back to dashboard</a></p>
 </main>
 </body>
 </html>

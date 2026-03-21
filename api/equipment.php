@@ -15,16 +15,21 @@ $hasLocations = count($locationRows) > 0;
 ?>
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><title>Equipment Management</title></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/style.css">
+  <title>Equipment Management</title>
+</head>
 <body>
-<main>
+<main class="page page-equipment">
   <h1>Equipment Management</h1>
-  <p>Role in workflow mode: <?= h($role) ?></p>
-  <?php if ($ok !== ''): ?><p>Success: <?= h($ok) ?></p><?php endif; ?>
-  <?php if ($error !== ''): ?><p>Error: <?= h($error) ?></p><?php endif; ?>
+  <p class="meta-note">Role in workflow mode: <?= h($role) ?></p>
+  <?php if ($ok !== ''): ?><p class="alert alert-success">Success: <?= h($ok) ?></p><?php endif; ?>
+  <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 
   <h2>Add Equipment</h2>
-  <form action="/api/actions/equipment_create.php?<?= http_build_query(['as' => $role]) ?>" method="post">
+  <form class="panel" action="/api/actions/equipment_create.php?<?= http_build_query(['as' => $role]) ?>" method="post">
     <p>Code is auto-generated when you add equipment.</p>
     <p><label for="name">Name</label></p><p><input id="name" name="name" required></p>
     <p><label for="category">Category</label></p><p><input id="category" name="category" required></p>
@@ -46,11 +51,13 @@ $hasLocations = count($locationRows) > 0;
 
   <hr>
   <h2>Current Inventory</h2>
+  <div class="stack-grid">
   <?php foreach ($rows as $item): ?>
-    <section>
-      <p>#<?= (int) $item['id'] ?> | <?= h((string) $item['code']) ?> | <?= h((string) $item['name']) ?> | <?= h((string) $item['category']) ?> | status: <?= h((string) $item['status']) ?></p>
+    <section class="item-card">
+      <p class="item-title">#<?= (int) $item['id'] ?> | <?= h((string) $item['code']) ?> | <?= h((string) $item['name']) ?></p>
+      <p><?= h((string) $item['category']) ?> <span class="chip chip-status chip-<?= h((string) $item['status']) ?>"><?= h((string) $item['status']) ?></span></p>
       <p>Total: <?= (int) $item['quantity_total'] ?> | Available: <?= (int) $item['quantity_available'] ?> | Location: <?= h((string) $item['location']) ?></p>
-      <form action="/api/actions/equipment_update.php?<?= http_build_query(['as' => $role, 'id' => (int) $item['id']]) ?>" method="post">
+      <form class="inline-form" action="/api/actions/equipment_update.php?<?= http_build_query(['as' => $role, 'id' => (int) $item['id']]) ?>" method="post">
         <input type="hidden" name="name" value="<?= h((string) $item['name']) ?>">
         <input type="hidden" name="category" value="<?= h((string) $item['category']) ?>">
         <input type="hidden" name="status" value="<?= h((string) $item['status']) ?>">
@@ -61,7 +68,8 @@ $hasLocations = count($locationRows) > 0;
       </form>
     </section>
   <?php endforeach; ?>
-  <p><a href="/api/dashboard.php?<?= http_build_query(['as' => $role]) ?>">Back to dashboard</a></p>
+  </div>
+  <p class="back-link"><a href="/api/dashboard.php?<?= http_build_query(['as' => $role]) ?>">Back to dashboard</a></p>
 </main>
 <script src="/assets/app.js"></script>
 </body>

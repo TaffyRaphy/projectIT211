@@ -27,19 +27,45 @@ $maintenanceRows = db()->query(
 ?>
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><title>Reports</title></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/style.css">
+  <title>Reports</title>
+</head>
 <body>
-<main>
+<main class="page page-reports">
   <h1>Reports</h1>
   <h2>Inventory Status Summary</h2>
-  <?php foreach ($inventoryRows as $row): ?><p>Category: <?= h((string) $row['category']) ?> | Items: <?= h((string) $row['items']) ?> | Total Qty: <?= h((string) $row['total_qty']) ?> | Available Qty: <?= h((string) $row['available_qty']) ?></p><?php endforeach; ?>
+  <div class="stack-grid">
+    <?php foreach ($inventoryRows as $row): ?>
+      <section class="item-card">
+        <p class="item-title">Category: <?= h((string) $row['category']) ?></p>
+        <p>Items: <?= h((string) $row['items']) ?> | Total Qty: <?= h((string) $row['total_qty']) ?> | Available Qty: <?= h((string) $row['available_qty']) ?></p>
+      </section>
+    <?php endforeach; ?>
+  </div>
   <hr>
   <h2>Equipment Usage Summary</h2>
-  <?php foreach ($usageRows as $row): ?><p>Equipment: <?= h((string) $row['equipment_name']) ?> | Allocations: <?= h((string) $row['allocations']) ?> | Allocated Qty: <?= h((string) $row['allocated_qty']) ?></p><?php endforeach; ?>
+  <div class="stack-grid">
+    <?php foreach ($usageRows as $row): ?>
+      <section class="item-card">
+        <p class="item-title">Equipment: <?= h((string) $row['equipment_name']) ?></p>
+        <p>Allocations: <?= h((string) $row['allocations']) ?> | Allocated Qty: <?= h((string) $row['allocated_qty']) ?></p>
+      </section>
+    <?php endforeach; ?>
+  </div>
   <hr>
   <h2>Maintenance History Summary</h2>
-  <?php foreach ($maintenanceRows as $row): ?><p>Equipment: <?= h((string) $row['equipment_name']) ?> | Total Logs: <?= h((string) $row['total_logs']) ?> | Completed: <?= h((string) $row['completed_logs']) ?></p><?php endforeach; ?>
-  <p><a href="/api/dashboard.php?as=admin&userId=1">Back to dashboard</a></p>
+  <div class="stack-grid">
+    <?php foreach ($maintenanceRows as $row): ?>
+      <section class="item-card">
+        <p class="item-title">Equipment: <?= h((string) $row['equipment_name']) ?></p>
+        <p>Total Logs: <?= h((string) $row['total_logs']) ?> | Completed: <?= h((string) $row['completed_logs']) ?></p>
+      </section>
+    <?php endforeach; ?>
+  </div>
+  <p class="back-link"><a href="/api/dashboard.php?as=admin&userId=1">Back to dashboard</a></p>
 </main>
 </body>
 </html>

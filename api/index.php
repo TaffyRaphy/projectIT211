@@ -2,7 +2,13 @@
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 
+$user = current_user();
+if ($user !== null) {
+  redirect_to('api/dashboard.php');
+}
+
 $error = query_param('error');
+$ok = query_param('ok');
 ?>
 <!doctype html>
 <html lang="en">
@@ -15,7 +21,8 @@ $error = query_param('error');
 <body>
 <main class="page page-login">
   <h1>Equipment Management System</h1>
-  <p>Login workflow (session handling intentionally omitted in workflow mode).</p>
+  <p>Sign in with your role account to access the equipment system.</p>
+  <?php if ($ok !== ''): ?><p class="alert alert-success"><?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Login Error: <?= h($error) ?></p><?php endif; ?>
   <form class="panel" action="/api/actions/login.php" method="post">
     <p><label for="email">Email</label></p>

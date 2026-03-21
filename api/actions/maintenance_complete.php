@@ -3,11 +3,10 @@ declare(strict_types=1);
 require dirname(__DIR__, 2) . '/includes/bootstrap.php';
 
 require_role(['maintenance']);
-$role = current_role('maintenance');
 $maintenanceId = int_query_param('id', 0);
 
 if ($maintenanceId <= 0) {
-    redirect_to('api/maintenance.php', ['as' => $role, 'error' => 'Invalid maintenance id']);
+    redirect_to('api/maintenance.php', ['error' => 'Invalid maintenance id']);
 }
 
 $pdo = db();
@@ -23,7 +22,7 @@ try {
     $row = $updateLog->fetch();
     if (!$row) {
         $pdo->rollBack();
-        redirect_to('api/maintenance.php', ['as' => $role, 'error' => 'Log not found or already completed']);
+        redirect_to('api/maintenance.php', ['error' => 'Log not found or already completed']);
     }
 
     $updateEquipment = $pdo->prepare(
@@ -35,10 +34,10 @@ try {
     );
     $updateEquipment->execute(['equipment_id' => (int) $row['equipment_id']]);
     $pdo->commit();
-    redirect_to('api/maintenance.php', ['as' => $role, 'ok' => 'Maintenance completed']);
+    redirect_to('api/maintenance.php', ['ok' => 'Maintenance completed']);
 } catch (Throwable $e) {
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    redirect_to('api/maintenance.php', ['as' => $role, 'error' => 'Failed to complete maintenance']);
+    redirect_to('api/maintenance.php', ['error' => 'Failed to complete maintenance']);
 }

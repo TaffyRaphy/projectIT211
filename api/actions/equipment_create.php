@@ -3,7 +3,6 @@ declare(strict_types=1);
 require dirname(__DIR__, 2) . '/includes/bootstrap.php';
 
 require_role(['admin']);
-$role = current_role('admin');
 
 $name = post_string('name');
 $category = post_string('category');
@@ -11,7 +10,7 @@ $location = post_string('location');
 $quantityTotal = post_int('quantity_total');
 
 if ($name === '' || $category === '' || $location === '' || $quantityTotal === null || $quantityTotal < 0) {
-    redirect_to('api/equipment.php', ['as' => $role, 'error' => 'Invalid equipment input']);
+    redirect_to('api/equipment.php', ['error' => 'Invalid equipment input']);
 }
 
 function generate_equipment_code(PDO $pdo): string
@@ -45,4 +44,4 @@ $stmt->execute([
     'location' => $location,
 ]);
 
-redirect_to('api/equipment.php', ['as' => $role, 'ok' => 'Equipment added']);
+redirect_to('api/equipment.php', ['ok' => 'Equipment added']);

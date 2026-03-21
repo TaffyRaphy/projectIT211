@@ -2,8 +2,8 @@
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 
-$role = current_role('maintenance');
-$maintenanceUserId = int_query_param('maintenanceUserId', 3);
+$role = require_role(['maintenance']);
+$maintenanceUserId = (int) require_login()['id'];
 $ok = query_param('ok');
 $error = query_param('error');
 
@@ -29,14 +29,13 @@ $maintenanceRows = db()->query(
 <body>
 <main class="page page-maintenance">
   <h1>Maintenance Scheduling</h1>
-  <p class="meta-note">Role in workflow mode: <?= h($role) ?></p>
-  <p class="meta-note">Maintenance User ID used for test workflow: <?= $maintenanceUserId ?></p>
+  <p class="meta-note">Role: <?= h($role) ?></p>
+  <p class="meta-note">Maintenance User ID: <?= $maintenanceUserId ?></p>
   <?php if ($ok !== ''): ?><p class="alert alert-success">Success: <?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 
   <h2>Schedule Maintenance</h2>
-  <form class="panel" action="/api/actions/maintenance_create.php?<?= http_build_query(['as' => $role]) ?>" method="post">
-    <input type="hidden" name="maintenance_user_id" value="<?= $maintenanceUserId ?>">
+  <form class="panel" action="/api/actions/maintenance_create.php" method="post">
     <p><label for="equipment_id">Equipment</label></p>
     <p><select id="equipment_id" name="equipment_id" required><?php foreach ($equipmentRows as $item): ?><option value="<?= (int) $item['id'] ?>"><?= h((string) $item['name']) ?> | status: <?= h((string) $item['status']) ?></option><?php endforeach; ?></select></p>
     <p><label for="maintenance_type">Maintenance Type</label></p>
@@ -60,14 +59,14 @@ $maintenanceRows = db()->query(
       <p>Completed Date: <?= h((string) ($log['completed_date'] ?? '-')) ?></p>
       <p>Notes: <?= h((string) ($log['notes'] ?? '-')) ?></p>
       <?php if ((string) $log['status'] === 'scheduled'): ?>
-        <form class="inline-form" action="/api/actions/maintenance_complete.php?<?= http_build_query(['as' => $role, 'id' => (int) $log['id']]) ?>" method="post">
+        <form class="inline-form" action="/api/actions/maintenance_complete.php?<?= http_build_query(['id' => (int) $log['id']]) ?>" method="post">
           <button type="submit">Mark Completed</button>
         </form>
       <?php endif; ?>
     </section>
   <?php endforeach; ?>
   </div>
-  <p class="back-link"><a href="/api/dashboard.php?<?= http_build_query(['as' => $role, 'userId' => $maintenanceUserId]) ?>">Back to dashboard</a></p>
+  <p class="back-link"><a href="/api/dashboard.php">Back to dashboard</a></p>
 </main>
 </body>
 </html>

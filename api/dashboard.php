@@ -2,8 +2,9 @@
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 
-$role = query_param('as');
-$userId = int_query_param('userId', 0);
+$user = require_login();
+$role = (string) $user['role'];
+$userId = (int) $user['id'];
 
 $inventoryCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM equipment")->fetch()['total'];
 $pendingRequests = (string) db()->query("SELECT COUNT(*)::text AS total FROM equipment_requests WHERE status = 'pending'")->fetch()['total'];
@@ -22,8 +23,8 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
   <header class="page-header">
     <h1>Dashboard</h1>
     <div class="meta-row">
-      <span class="chip chip-role">Role: <?= h($role !== '' ? $role : 'none') ?></span>
-      <span class="chip chip-id">User ID: <?= $userId > 0 ? $userId : 'unknown' ?></span>
+      <span class="chip chip-role">Role: <?= h($role) ?></span>
+      <span class="chip chip-id">User ID: <?= $userId ?></span>
     </div>
   </header>
 
@@ -46,13 +47,13 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
   <hr>
   <h2>Workflow Links</h2>
   <nav class="workflow-grid">
-    <a class="workflow-link" href="/api/equipment.php?<?= http_build_query(['as' => $role !== '' ? $role : 'admin']) ?>">Equipment Management (Admin)</a>
-    <a class="workflow-link" href="/api/requests.php?<?= http_build_query(['as' => $role !== '' ? $role : 'staff', 'staffId' => $userId > 0 ? $userId : 2]) ?>">Equipment Request (Staff)</a>
-    <a class="workflow-link" href="/api/admin_requests.php?<?= http_build_query(['as' => $role !== '' ? $role : 'admin', 'adminId' => $userId > 0 ? $userId : 1]) ?>">Request Approval and Allocation (Admin)</a>
-    <a class="workflow-link" href="/api/maintenance.php?<?= http_build_query(['as' => $role !== '' ? $role : 'maintenance', 'maintenanceUserId' => $userId > 0 ? $userId : 3]) ?>">Maintenance Scheduling (Maintenance)</a>
+    <a class="workflow-link" href="/api/equipment.php">Equipment Management (Admin)</a>
+    <a class="workflow-link" href="/api/requests.php">Equipment Request (Staff)</a>
+    <a class="workflow-link" href="/api/admin_requests.php">Request Approval and Allocation (Admin)</a>
+    <a class="workflow-link" href="/api/maintenance.php">Maintenance Scheduling (Maintenance)</a>
     <a class="workflow-link" href="/api/reports.php">Reports</a>
   </nav>
-  <p class="back-link"><a href="/api/index.php">Logout (workflow mode)</a></p>
+  <p class="back-link"><a href="/api/actions/logout.php">Logout</a></p>
 </main>
 </body>
 </html>

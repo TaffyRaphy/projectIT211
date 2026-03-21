@@ -1,6 +1,10 @@
 <?php
 declare(strict_types=1);
 
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
 function app_env(string $key): string
 {
     $value = getenv($key);
@@ -57,16 +61,76 @@ function parse_role(?string $value): ?string
     return in_array($value, ['admin', 'staff', 'maintenance'], true) ? $value : null;
 }
 
+function current_user(): ?array
+{
+    $user = $_SESSION['user'] ?? null;
+    if (!is_array($user)) {
+        return null;
+    }
+
+    $id = isset($user['id']) ? (int) $user['id'] : 0;
+    $role = parse_role(isset($user['role']) ? (string) $user['role'] : null);
+    $email = isset($user['email']) ? (string) $user['email'] : '';
+    $fullName = isset($user['full_name']) ? (string) $user['full_name'] : '';
+
+    if ($id <= 0 || $role === null || $email === '' || $fullName === '') {
+        return null;
+    }
+
+    return [
+        'id' => $id,
+        'role' => $role,
+        'email' => $email,
+        'full_name' => $fullName,
+    ];
+}
+
+function login_user(array $user): void
+{
+    session_regenerate_id(true);
+    $_SESSION['user'] = [
+        'id' => (int) ($user['id'] ?? 0),
+        'full_name' => (string) ($user['full_name'] ?? ''),
+        'email' => (string) ($user['email'] ?? ''),
+        'role' => (string) ($user['role'] ?? ''),
+    ];
+}
+
+function logout_user(): void
+{
+    $_SESSION = [];
+    if (ini_get('session.use_cookies')) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
+    }
+    session_destroy();
+}
+
+function require_login(): array
+{
+    $user = current_user();
+    if ($user === null) {
+        redirect_to('api/index.php', ['error' => 'Please log in first']);
+    }
+    return $user;
+}
+
 function current_role(string $default): string
 {
+    $user = current_user();
+    if ($user !== null) {
+        return (string) $user['role'];
+    }
+
     $role = parse_role($_GET['as'] ?? null);
     return $role ?? $default;
 }
 
 function require_role(array $required): string
 {
-    $role = parse_role($_GET['as'] ?? null);
-    if ($role === null || !in_array($role, $required, true)) {
+    $user = require_login();
+    $role = (string) $user['role'];
+    if (!in_array($role, $required, true)) {
         http_response_code(403);
         echo 'Forbidden';
         exit;

@@ -3,10 +3,9 @@ declare(strict_types=1);
 require dirname(__DIR__, 2) . '/includes/bootstrap.php';
 
 require_role(['admin']);
-$role = current_role('admin');
 $equipmentId = int_query_param('id', 0);
 if ($equipmentId <= 0) {
-    redirect_to('api/equipment.php', ['as' => $role, 'error' => 'Invalid equipment id']);
+    redirect_to('api/equipment.php', ['error' => 'Invalid equipment id']);
 }
 
 $action = post_string('action');
@@ -17,7 +16,7 @@ if ($action === 'retire') {
          WHERE id = :id"
     );
     $stmt->execute(['id' => $equipmentId]);
-    redirect_to('api/equipment.php', ['as' => $role, 'ok' => 'Equipment retired']);
+    redirect_to('api/equipment.php', ['ok' => 'Equipment retired']);
 }
 
 $name = post_string('name');
@@ -33,7 +32,7 @@ if (
     $quantityTotal === null || $quantityAvailable === null ||
     $quantityTotal < 0 || $quantityAvailable < 0 || $quantityAvailable > $quantityTotal
 ) {
-    redirect_to('api/equipment.php', ['as' => $role, 'error' => 'Invalid equipment update']);
+    redirect_to('api/equipment.php', ['error' => 'Invalid equipment update']);
 }
 
 $stmt = db()->prepare(
@@ -57,4 +56,4 @@ $stmt->execute([
     'id' => $equipmentId,
 ]);
 
-redirect_to('api/equipment.php', ['as' => $role, 'ok' => 'Equipment updated']);
+redirect_to('api/equipment.php', ['ok' => 'Equipment updated']);

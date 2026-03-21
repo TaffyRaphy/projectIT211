@@ -14,4 +14,5 @@ if ($user === null) {
     redirect_to('api/index.php', ['error' => 'Invalid email or password']);
 }
 
-redirect_to('api/dashboard.php', ['as' => $user['role'], 'userId' => (string) $user['id']]);
+login_user($user);
+redirect_to('api/dashboard.php');

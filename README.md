@@ -1,55 +1,62 @@
-# Inventory System (HTML + JavaScript + PHP)
+# Web-Based Equipment Management System (PHP + PostgreSQL)
 
-This project now includes a PHP + HTML + JavaScript implementation (while keeping the original Next.js source for rollback safety) and uses PostgreSQL.
+This repository contains a role-based equipment management web app built with PHP, PostgreSQL, and vanilla JavaScript/CSS.
 
-## Implemented Workflow
+The implementation aligns with the project scope in `PROJECT_OVERVIEW.md`:
 
-1. User Login (role-aware workflow mode)
-2. Equipment Management (admin)
-3. Equipment Request and Allocation (staff + admin)
-4. Maintenance Scheduling and Repair Logging (maintenance)
+1. Authentication and role-based access (`admin`, `staff`, `maintenance`)
+2. Equipment inventory management
+3. Request and allocation workflow
+4. Maintenance scheduling and completion
+5. Reporting views for inventory, usage, and maintenance history
 
-## Important Testing Note
+## Current Security and Access Model
 
-Session-based code is intentionally omitted so the workflow can be checked first.
-Role context is currently passed with query string values like `?as=admin`.
+- Login uses database-backed credential validation (`users.password_hash` + `password_verify`)
+- Session handling is enabled via PHP sessions
+- Authenticated user identity is stored in `$_SESSION['user']`
+- Role checks are enforced server-side by `require_role(...)`
+- Action handlers derive actor identity from session (not from query/form IDs)
+- Logout is handled by `/api/actions/logout.php`
 
 ## Tech Stack
 
-- PHP (server-side pages + action handlers)
-- HTML + vanilla JavaScript
+- PHP 8+
 - PostgreSQL
-- Plain HTML markup only (no CSS workflow design)
+- Vercel PHP runtime (`vercel-php`)
+- Vanilla JavaScript for confirmation UX (`assets/app.js`)
+- Shared design system stylesheet (`assets/style.css`)
 
 ## Project Structure
 
-- `index.php` - login page
-- `dashboard.php` - workflow dashboard
-- `equipment.php` - equipment management
-- `requests.php` - staff requests
-- `admin_requests.php` - admin approvals/rejections
-- `maintenance.php` - maintenance scheduling/completion
-- `reports.php` - summaries
-- `actions/*.php` - workflow action handlers
-- `includes/bootstrap.php` - shared DB/auth/helpers
-- `assets/app.js` - frontend confirmation behavior
+- `api/index.php` - login page
+- `api/dashboard.php` - role-aware dashboard and navigation
+- `api/equipment.php` - equipment inventory management (admin)
+- `api/requests.php` - equipment requests/history (staff)
+- `api/admin_requests.php` - approval/rejection/allocation (admin)
+- `api/maintenance.php` - maintenance scheduling/completion (maintenance)
+- `api/reports.php` - reporting summaries (admin)
+- `api/actions/*.php` - form/action handlers
+- `includes/bootstrap.php` - DB connection, auth/session helpers, utility functions
+- `assets/style.css` - design system implementation
+- `assets/app.js` - client-side confirm prompts
 
 ## Database Setup
 
-1. Set `DATABASE_URL` to your PostgreSQL connection string.
-2. Run schema and seed scripts:
+1. Set environment variable `DATABASE_URL` (or `POSTGRES_URL`) to your PostgreSQL connection string.
+2. Run schema and seed setup:
 
 ```bash
 npm run db:setup
 ```
 
-Seeded accounts (password for all is `Pass123!`):
+Seeded accounts (password for all):
 
-- admin@example.com
-- staff@example.com
-- maintenance@example.com
+- `admin@example.com` / `Pass123!`
+- `staff@example.com` / `Pass123!`
+- `maintenance@example.com` / `Pass123!`
 
-## Run Locally (PHP App)
+## Local Run
 
 ```bash
 php -S localhost:8000
@@ -57,31 +64,37 @@ php -S localhost:8000
 
 Open `http://localhost:8000`.
 
-## Routes (PHP)
+## Route Map
 
-- `/index.php` Login
-- `/dashboard.php` Workflow dashboard
-- `/equipment.php` Admin equipment management
-- `/requests.php` Staff request creation/history
-- `/admin_requests.php` Admin approval/allocation
-- `/maintenance.php` Maintenance scheduling/completion
-- `/reports.php` Query-based reporting
+- `/api/index.php` - login
+- `/api/dashboard.php` - dashboard (requires login)
+- `/api/equipment.php` - equipment (admin)
+- `/api/requests.php` - request workflow (staff)
+- `/api/admin_requests.php` - request approval/allocation (admin)
+- `/api/maintenance.php` - maintenance workflow (maintenance)
+- `/api/reports.php` - reports (admin)
+- `/api/actions/logout.php` - logout
 
-## Vercel Deployment
+## DESIGN.md Compliance Check (Current)
 
-Before pushing to GitHub (important for your currently deployed Vercel app):
+Checked against `DESIGN.md` and implemented in `assets/style.css`:
 
-1. In Vercel Project Settings, disable Auto-Deploy (or use a Preview branch only) so production will not instantly switch.
-2. Set Framework Preset to **Other** (PHP setup), not Next.js.
-3. Keep `DATABASE_URL` in Vercel environment variables.
-4. Commit and push, then deploy to Preview first and test all workflows.
-5. Promote to Production only after preview passes.
-6. Run one-time DB initialization (locally or with the same DB):
+- Tonal dark layering with no hard divider borders: implemented
+- Primary/secondary/tertiary/error palette usage: implemented
+- Glass/blur panel treatment for main container: implemented
+- Typography system (`Manrope`, `Inter`, `Space Grotesk`): implemented
+- Rounded, glowing CTA buttons with hover glow behavior: implemented
+- Status chips and metric cards with accent glows: implemented
+- Asymmetric dashboard metric layout (hero card + support cards): implemented
+- Mobile responsiveness: implemented
 
-```bash
-npm run db:setup
-```
+Known browser limitation:
 
-## Artifact
+- Native select popup rendering can vary by OS/browser engine. Dark dropdown styling is applied, but the OS-level popup can still differ slightly.
 
-Detailed implementation artifact is in `WORKFLOW_ARTIFACT.md`.
+## Deployment Notes (Vercel)
+
+1. Framework preset: `Other`
+2. Keep `DATABASE_URL` in environment variables
+3. Deploy preview first, verify login/session and role routes, then promote to production
+4. Do not re-run destructive DB setup against production data unless intended

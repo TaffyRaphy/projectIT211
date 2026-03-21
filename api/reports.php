@@ -2,6 +2,8 @@
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 
+require_role(['admin']);
+
 $inventoryRows = db()->query(
     'SELECT category, COUNT(*)::text AS items, COALESCE(SUM(quantity_total), 0)::text AS total_qty,
             COALESCE(SUM(quantity_available), 0)::text AS available_qty
@@ -65,7 +67,7 @@ $maintenanceRows = db()->query(
       </section>
     <?php endforeach; ?>
   </div>
-  <p class="back-link"><a href="/api/dashboard.php?as=admin&userId=1">Back to dashboard</a></p>
+  <p class="back-link"><a href="/api/dashboard.php">Back to dashboard</a></p>
 </main>
 </body>
 </html>

@@ -2,8 +2,8 @@
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 
-$role = current_role('staff');
-$staffId = int_query_param('staffId', 2);
+$role = require_role(['staff']);
+$staffId = (int) require_login()['id'];
 $ok = query_param('ok');
 $error = query_param('error');
 
@@ -32,14 +32,13 @@ $requestRows = $stmt->fetchAll();
 <body>
 <main class="page page-requests">
   <h1>Equipment Request</h1>
-  <p class="meta-note">Role in workflow mode: <?= h($role) ?></p>
-  <p class="meta-note">Staff ID used for test workflow: <?= $staffId ?></p>
+  <p class="meta-note">Role: <?= h($role) ?></p>
+  <p class="meta-note">Staff ID: <?= $staffId ?></p>
   <?php if ($ok !== ''): ?><p class="alert alert-success">Success: <?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 
   <h2>Create Request</h2>
-  <form class="panel" action="/api/actions/request_create.php?<?= http_build_query(['as' => $role]) ?>" method="post">
-    <input type="hidden" name="staff_id" value="<?= $staffId ?>">
+  <form class="panel" action="/api/actions/request_create.php" method="post">
     <p><label for="equipment_id">Equipment</label></p>
     <p>
       <select id="equipment_id" name="equipment_id" required>
@@ -66,7 +65,7 @@ $requestRows = $stmt->fetchAll();
     </section>
   <?php endforeach; ?>
   </div>
-  <p class="back-link"><a href="/api/dashboard.php?<?= http_build_query(['as' => $role, 'userId' => $staffId]) ?>">Back to dashboard</a></p>
+  <p class="back-link"><a href="/api/dashboard.php">Back to dashboard</a></p>
 </main>
 </body>
 </html>

@@ -28,7 +28,10 @@ $ok = query_param('ok');
     <p><label for="email">Email</label></p>
     <p><input id="email" name="email" type="email" required></p>
     <p><label for="password">Password</label></p>
-    <p><input id="password" name="password" type="password" required></p>
+    <p class="password-row">
+      <input id="password" name="password" type="password" required>
+      <button type="button" class="toggle-password" data-target="password" aria-pressed="false">Show</button>
+    </p>
     <p><button type="submit">Login</button></p>
   </form>
   <hr>
@@ -39,5 +42,6 @@ $ok = query_param('ok');
     <p>maintenance@example.com / Pass123!</p>
   </section>
 </main>
+<script src="/assets/app.js"></script>
 </body>
 </html>

@@ -193,15 +193,61 @@ function redirect_to(string $path, array $params = []): void
     exit;
 }
 
+function users_password_column(): ?string
+{
+    static $column = false;
+    if ($column !== false) {
+        return is_string($column) ? $column : null;
+    }
+
+    $stmt = db()->prepare(
+        "SELECT column_name
+         FROM information_schema.columns
+         WHERE table_schema = current_schema()
+           AND table_name = 'users'
+           AND column_name IN ('password_hash', 'password')
+         ORDER BY CASE WHEN column_name = 'password_hash' THEN 0 ELSE 1 END
+         LIMIT 1"
+    );
+    $stmt->execute();
+    $value = $stmt->fetchColumn();
+    $column = is_string($value) ? $value : null;
+    return is_string($column) ? $column : null;
+}
+
 function validate_login(string $email, string $password): ?array
 {
+    $passwordColumn = users_password_column();
+    if ($passwordColumn === null) {
+        return null;
+    }
+
     $stmt = db()->prepare(
-        'SELECT id, full_name, email, role, password_hash FROM users WHERE email = :email'
+        "SELECT id, full_name, email, role, {$passwordColumn} AS password_value
+         FROM users
+         WHERE LOWER(email) = LOWER(:email)
+         LIMIT 1"
     );
     $stmt->execute(['email' => $email]);
     $user = $stmt->fetch();
 
-    if (!$user || !password_verify($password, (string) $user['password_hash'])) {
+    if (!$user) {
+        return null;
+    }
+
+    $storedPassword = (string) ($user['password_value'] ?? '');
+    if ($storedPassword === '') {
+        return null;
+    }
+
+    $passwordInfo = password_get_info($storedPassword);
+    $isHashed = isset($passwordInfo['algo']) && (int) $passwordInfo['algo'] !== 0;
+
+    $isValid = $isHashed
+        ? password_verify($password, $storedPassword)
+        : hash_equals($storedPassword, $password);
+
+    if (!$isValid) {
         return null;
     }
 

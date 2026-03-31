@@ -28,7 +28,10 @@ $maintenanceRows = db()->query(
 </head>
 <body>
 <main class="page page-maintenance">
-  <h1>Maintenance Scheduling</h1>
+  <div class="page-intro">
+    <h1>Maintenance Management</h1>
+    <p class="page-tagline">Track maintenance logs and schedule repairs for higher uptime.</p>
+  </div>
   <p class="meta-note">Role: <?= h($role) ?></p>
   <p class="meta-note">Maintenance User ID: <?= $maintenanceUserId ?></p>
   <?php if ($ok !== ''): ?><p class="alert alert-success">Success: <?= h($ok) ?></p><?php endif; ?>

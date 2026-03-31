@@ -20,8 +20,10 @@ $ok = query_param('ok');
 </head>
 <body>
 <main class="page page-login">
-  <h1>Equipment Management System</h1>
-  <p>Enter your username and password to safely manage equipment assignments and operations.</p>
+  <div class="page-intro">
+    <h1>Equipment Management System</h1>
+    <p class="page-tagline">Log in to manage asset inventory, access controls, and operational workflows.</p>
+  </div>
   <?php if ($ok !== ''): ?><p class="alert alert-success"><?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Login Error: <?= h($error) ?></p><?php endif; ?>
   <form class="panel" action="/api/actions/login.php" method="post">

@@ -20,6 +20,10 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
 </head>
 <body>
 <main class="page page-dashboard">
+  <div class="page-intro">
+    <h1>Admin Dashboard</h1>
+    <p class="page-tagline">Overview of equipment stock, requests and maintenance status.</p>
+  </div>
   <header class="page-header">
     <h1>Dashboard</h1>
     <div class="meta-row">

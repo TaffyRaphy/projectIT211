@@ -23,7 +23,10 @@ $hasLocations = count($locationRows) > 0;
 </head>
 <body>
 <main class="page page-equipment">
-  <h1>Equipment Management</h1>
+  <div class="page-intro">
+    <h1>Equipment Management</h1>
+    <p class="page-tagline">Add new items and keep your inventory organized with faster workflows.</p>
+  </div>
   <p class="meta-note">Role: <?= h($role) ?></p>
   <?php if ($ok !== ''): ?><p class="alert alert-success">Success: <?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>

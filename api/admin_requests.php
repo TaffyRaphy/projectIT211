@@ -25,7 +25,10 @@ $rows = db()->query(
 </head>
 <body>
 <main class="page page-admin-requests">
-  <h1>Admin Request Approval and Allocation</h1>
+  <div class="page-intro">
+    <h1>Admin Request Workflow</h1>
+    <p class="page-tagline">Approve, allocate, and manage staff equipment requests efficiently.</p>
+  </div>
   <p class="meta-note">Role: <?= h($role) ?></p>
   <p class="meta-note">Admin ID: <?= $adminId ?></p>
   <?php if ($ok !== ''): ?><p class="alert alert-success">Success: <?= h($ok) ?></p><?php endif; ?>

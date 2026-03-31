@@ -31,7 +31,10 @@ $requestRows = $stmt->fetchAll();
 </head>
 <body>
 <main class="page page-requests">
-  <h1>Equipment Request</h1>
+  <div class="page-intro">
+    <h1>Equipment Request Center</h1>
+    <p class="page-tagline">Make requisitions quickly and track your request history in one place.</p>
+  </div>
   <p class="meta-note">Role: <?= h($role) ?></p>
   <p class="meta-note">Staff ID: <?= $staffId ?></p>
   <?php if ($ok !== ''): ?><p class="alert alert-success">Success: <?= h($ok) ?></p><?php endif; ?>

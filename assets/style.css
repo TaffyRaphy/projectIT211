@@ -279,28 +279,30 @@ button[data-confirm*='Reject'] {
   margin-left: 0.45rem;
 }
 
+/* ===== Enhanced UI improvements ===== */
 .page {
-  position: relative;
-  width: min(1200px, calc(100% - 2rem));
-  margin: 1.5rem auto 2rem;
+  max-width: 1200px;
+  margin: 1.5rem auto;
   padding: 1.5rem;
-  background: linear-gradient(180deg, rgba(23, 30, 31, 0.95), rgba(17, 22, 23, 0.92));
-  border: 1px solid rgba(170, 184, 184, 0.14);
+  background: linear-gradient(180deg, rgba(16, 20, 22, 0.88), rgba(11, 15, 17, 0.95));
+  border: 1px solid rgba(130, 166, 171, 0.25);
   border-radius: var(--radius-lg);
-  box-shadow: 0 25px 55px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.35);
 }
 
 .page h1 {
-  margin-bottom: 0.65rem;
-  color: var(--primary-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  color: #cffcb3;
+  letter-spacing: 0.08em;
 }
 
 .page h2 {
   color: #d8e7e7;
-  margin-top: 1.5rem;
-  margin-bottom: 0.8rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0.85rem;
+}
+
+.page p {
+  color: #b9d7d7;
 }
 
 .alert {
@@ -322,6 +324,102 @@ button[data-confirm*='Reject'] {
   background: rgba(255, 115, 81, 0.16);
   border: 1px solid rgba(255, 115, 81, 0.35);
 }
+
+.panel {
+  background: rgba(15, 20, 22, 0.85);
+  border: 1px solid rgba(169, 211, 215, 0.24);
+  box-shadow: 0 8px 16px rgba(2, 7, 8, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.panel:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(2, 7, 8, 0.4);
+}
+
+button,
+input[type="submit"] {
+  color: #0f1314;
+  background: linear-gradient(135deg, var(--primary), #e7ff8b);
+  border-color: rgba(200, 255, 160, 0.5);
+  box-shadow: 0 8px 14px rgba(181, 255, 178, 0.25);
+}
+
+button:hover,
+input[type="submit"]:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.1);
+}
+
+.metrics-grid,
+.workflow-grid,
+.stack-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.metrics-grid {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.workflow-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.item-card,
+.metric-card {
+  background: rgba(8, 12, 13, 0.95);
+  border: 1px solid rgba(123, 176, 180, 0.2);
+  border-radius: var(--radius-md);
+  padding: 0.95rem;
+  box-shadow: 0 10px 24px rgba(1, 2, 4, 0.25);
+}
+
+.item-title,
+.metric-label {
+  color: #c5ffca;
+  font-weight: 700;
+}
+
+.metric-value {
+  color: #fff;
+  font-size: 2rem;
+  margin-top: 0.3rem;
+}
+
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+
+.inline-form button {
+  width: auto;
+  min-width: 130px;
+  padding: 0.58rem 0.9rem;
+}
+
+.back-link a {
+  color: var(--tertiary);
+}
+
+.back-link a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 880px) {
+  main {
+    margin: 1rem;
+    padding: 1rem;
+  }
+  .metrics-grid,
+  .workflow-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 
 .metrics-grid,
 .workflow-grid,
@@ -418,8 +516,6 @@ button[data-confirm*='Reject'] {
 
 @media (max-width: 880px) {
   .page { margin: 0.75rem 0.75rem 1.2rem; padding: 1rem; }
-  .site-header { flex-wrap: wrap; gap: 0.5rem; }
-
   .workflow-grid, .metrics-grid { grid-template-columns: 1fr; }
 }
 

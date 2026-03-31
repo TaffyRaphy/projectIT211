@@ -118,6 +118,7 @@ main.page {
 
 .page-intro h1 {
   background: linear-gradient(135deg, #fff, var(--text-muted));
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: var(--space-2);
@@ -497,6 +498,53 @@ section:hover, .item-card:hover, .metric-card:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: var(--text-muted);
   color: var(--text-heading);
+}
+
+/* Login Page Specifics */
+main.page-login {
+  max-width: 450px;
+  margin: max(6vh, 2rem) auto var(--space-8);
+  padding: 2.5rem 2rem;
+}
+
+.page-login .page-intro {
+  text-align: center;
+  border-bottom: none;
+  padding-bottom: var(--space-2);
+}
+
+.page-login .page-intro h1 {
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
+}
+
+.page-login h2 {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  margin: var(--space-4) 0;
+}
+
+.page-login hr {
+  margin: var(--space-6) 0 var(--space-4);
+  opacity: 0.5;
+}
+
+.page-login .list-panel {
+  text-align: center;
+  padding: 1.25rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.page-login .list-panel p {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  color: var(--neon-cyan);
+}
+
+.page-login .list-panel p:last-child {
+  margin-bottom: 0;
 }
 
 /* Responsive */

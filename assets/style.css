@@ -279,6 +279,197 @@ button[data-confirm*='Reject'] {
   margin-left: 0.45rem;
 }
 
+/* ===== Global site header and layout ===== */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, rgba(10, 13, 14, 0.90), rgba(19, 25, 26, 0.95));
+  border-bottom: 1px solid rgba(166, 233, 255, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.site-header .brand {
+  font-family: Manrope, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--primary-soft);
+  letter-spacing: 0.03em;
+}
+
+.site-header nav {
+  display: flex;
+  gap: 0.7rem;
+}
+
+.site-header nav a {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--radius-pill);
+  transition: all 0.2s ease;
+}
+
+.site-header nav a:hover,
+.site-header nav a.active {
+  color: #0f1314;
+  background: linear-gradient(120deg, var(--primary), #e8ff8a);
+  transform: translateY(-1px);
+}
+
+.page {
+  position: relative;
+  width: min(1200px, calc(100% - 2rem));
+  margin: 1.5rem auto 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(180deg, rgba(23, 30, 31, 0.95), rgba(17, 22, 23, 0.92));
+  border: 1px solid rgba(170, 184, 184, 0.14);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 55px rgba(0, 0, 0, 0.45);
+}
+
+.page h1 {
+  margin-bottom: 0.65rem;
+  color: var(--primary-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.page h2 {
+  color: #d8e7e7;
+  margin-top: 1.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.alert {
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+  font-weight: 600;
+  display: inline-block;
+}
+
+.alert-success {
+  color: #0f2b12;
+  background: rgba(157, 252, 170, 0.2);
+  border: 1px solid rgba(183, 255, 189, 0.44);
+}
+
+.alert-error {
+  color: #3f0a07;
+  background: rgba(255, 115, 81, 0.16);
+  border: 1px solid rgba(255, 115, 81, 0.35);
+}
+
+.metrics-grid,
+.workflow-grid,
+.stack-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.metrics-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.metric-card {
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  background: rgba(17, 24, 26, 0.95);
+  border: 1px solid rgba(143, 161, 162, 0.2);
+  box-shadow: 0 8px 20px rgba(7, 15, 17, 0.4);
+}
+
+.metric-card-hero { background: linear-gradient(135deg, #99ff94, #b4ffc8); color: #0c0f08; }
+.metric-card-warning { background: linear-gradient(135deg, #ffcb8d, #fcd38d); color: #2f1e06; }
+.metric-card-cool { background: linear-gradient(135deg, #8ad4ff, #7ad1f6); color: #0b1c23; }
+
+.metric-label { font-size: 0.82rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.06em; }
+.metric-value { font-size: 2.5rem; margin-top: 0.2rem; font-weight: 800; }
+
+.workflow-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+
+.workflow-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 70px;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  background: rgba(22, 30, 32, 0.97);
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid rgba(166, 233, 255, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.workflow-link:hover {
+  border-color: rgba(202, 253, 0, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
+}
+
+.panel {
+  padding: 1rem 1.2rem;
+  background: rgba(8, 11, 12, 0.84);
+  border: 1px solid rgba(171, 183, 185, 0.24);
+  border-radius: var(--radius-md);
+}
+
+.item-card {
+  background: rgba(16, 20, 22, 0.9);
+  border: 1px solid rgba(143, 161, 162, 0.16);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  backdrop-filter: blur(2px);
+}
+
+.item-title {
+  margin: 0 0 0.25rem;
+  font-weight: 700;
+  color: var(--primary-soft);
+}
+
+.inline-form {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+}
+
+.inline-form button {
+  width: auto;
+  flex: 0 0 120px;
+  padding: 0.52rem 0.8rem;
+}
+
+.back-link {
+  margin-top: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.back-link a {
+  color: var(--tertiary);
+  text-decoration: none;
+}
+
+.back-link a:hover { text-decoration: underline; }
+
+@media (max-width: 880px) {
+  .page { margin: 0.75rem 0.75rem 1.2rem; padding: 1rem; }
+  .site-header { flex-wrap: wrap; gap: 0.5rem; }
+
+  .workflow-grid, .metrics-grid { grid-template-columns: 1fr; }
+}
+
+
 .chip-available,
 .chip-approved,
 .chip-allocated,

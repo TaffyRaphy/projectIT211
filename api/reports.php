@@ -36,6 +36,16 @@ $maintenanceRows = db()->query(
   <title>Reports</title>
 </head>
 <body>
+<header class="site-header">
+  <div class="brand">Equipment Inventory Pro</div>
+  <nav>
+    <a href="/api/index.php">Sign In</a>
+    <a href="/api/dashboard.php">Dashboard</a>
+    <a href="/api/equipment.php">Equipment</a>
+    <a href="/api/requests.php">Requests</a>
+    <a href="/api/maintenance.php">Maintenance</a>
+  </nav>
+</header>
 <main class="page page-reports">
   <h1>Reports</h1>
   <h2>Inventory Status Summary</h2>

@@ -22,6 +22,16 @@ $hasLocations = count($locationRows) > 0;
   <title>Equipment Management</title>
 </head>
 <body>
+<header class="site-header">
+  <div class="brand">Equipment Inventory Pro</div>
+  <nav>
+    <a href="/api/index.php">Sign In</a>
+    <a href="/api/dashboard.php">Dashboard</a>
+    <a class="active" href="/api/equipment.php">Equipment</a>
+    <a href="/api/requests.php">Requests</a>
+    <a href="/api/maintenance.php">Maintenance</a>
+  </nav>
+</header>
 <main class="page page-equipment">
   <h1>Equipment Management</h1>
   <p class="meta-note">Role: <?= h($role) ?></p>

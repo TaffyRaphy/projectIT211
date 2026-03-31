@@ -19,16 +19,6 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
   <title>Dashboard</title>
 </head>
 <body>
-<header class="site-header">
-  <div class="brand">Equipment Inventory Pro</div>
-  <nav>
-    <a href="/api/index.php">Sign In</a>
-    <a class="active" href="/api/dashboard.php">Dashboard</a>
-    <a href="/api/equipment.php">Equipment</a>
-    <a href="/api/requests.php">Requests</a>
-    <a href="/api/maintenance.php">Maintenance</a>
-  </nav>
-</header>
 <main class="page page-dashboard">
   <header class="page-header">
     <h1>Dashboard</h1>

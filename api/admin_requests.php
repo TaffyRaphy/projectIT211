@@ -24,16 +24,6 @@ $rows = db()->query(
   <title>Admin Requests</title>
 </head>
 <body>
-<header class="site-header">
-  <div class="brand">Equipment Inventory Pro</div>
-  <nav>
-    <a href="/api/index.php">Sign In</a>
-    <a href="/api/dashboard.php">Dashboard</a>
-    <a href="/api/equipment.php">Equipment</a>
-    <a href="/api/requests.php">Requests</a>
-    <a href="/api/maintenance.php">Maintenance</a>
-  </nav>
-</header>
 <main class="page page-admin-requests">
   <h1>Admin Request Approval and Allocation</h1>
   <p class="meta-note">Role: <?= h($role) ?></p>

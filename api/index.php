@@ -19,17 +19,8 @@ $ok = query_param('ok');
   <title>Equipment Management System</title>
 </head>
 <body>
-<header class="site-header">
-  <div class="brand">Equipment Inventory Pro</div>
-  <nav>
-    <a class="active" href="/api/index.php">Sign In</a>
-    <a href="/api/dashboard.php">Dashboard</a>
-    <a href="/api/equipment.php">Equipment</a>
-    <a href="/api/requests.php">Requests</a>
-  </nav>
-</header>
 <main class="page page-login">
-  <h1>Equipment Inventory Management</h1>
+  <h1>Equipment Management System</h1>
   <p>Enter your username and password to safely manage equipment assignments and operations.</p>
   <?php if ($ok !== ''): ?><p class="alert alert-success"><?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Login Error: <?= h($error) ?></p><?php endif; ?>

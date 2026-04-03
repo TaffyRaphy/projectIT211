@@ -16,7 +16,7 @@ $ok = query_param('ok');
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/assets/style.css">
-  <title>Equipment Management System</title>
+  <title>Equipment Management Systemm</title>
 </head>
 <body>
 <main class="page page-login">

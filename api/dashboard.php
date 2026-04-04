@@ -57,6 +57,16 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
     <a class="workflow-link" href="/api/maintenance.php">Maintenance Scheduling (Maintenance)</a>
     <a class="workflow-link" href="/api/reports.php">Reports (Admin)</a>
   </nav>
+
+  <?php if ($role === 'admin'): ?>
+  <hr>
+  <h2>Administration</h2>
+  <nav class="workflow-grid">
+    <a class="workflow-link" href="/api/notification_logs.php">📧 Notification Logs</a>
+    <a class="workflow-link" href="/api/email_config.php">⚙️ Email Configuration</a>
+  </nav>
+  <?php endif; ?>
+
   <p class="back-link"><a href="/api/actions/logout.php">Logout</a></p>
 </main>
 </body>

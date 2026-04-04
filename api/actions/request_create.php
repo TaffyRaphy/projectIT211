@@ -24,4 +24,29 @@ $stmt->execute([
     'purpose' => $purpose,
 ]);
 
+// Get staff and equipment details for notification
+$user = require_login();
+$equipStmt = db()->prepare('SELECT name FROM equipment WHERE id = :id');
+$equipStmt->execute(['id' => $equipmentId]);
+$equipment = $equipStmt->fetch();
+
+// Send notification to all admins
+if ($equipment) {
+    $adminsEmails = NotificationService::getInstance()->getAdminsEmails();
+    foreach ($adminsEmails as $adminId => $adminEmail) {
+        NotificationService::getInstance()->send(
+            'request_submitted',
+            $adminEmail,
+            (int) $adminId,
+            [
+                'staff_name' => $user['full_name'],
+                'equipment_name' => $equipment['name'],
+                'qty_requested' => $qtyRequested,
+                'purpose' => $purpose,
+                'admin_link' => 'View Request in Admin Panel',
+            ]
+        );
+    }
+}
+
 redirect_to('api/requests.php', ['ok' => 'Request submitted']);

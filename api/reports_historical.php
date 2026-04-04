@@ -1,0 +1,276 @@
+<?php
+declare(strict_types=1);
+require dirname(__DIR__) . '/includes/bootstrap.php';
+
+require_role(['admin']);
+
+$ok = query_param('ok');
+$error = query_param('error');
+
+// Date range filters
+$startDate = post_string('start_date') ?: query_param('start_date') ?: date('Y-m-d', strtotime('-30 days'));
+$endDate = post_string('end_date') ?: query_param('end_date') ?: date('Y-m-d');
+
+// Validate dates
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $startDate)) {
+    $startDate = date('Y-m-d', strtotime('-30 days'));
+}
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $endDate)) {
+    $endDate = date('Y-m-d');
+}
+
+// Ensure start is before end
+if ($startDate > $endDate) {
+    [$startDate, $endDate] = [$endDate, $startDate];
+}
+
+try {
+    // Equipment trend data
+    $equipmentTrendStmt = db()->prepare(
+        "SELECT snapshot_date, 
+                COALESCE(SUM(CASE WHEN metric_key = 'total_equipment' THEN metric_value ELSE 0 END), 0) as total,
+                COALESCE(SUM(CASE WHEN metric_key = 'available_equipment' THEN metric_value ELSE 0 END), 0) as available,
+                COALESCE(SUM(CASE WHEN metric_key = 'allocated_equipment' THEN metric_value ELSE 0 END), 0) as allocated,
+                COALESCE(SUM(CASE WHEN metric_key = 'maintenance_equipment' THEN metric_value ELSE 0 END), 0) as maintenance
+         FROM report_snapshots
+         WHERE snapshot_date BETWEEN :start AND :end
+         GROUP BY snapshot_date
+         ORDER BY snapshot_date ASC"
+    );
+    $equipmentTrendStmt->execute ([':start' => $startDate, ':end' => $endDate]);
+    $equipmentTrend = $equipmentTrendStmt->fetchAll();
+
+    // Request metrics trend
+    $requestTrendStmt = db()->prepare(
+        "SELECT snapshot_date,
+                COALESCE(SUM(CASE WHEN metric_key = 'pending_requests' THEN metric_value ELSE 0 END), 0) as pending,
+                COALESCE(SUM(CASE WHEN metric_key = 'approved_requests_today' THEN metric_value ELSE 0 END), 0) as approved_today
+         FROM report_snapshots
+         WHERE snapshot_date BETWEEN :start AND :end
+         GROUP BY snapshot_date
+         ORDER BY snapshot_date ASC"
+    );
+    $requestTrendStmt->execute([':start' => $startDate, ':end' => $endDate]);
+    $requestTrend = $requestTrendStmt->fetchAll();
+
+    // Maintenance cost trend
+    $costTrendStmt = db()->prepare(
+        "SELECT snapshot_date,
+                COALESCE(SUM(CASE WHEN metric_key = 'total_maintenance_cost' THEN metric_value ELSE 0 END), 0) as cost,
+                COALESCE(SUM(CASE WHEN metric_key = 'completed_maintenance' THEN metric_value ELSE 0 END), 0) as completed
+         FROM report_snapshots
+         WHERE snapshot_date BETWEEN :start AND :end
+         GROUP BY snapshot_date
+         ORDER BY snapshot_date ASC"
+    );
+    $costTrendStmt->execute([':start' => $startDate, ':end' => $endDate]);
+    $costTrend = $costTrendStmt->fetchAll();
+
+    // Category breakdown
+    $categoryStmt = db()->prepare(
+        "SELECT category, SUM(metric_value) as total_count
+         FROM report_snapshots
+         WHERE snapshot_date = (SELECT MAX(snapshot_date) FROM report_snapshots WHERE snapshot_date <= :end)
+         AND metric_key LIKE 'equipment_by_category_%'
+         AND category IS NOT NULL
+         GROUP BY category
+         ORDER BY total_count DESC"
+    );
+    $categoryStmt->execute([':end' => $endDate]);
+    $categoryData = $categoryStmt->fetchAll();
+} catch (Throwable $e) {
+    error_log('Historical report error: ' . $e->getMessage());
+    $equipmentTrend = [];
+    $requestTrend = [];
+    $costTrend = [];
+    $categoryData = [];
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Historical Reports - Equipment Management System</title>
+    <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📈 Historical Trends & Analysis</h1>
+            <p>View equipment metrics and performance trends over time</p>
+        </header>
+
+        <?php if ($ok !== ''): ?>
+            <p class="alert alert-success"><?= h($ok) ?></p>
+        <?php endif; ?>
+
+        <?php if ($error !== ''): ?>
+            <p class="alert alert-error">Error: <?= h($error) ?></p>
+        <?php endif; ?>
+
+        <section class="card">
+            <h2>Select Date Range</h2>
+            <form method="post" class="filter-form">
+                <div class="form-group">
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date" value="<?= h($startDate) ?>" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="end_date">End Date:</label>
+                    <input type="date" id="end_date" name="end_date" value="<?= h($endDate) ?>" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Update Trends</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Equipment Status Trend</h2>
+            <p class="text-muted">Equipment count by status over time from <?= h($startDate) ?> to <?= h($endDate) ?></p>
+
+            <?php if (count($equipmentTrend) > 0): ?>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Total Equipment</th>
+                                <th>Available</th>
+                                <th>Allocated</th>
+                                <th>Under Maintenance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($equipmentTrend as $row): ?>
+                                <tr>
+                                    <td><strong><?= h($row['snapshot_date']) ?></strong></td>
+                                    <td><?= (int) $row['total'] ?></td>
+                                    <td><?= (int) $row['available'] ?></td>
+                                    <td><?= (int) $row['allocated'] ?></td>
+                                    <td><?= (int) $row['maintenance'] ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else: ?>
+                <p class="empty-state">No snapshot data available for this date range. Run the daily snapshot to collect metrics.</p>
+            <?php endif; ?>
+        </section>
+
+        <section class="card">
+            <h2>Request Processing Trend</h2>
+            <p class="text-muted">Request metrics over time</p>
+
+            <?php if (count($requestTrend) > 0): ?>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Pending Requests</th>
+                                <th>Approved Today</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($requestTrend as $row): ?>
+                                <tr>
+                                    <td><strong><?= h($row['snapshot_date']) ?></strong></td>
+                                    <td><?= (int) $row['pending'] ?></td>
+                                    <td><?= (int) $row['approved_today'] ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else: ?>
+                <p class="empty-state">No data available.</p>
+            <?php endif; ?>
+        </section>
+
+        <section class="card">
+            <h2>Maintenance Cost Trend</h2>
+            <p class="text-muted">Cumulative maintenance costs and completed tasks over time</p>
+
+            <?php if (count($costTrend) > 0): ?>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Total Cost</th>
+                                <th>Completed Tasks</th>
+                                <th>Cost per Task</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($costTrend as $row): ?>
+                                <tr>
+                                    <td><strong><?= h($row['snapshot_date']) ?></strong></td>
+                                    <td>$<?= number_format((float) $row['cost'], 2) ?></td>
+                                    <td><?= (int) $row['completed'] ?></td>
+                                    <td>
+                                        <?php if ((int) $row['completed'] > 0): ?>
+                                            $<?= number_format((float) $row['cost'] / (int) $row['completed'], 2) ?>
+                                        <?php else: ?>
+                                            -
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else: ?>
+                <p class="empty-state">No data available.</p>
+            <?php endif; ?>
+        </section>
+
+        <section class="card">
+            <h2>Equipment by Category</h2>
+            <p class="text-muted">Latest equipment distribution by category</p>
+
+            <?php if (count($categoryData) > 0): ?>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($categoryData as $row): ?>
+                                <tr>
+                                    <td><strong><?= h((string) $row['category']) ?></strong></td>
+                                    <td><?= (int) $row['total_count'] ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else: ?>
+                <p class="empty-state">No category data available.</p>
+            <?php endif; ?>
+        </section>
+
+        <section class="card">
+            <h2>Data Management</h2>
+            <p>
+                <a href="/api/actions/snapshot_daily.php" class="btn btn-secondary">📸 Capture Metrics Now</a>
+                <a href="/api/reports.php" class="btn btn-primary">← Back to Reports</a>
+            </p>
+        </section>
+
+        <nav class="breadcrumb">
+            <a href="/api/reports.php">← Back to Reports</a>
+            <a href="/api/dashboard.php">← Back to Dashboard</a>
+        </nav>
+    </div>
+
+    <script src="/assets/app.js"></script>
+</body>
+</html>

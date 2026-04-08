@@ -29,7 +29,7 @@ class NotificationService
     /**
      * Send a notification email
      *
-     * @param string $eventType Event type key (matches notification_templates.event_type)
+        * @param string $eventType Event type key (matches assets/email_templates/{eventType}.html)
      * @param string $recipientEmail Recipient email address
      * @param ?int $recipientId User ID (for tracking)
      * @param array $templateData Variables to interpolate in template
@@ -76,15 +76,35 @@ class NotificationService
     }
 
     /**
-     * Get template from database
+     * Get template from filesystem with a subject fallback map.
      */
     private function getTemplate(string $eventType): ?array
     {
         try {
-            $stmt = db()->prepare('SELECT subject, body_html FROM notification_templates WHERE event_type = :type AND is_active = true');
-            $stmt->execute([':type' => $eventType]);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $result ?: null;
+            $subjects = [
+                'request_submitted' => 'New Equipment Request Submitted',
+                'request_approved' => 'Your Equipment Request Was Approved',
+                'request_rejected' => 'Your Equipment Request Was Rejected',
+                'maintenance_scheduled' => 'Maintenance Scheduled',
+                'maintenance_completed' => 'Maintenance Completed',
+                'equipment_due_return' => 'Equipment Return Reminder',
+                'equipment_overdue_return' => 'Equipment Return Overdue',
+            ];
+
+            $templatePath = dirname(__DIR__) . '/assets/email_templates/' . $eventType . '.html';
+            if (!is_file($templatePath)) {
+                return null;
+            }
+
+            $bodyHtml = file_get_contents($templatePath);
+            if ($bodyHtml === false || trim($bodyHtml) === '') {
+                return null;
+            }
+
+            return [
+                'subject' => $subjects[$eventType] ?? 'Equipment Management Notification',
+                'body_html' => $bodyHtml,
+            ];
         } catch (Throwable $e) {
             error_log("Failed to load template: {$e->getMessage()}");
             return null;
@@ -141,7 +161,7 @@ class NotificationService
     }
 
     /**
-     * Log notification to database
+     * Log notification to notifications table from the base schema.
      */
     private function logNotification(
         string $recipientEmail,
@@ -151,16 +171,21 @@ class NotificationService
         string $status,
         ?string $errorMessage = null
     ): void {
+        if ($recipientId === null || $recipientId <= 0) {
+            return;
+        }
+
         try {
+            $message = $status === 'sent'
+                ? $subject
+                : ('Failed to send: ' . $subject . ($errorMessage ? ' (' . $errorMessage . ')' : ''));
+
             db()->prepare(
-                'INSERT INTO notification_logs (recipient_email, recipient_id, event_type, subject, status, error_message) VALUES (:email, :id, :type, :subject, :status, :error)'
+                'INSERT INTO notifications (user_id, message, type, is_read) VALUES (:user_id, :message, :type, false)'
             )->execute([
-                ':email' => $recipientEmail,
-                ':id' => $recipientId,
-                ':type' => $eventType,
-                ':subject' => $subject,
-                ':status' => $status,
-                ':error' => $errorMessage,
+                ':user_id' => $recipientId,
+                ':message' => $message,
+                ':type' => $status === 'sent' ? $eventType : ($eventType . '_failed'),
             ]);
         } catch (Throwable $e) {
             error_log("Failed to log notification: {$e->getMessage()}");
@@ -225,6 +250,7 @@ class NotificationService
                  JOIN users u ON a.staff_id = u.id
                  JOIN equipment e ON a.equipment_id = e.id
                  WHERE a.expected_return_date < CURRENT_DATE 
+                  AND a.status = 'active'
                  AND a.expected_return_date IS NOT NULL"
             );
             $overdue = $stmt->fetchAll(PDO::FETCH_ASSOC);

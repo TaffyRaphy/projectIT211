@@ -32,7 +32,7 @@ try {
     if ($success) {
         redirect_to('/api/email_config.php', ['ok' => 'Email configuration saved successfully']);
     } else {
-        redirect_to('/api/email_config.php', ['error' => 'Failed to save configuration']);
+        redirect_to('/api/email_config.php', ['error' => 'SMTP settings are environment-managed in this schema. Set SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, and SMTP_FROM_EMAIL instead.']);
     }
 } catch (Throwable $e) {
     redirect_to('/api/email_config.php', ['error' => 'Error: ' . $e->getMessage()]);

@@ -16,8 +16,8 @@ $categoryStmt = db()->query("SELECT DISTINCT category FROM equipment WHERE categ
 $categories = $categoryStmt->fetchAll(PDO::FETCH_COLUMN);
 
 // Build category filter where clause
-$categoryWhere = $categoryFilter !== '' ? "AND e.category = '" . db()->quote($categoryFilter) . "'" : '';
-$statusWhere = $statusFilter !== '' ? "AND e.status = '" . db()->quote($statusFilter) . "'" : '';
+$categoryWhere = $categoryFilter !== '' ? 'AND e.category = ' . db()->quote($categoryFilter) : '';
+$statusWhere = $statusFilter !== '' ? 'AND e.status = ' . db()->quote($statusFilter) : '';
 
 // Inventory by category
 $inventoryRows = db()->query(

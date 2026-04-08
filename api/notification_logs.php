@@ -22,38 +22,49 @@ $where = [];
 $params = [];
 
 if ($eventFilter !== '') {
-    $where[] = 'event_type = :event_type';
-    $params[':event_type'] = $eventFilter;
+    $where[] = 'type = :type';
+    $params[':type'] = $eventFilter;
 }
 
 if ($statusFilter !== '') {
-    $where[] = 'status = :status';
-    $params[':status'] = $statusFilter;
+    if ($statusFilter === 'read') {
+        $where[] = 'is_read = true';
+    } elseif ($statusFilter === 'unread') {
+        $where[] = 'is_read = false';
+    }
 }
 
 if ($searchEmail !== '') {
-    $where[] = "recipient_email ILIKE :email";
+    $where[] = "u.email ILIKE :email";
     $params[':email'] = '%' . $searchEmail . '%';
 }
 
 $whereClause = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
 
 // Get distinct event types for filter dropdown
-$eventStmt = db()->query("SELECT DISTINCT event_type FROM notification_logs ORDER BY event_type");
-$eventTypes = $eventStmt->fetchAll(PDO::FETCH_COLUMN);
+$eventTypes = [
+    'request_submitted',
+    'request_approved',
+    'request_rejected',
+    'maintenance_scheduled',
+    'maintenance_completed',
+    'equipment_due_return',
+    'equipment_overdue_return',
+];
 
 // Get total count
-$countStmt = db()->prepare("SELECT COUNT(*) FROM notification_logs $whereClause");
+$countStmt = db()->prepare("SELECT COUNT(*) FROM notifications n JOIN users u ON u.id = n.user_id $whereClause");
 $countStmt->execute($params);
 $totalCount = (int) $countStmt->fetchColumn();
 $totalPages = (int) ceil($totalCount / $perPage);
 
 // Fetch notification logs
 $stmt = db()->prepare(
-    "SELECT id, recipient_email, event_type, subject, status, sent_at, error_message
-     FROM notification_logs
+    "SELECT n.id, u.email AS recipient_email, n.type AS event_type, n.message AS subject, CASE WHEN n.is_read THEN 'read' ELSE 'unread' END AS status, n.created_at AS sent_at, NULL AS error_message
+     FROM notifications n
+     JOIN users u ON u.id = n.user_id
      $whereClause
-     ORDER BY sent_at DESC
+     ORDER BY n.created_at DESC
      LIMIT :limit OFFSET :offset"
 );
 $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
@@ -107,9 +118,8 @@ $logs = $stmt->fetchAll();
                     <label for="status_filter">Status:</label>
                     <select id="status_filter" name="status_filter">
                         <option value="">All Statuses</option>
-                        <option value="sent" <?= $statusFilter === 'sent' ? 'selected' : '' ?>>Sent</option>
-                        <option value="failed" <?= $statusFilter === 'failed' ? 'selected' : '' ?>>Failed</option>
-                        <option value="pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Pending</option>
+                        <option value="unread" <?= $statusFilter === 'unread' ? 'selected' : '' ?>>Unread</option>
+                        <option value="read" <?= $statusFilter === 'read' ? 'selected' : '' ?>>Read</option>
                     </select>
                 </div>
 

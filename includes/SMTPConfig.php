@@ -28,11 +28,10 @@ class SMTPConfig
     }
 
     /**
-     * Load SMTP configuration from environment or database
+     * Load SMTP configuration from environment variables.
      */
     public static function load(): ?self
     {
-        // Try environment variables first
         $host = getenv('SMTP_HOST');
         $port = (int) (getenv('SMTP_PORT') ?: '587');
         $username = getenv('SMTP_USERNAME') ?: null;
@@ -43,70 +42,16 @@ class SMTPConfig
             return new self($host, $port, $username, $password, $fromEmail);
         }
 
-        // Fall back to database configuration
-        try {
-            $stmt = db()->query('SELECT host, port, username, password, from_email FROM smtp_configuration LIMIT 1');
-            $config = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($config) {
-                // Decrypt password if stored encrypted (optional enhancement)
-                return new self(
-                    (string) $config['host'],
-                    (int) $config['port'],
-                    $config['username'],
-                    $config['password'],
-                    (string) $config['from_email']
-                );
-            }
-        } catch (Throwable $e) {
-            // Database not ready or table doesn't exist yet
-            error_log('SMTPConfig: Database load failed: ' . $e->getMessage());
-        }
-
         return null;
     }
 
     /**
-     * Save SMTP configuration to database
+     * Save SMTP configuration is not supported in this schema.
      */
     public static function save(string $host, int $port, ?string $username, ?string $password, string $fromEmail): bool
     {
-        try {
-            $pdo = db();
-
-            // Check if record exists
-            $stmt = $pdo->query('SELECT id FROM smtp_configuration LIMIT 1');
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($result) {
-                // Update
-                $pdo->prepare(
-                    'UPDATE smtp_configuration SET host = :host, port = :port, username = :username, password = :password, from_email = :from_email, updated_at = CURRENT_TIMESTAMP'
-                )->execute([
-                    ':host' => $host,
-                    ':port' => $port,
-                    ':username' => $username,
-                    ':password' => $password,
-                    ':from_email' => $fromEmail,
-                ]);
-            } else {
-                // Insert
-                $pdo->prepare(
-                    'INSERT INTO smtp_configuration (host, port, username, password, from_email) VALUES (:host, :port, :username, :password, :from_email)'
-                )->execute([
-                    ':host' => $host,
-                    ':port' => $port,
-                    ':username' => $username,
-                    ':password' => $password,
-                    ':from_email' => $fromEmail,
-                ]);
-            }
-
-            return true;
-        } catch (Throwable $e) {
-            error_log('SMTPConfig save failed: ' . $e->getMessage());
-            return false;
-        }
+        error_log('SMTPConfig save skipped: schema does not include smtp_configuration; use environment variables instead.');
+        return false;
     }
 
     public function getHost(): string

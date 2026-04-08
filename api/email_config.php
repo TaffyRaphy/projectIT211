@@ -52,7 +52,7 @@ if (post_string('action') === 'test') {
 
         <section class="card">
             <h2>SMTP Configuration</h2>
-            <p class="text-muted">Settings are loaded from environment variables first, then from database.</p>
+            <p class="text-muted">Settings are loaded from environment variables. This schema does not include a persistent SMTP configuration table.</p>
 
             <form method="post" action="/api/actions/save_email_config.php" class="form">
                 <div class="form-group">
@@ -87,10 +87,7 @@ if (post_string('action') === 'test') {
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Save Configuration</button>
-                    <form method="post" style="display: inline;">
-                        <input type="hidden" name="action" value="test">
-                        <button type="submit" class="btn btn-secondary">Test Connection</button>
-                    </form>
+                    <button type="submit" name="action" value="test" class="btn btn-secondary">Test Connection</button>
                 </div>
             </form>
         </section>

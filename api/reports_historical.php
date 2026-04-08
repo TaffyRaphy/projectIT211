@@ -25,58 +25,88 @@ if ($startDate > $endDate) {
 }
 
 try {
-    // Equipment trend data
+    // Equipment trend by request/allocation activity date.
     $equipmentTrendStmt = db()->prepare(
-        "SELECT snapshot_date, 
-                COALESCE(SUM(CASE WHEN metric_key = 'total_equipment' THEN metric_value ELSE 0 END), 0) as total,
-                COALESCE(SUM(CASE WHEN metric_key = 'available_equipment' THEN metric_value ELSE 0 END), 0) as available,
-                COALESCE(SUM(CASE WHEN metric_key = 'allocated_equipment' THEN metric_value ELSE 0 END), 0) as allocated,
-                COALESCE(SUM(CASE WHEN metric_key = 'maintenance_equipment' THEN metric_value ELSE 0 END), 0) as maintenance
-         FROM report_snapshots
-         WHERE snapshot_date BETWEEN :start AND :end
-         GROUP BY snapshot_date
-         ORDER BY snapshot_date ASC"
+        "WITH RECURSIVE days AS (
+             SELECT :start::date AS day
+             UNION ALL
+             SELECT day + INTERVAL '1 day' FROM days WHERE day < :end::date
+         )
+         SELECT
+            TO_CHAR(days.day::date, 'YYYY-MM-DD') AS snapshot_date,
+            (SELECT COUNT(*) FROM equipment) AS total,
+            (SELECT COUNT(*) FROM equipment WHERE status = 'available') AS available,
+            (SELECT COUNT(DISTINCT a.equipment_id)
+             FROM allocations a
+             WHERE DATE(a.checkout_date) <= days.day::date
+               AND (a.actual_return_date IS NULL OR DATE(a.actual_return_date) > days.day::date)
+            ) AS allocated,
+            (SELECT COUNT(DISTINCT m.equipment_id)
+             FROM maintenance_logs m
+             WHERE DATE(m.schedule_date) <= days.day::date
+               AND (m.completed_date IS NULL OR m.completed_date > days.day::date)
+            ) AS maintenance
+         FROM days
+         ORDER BY days.day::date ASC"
     );
-    $equipmentTrendStmt->execute ([':start' => $startDate, ':end' => $endDate]);
+    $equipmentTrendStmt->execute([':start' => $startDate, ':end' => $endDate]);
     $equipmentTrend = $equipmentTrendStmt->fetchAll();
 
-    // Request metrics trend
+    // Request trend derived from equipment_requests dates.
     $requestTrendStmt = db()->prepare(
-        "SELECT snapshot_date,
-                COALESCE(SUM(CASE WHEN metric_key = 'pending_requests' THEN metric_value ELSE 0 END), 0) as pending,
-                COALESCE(SUM(CASE WHEN metric_key = 'approved_requests_today' THEN metric_value ELSE 0 END), 0) as approved_today
-         FROM report_snapshots
-         WHERE snapshot_date BETWEEN :start AND :end
-         GROUP BY snapshot_date
-         ORDER BY snapshot_date ASC"
+        "WITH RECURSIVE days AS (
+             SELECT :start::date AS day
+             UNION ALL
+             SELECT day + INTERVAL '1 day' FROM days WHERE day < :end::date
+         )
+         SELECT
+            TO_CHAR(days.day::date, 'YYYY-MM-DD') AS snapshot_date,
+            (SELECT COUNT(*)
+             FROM equipment_requests r
+             WHERE r.status = 'pending' AND DATE(r.requested_at) <= days.day::date
+            ) AS pending,
+            (SELECT COUNT(*)
+             FROM equipment_requests r
+             WHERE r.status = 'allocated' AND DATE(r.reviewed_at) = days.day::date
+            ) AS approved_today
+         FROM days
+         ORDER BY days.day::date ASC"
     );
     $requestTrendStmt->execute([':start' => $startDate, ':end' => $endDate]);
     $requestTrend = $requestTrendStmt->fetchAll();
 
-    // Maintenance cost trend
+    // Maintenance trend from completed_date.
     $costTrendStmt = db()->prepare(
-        "SELECT snapshot_date,
-                COALESCE(SUM(CASE WHEN metric_key = 'total_maintenance_cost' THEN metric_value ELSE 0 END), 0) as cost,
-                COALESCE(SUM(CASE WHEN metric_key = 'completed_maintenance' THEN metric_value ELSE 0 END), 0) as completed
-         FROM report_snapshots
-         WHERE snapshot_date BETWEEN :start AND :end
-         GROUP BY snapshot_date
-         ORDER BY snapshot_date ASC"
+        "WITH RECURSIVE days AS (
+             SELECT :start::date AS day
+             UNION ALL
+             SELECT day + INTERVAL '1 day' FROM days WHERE day < :end::date
+         )
+         SELECT
+            TO_CHAR(days.day::date, 'YYYY-MM-DD') AS snapshot_date,
+            COALESCE((
+              SELECT SUM(m.cost)
+              FROM maintenance_logs m
+              WHERE m.status = 'completed' AND m.completed_date <= days.day::date
+            ), 0) AS cost,
+            (SELECT COUNT(*)
+             FROM maintenance_logs m
+             WHERE m.status = 'completed' AND m.completed_date <= days.day::date
+            ) AS completed
+         FROM days
+         ORDER BY days.day::date ASC"
     );
     $costTrendStmt->execute([':start' => $startDate, ':end' => $endDate]);
     $costTrend = $costTrendStmt->fetchAll();
 
-    // Category breakdown
-    $categoryStmt = db()->prepare(
-        "SELECT category, SUM(metric_value) as total_count
-         FROM report_snapshots
-         WHERE snapshot_date = (SELECT MAX(snapshot_date) FROM report_snapshots WHERE snapshot_date <= :end)
-         AND metric_key LIKE 'equipment_by_category_%'
-         AND category IS NOT NULL
+    // Current category breakdown from equipment table.
+    $categoryStmt = db()->query(
+        "SELECT category, COUNT(*) as total_count
+         FROM equipment
+         WHERE category IS NOT NULL
          GROUP BY category
          ORDER BY total_count DESC"
     );
-    $categoryStmt->execute([':end' => $endDate]);
     $categoryData = $categoryStmt->fetchAll();
 } catch (Throwable $e) {
     error_log('Historical report error: ' . $e->getMessage());
@@ -157,7 +187,7 @@ try {
                     </table>
                 </div>
             <?php else: ?>
-                <p class="empty-state">No snapshot data available for this date range. Run the daily snapshot to collect metrics.</p>
+                <p class="empty-state">No historical data available for this date range.</p>
             <?php endif; ?>
         </section>
 

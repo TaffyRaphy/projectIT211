@@ -33,7 +33,7 @@ try {
     echo 'th { background-color: #f5f5f5; font-weight: bold; }';
     echo 'tr:nth-child(even) { background-color: #f9f9f9; }';
     echo '.metric { display: inline-block; margin: 10px 20px 10px 0; }';
-    echo '.metric strong { font-size: 24px; color: #cafd00; }';J
+    echo '.metric strong { font-size: 24px; color: #cafd00; }';
     echo '.footer { margin-top: 40px; font-size: 12px; color: #999; border-top: 1px solid #ddd; padding-top: 20px; }';
     echo '</style>';
     echo '</head><body>';

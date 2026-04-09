@@ -37,7 +37,10 @@ $maintenanceRows = db()->query(
 </head>
 <body>
 <main class="page page-reports">
-  <h1>Reports</h1>
+  <div class="page-intro">
+    <h1>Insightful Reports</h1>
+    <p class="page-tagline">Review inventory, allocation, and maintenance metrics at a glance.</p>
+  </div>
   <h2>Inventory Status Summary</h2>
   <div class="stack-grid">
     <?php foreach ($inventoryRows as $row): ?>

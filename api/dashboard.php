@@ -39,45 +39,41 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
     </div>
   </div>
 </header>
-<main class="page page-dashboard">
+<section class="page page-dashboard page-dashboard-summary">
   <h2>Quick Summary</h2>
-  <section class="quick-summary-row">
-    <article class="metric-card metric-card-hero">
-      <p class="metric-label">Total Equipment</p>
-      <p class="metric-value\"><?= h($inventoryCount) ?></p>
-    </article>
-    <article class="metric-card metric-card-warning">
-      <p class="metric-label">Pending Requests</p>
-      <p class="metric-value\"><?= h($pendingRequests) ?></p>
-    </article>
-    <article class="metric-card metric-card-cool">
-      <p class="metric-label">Scheduled Maintenance</p>
-      <p class="metric-value\"><?= h($maintenanceCount) ?></p>
-    </article>
-  </section>
+  <article class="metric-card metric-card-hero">
+    <p class="metric-label">TOTAL EQUIPMENT</p>
+    <p class="metric-value"><?= h($inventoryCount) ?></p>
+  </article>
+  <article class="metric-card metric-card-warning">
+    <p class="metric-label">PENDING REQUESTS</p>
+    <p class="metric-value"><?= h($pendingRequests) ?></p>
+  </article>
+  <article class="metric-card metric-card-cool">
+    <p class="metric-label">SCHEDULE MAINTENANCE</p>
+    <p class="metric-value"><?= h($maintenanceCount) ?></p>
+  </article>
+</section>
 
+<section class="page page-dashboard dashboard-workflow-panel">
+  <h2>Workflow Links</h2>
+  <nav class="workflow-grid">
+    <a class="workflow-link" href="/api/equipment.php">Equipment Management (Admin)</a>
+    <a class="workflow-link" href="/api/requests.php">Equipment Request (Staff)</a>
+    <a class="workflow-link" href="/api/admin_requests.php">Request Approval and Allocation (Admin)</a>
+    <a class="workflow-link" href="/api/maintenance.php">Maintenance Scheduling (Maintenance)</a>
+    <a class="workflow-link" href="/api/reports.php">Reports (Admin)</a>
+  </nav>
+
+  <?php if ($role === 'admin'): ?>
   <hr>
-  <section class="dashboard-workflow-panel">
-    <h2>Workflow Links</h2>
-    <nav class="workflow-grid">
-      <a class="workflow-link" href="/api/equipment.php">Equipment Management (Admin)</a>
-      <a class="workflow-link" href="/api/requests.php">Equipment Request (Staff)</a>
-      <a class="workflow-link" href="/api/admin_requests.php">Request Approval and Allocation (Admin)</a>
-      <a class="workflow-link" href="/api/maintenance.php">Maintenance Scheduling (Maintenance)</a>
-      <a class="workflow-link" href="/api/reports.php">Reports (Admin)</a>
-    </nav>
-
-    <?php if ($role === 'admin'): ?>
-    <hr>
-    <h2>Administration</h2>
-    <nav class="workflow-grid">
-      <a class="workflow-link" href="/api/notification_logs.php">📧 Notification Logs</a>
-      <a class="workflow-link" href="/api/email_config.php">⚙️ Email Configuration</a>
-    </nav>
-    <?php endif; ?>
-  </section>
-
-</main>
+  <h2>Administration</h2>
+  <nav class="workflow-grid">
+    <a class="workflow-link" href="/api/notification_logs.php">📧 Notification Logs</a>
+    <a class="workflow-link" href="/api/email_config.php">⚙️ Email Configuration</a>
+  </nav>
+  <?php endif; ?>
+</section>
 <script src="/assets/app.js"></script>
 </body>
 </html>

@@ -26,25 +26,19 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
 </head>
 <body>
 <header class="dashboard-topbar">
-  <p class="dashboard-role-title"><?= h($dashboardTitle) ?></p>
+  <div class="dashboard-topbar-left">
+    <p class="dashboard-topbar-title"><?= h($dashboardTitle) ?></p>
+    <div class="dashboard-topbar-meta">
+      <span class="chip chip-role">Role: <?= h($role) ?></span>
+      <span class="chip chip-id">User ID: <?= $userId ?></span>
+    </div>
+  </div>
   <div class="dashboard-topbar-actions">
     <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
     <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
   </div>
 </header>
 <main class="page page-dashboard">
-  <div class="page-intro">
-    <h1><?= h($dashboardTitle) ?></h1>
-    <p class="page-tagline">Overview of equipment stock, requests and maintenance status.</p>
-  </div>
-  <header class="page-header">
-    <h2>Dashboard</h2>
-    <div class="meta-row">
-      <span class="chip chip-role">Role: <?= h($role) ?></span>
-      <span class="chip chip-id">User ID: <?= $userId ?></span>
-    </div>
-  </header>
-
   <h2>Quick Summary</h2>
   <section class="metrics-grid">
     <article class="metric-card metric-card-hero">

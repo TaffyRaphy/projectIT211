@@ -662,20 +662,38 @@ section:hover,
   align-items: center;
   justify-content: space-between;
   box-shadow: var(--shadow-soft);
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
-.dashboard-role-title {
+.dashboard-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 0 1 auto;
+}
+
+.dashboard-topbar-title {
   margin: 0;
   font-family: var(--font-heading);
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-heading);
+  white-space: nowrap;
+}
+
+.dashboard-topbar-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
 }
 
 .dashboard-topbar-actions {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  flex: 0 0 auto;
 }
 
 .dashboard-logout {

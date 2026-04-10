@@ -2,8 +2,11 @@
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 
+$user = require_login();
 require_role(['admin']);
-
+$userId = (int) $user['id'];
+$role = 'admin';
+$dashboardTitle = 'Equipment Reports';
 $ok = query_param('ok');
 $error = query_param('error');
 
@@ -95,14 +98,20 @@ try {
   <title>Reports</title>
 </head>
 <body>
-<div class="theme-toolbar">
-  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">??</button>
-</div>
-<main class="page page-reports">
-  <div class="page-intro">
-    <h1>Equipment Reports & Analytics</h1>
-    <p class="page-tagline">Comprehensive insights into inventory, allocation, maintenance, and performance metrics.</p>
+<header class="dashboard-topbar">
+  <div class="dashboard-topbar-left">
+    <p class="dashboard-topbar-title"><?= h($dashboardTitle) ?></p>
+    <div class="dashboard-topbar-meta">
+      <span class="chip chip-role">Role: <?= h($role) ?></span>
+      <span class="chip chip-id">User ID: <?= $userId ?></span>
+    </div>
   </div>
+  <div class="dashboard-topbar-actions">
+    <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
+    <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
+  </div>
+</header>
+<main class="page page-reports">
 
   <?php if ($ok !== ''): ?>
     <p class="alert alert-success"><?= h($ok) ?></p>

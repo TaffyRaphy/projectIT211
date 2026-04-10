@@ -2,9 +2,12 @@
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 
+$user = require_login();
 $role = require_role(['admin']);
+$userId = (int) $user['id'];
 $ok = query_param('ok');
 $error = query_param('error');
+$dashboardTitle = 'Equipment Management';
 $rows = db()->query(
     'SELECT id, code, name, category, status, quantity_total, quantity_available, location FROM equipment ORDER BY id DESC'
 )->fetchAll();
@@ -22,15 +25,20 @@ $hasLocations = count($locationRows) > 0;
   <title>Equipment Management</title>
 </head>
 <body>
-<div class="theme-toolbar">
-  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">??</button>
-</div>
-<main class="page page-equipment">
-  <div class="page-intro">
-    <h1>Equipment Management</h1>
-    <p class="page-tagline">Add new items and keep your inventory organized with faster workflows.</p>
+<header class="dashboard-topbar">
+  <div class="dashboard-topbar-left">
+    <p class="dashboard-topbar-title"><?= h($dashboardTitle) ?></p>
+    <div class="dashboard-topbar-meta">
+      <span class="chip chip-role">Role: <?= h($role) ?></span>
+      <span class="chip chip-id">User ID: <?= $userId ?></span>
+    </div>
   </div>
-  <p class="meta-note">Role: <?= h($role) ?></p>
+  <div class="dashboard-topbar-actions">
+    <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
+    <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
+  </div>
+</header>
+<main class="page page-equipment">
   <?php if ($ok !== ''): ?><p class="alert alert-success">Success: <?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 

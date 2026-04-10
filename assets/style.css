@@ -405,9 +405,9 @@ button[data-confirm*='Reject']:hover {
   width: 2.6rem;
   min-width: 2.6rem;
   height: 2.6rem;
-  background: var(--surface-3);
+  background: transparent;
   color: var(--text-main);
-  border: 1px solid var(--border-subtle);
+  border: 0;
   box-shadow: none;
   padding: 0;
   border-radius: 4px;
@@ -417,11 +417,6 @@ button[data-confirm*='Reject']:hover {
   font-weight: 600;
   font-size: 1rem;
   line-height: 1;
-}
-
-.toggle-password:hover {
-  background: color-mix(in srgb, var(--accent-teal) 22%, var(--surface-3));
-  border-color: color-mix(in srgb, var(--accent-teal) 55%, transparent);
 }
 
 .toggle-password-inside {
@@ -438,11 +433,26 @@ button[data-confirm*='Reject']:hover {
   padding: 0;
 }
 
-.toggle-password-inside:hover {
-  transform: translateY(-50%);
-  background: color-mix(in srgb, var(--accent-teal) 22%, transparent);
-  border: 0;
-  box-shadow: none;
+.toggle-password-inside::before {
+  content: '';
+  display: block;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin: 0 auto;
+  background: var(--text-muted);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E");
+}
+
+.toggle-password-inside.is-visible::before {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 3 18 18'/%3E%3Cpath d='M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58'/%3E%3Cpath d='M9.36 5.37A10.9 10.9 0 0 1 12 5c7 0 11 7 11 7a21.7 21.7 0 0 1-2.58 3.35'/%3E%3Cpath d='M6.61 6.61C3.73 8.36 2 12 2 12s4 7 10 7a9.6 9.6 0 0 0 5.39-1.61'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 3 18 18'/%3E%3Cpath d='M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58'/%3E%3Cpath d='M9.36 5.37A10.9 10.9 0 0 1 12 5c7 0 11 7 11 7a21.7 21.7 0 0 1-2.58 3.35'/%3E%3Cpath d='M6.61 6.61C3.73 8.36 2 12 2 12s4 7 10 7a9.6 9.6 0 0 0 5.39-1.61'/%3E%3C/svg%3E");
 }
 
 .inline-form {

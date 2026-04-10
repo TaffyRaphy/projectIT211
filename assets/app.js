@@ -47,7 +47,7 @@ document.addEventListener('click', (event) => {
     if (!(input instanceof HTMLInputElement)) return;
     const show = input.type === 'password';
     input.type = show ? 'text' : 'password';
-    toggleButton.textContent = show ? '🙈' : '👁';
+    toggleButton.classList.toggle('is-visible', show);
     toggleButton.setAttribute('aria-pressed', show ? 'true' : 'false');
     toggleButton.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
     return;
@@ -69,7 +69,7 @@ document.addEventListener('click', (event) => {
 
     const passwordToggle = document.querySelector('.toggle-password');
     if (passwordToggle instanceof HTMLElement) {
-      passwordToggle.textContent = '👁';
+      passwordToggle.classList.remove('is-visible');
       passwordToggle.setAttribute('aria-pressed', 'false');
       passwordToggle.setAttribute('aria-label', 'Show password');
     }

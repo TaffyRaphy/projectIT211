@@ -25,9 +25,9 @@ $ok = query_param('ok');
 <main class="page page-login">
   <div class="login-shell">
     <section class="login-column login-column-form" aria-label="Login panel">
-      <div class="login-brand">
-        <h1>Dashboard<br>FurtArt</h1>
-      </div>
+      <p class="login-auth-kicker">Access Portal</p>
+      <h1 class="login-auth-title">Welcome back</h1>
+      <p class="login-auth-copy">Sign in to manage equipment inventory, approvals, maintenance schedules, and reports.</p>
 
       <?php if ($ok !== ''): ?><p class="alert alert-success"><?= h($ok) ?></p><?php endif; ?>
       <?php if ($error !== ''): ?><p class="alert alert-error">Login Error: <?= h($error) ?></p><?php endif; ?>
@@ -45,12 +45,12 @@ $ok = query_param('ok');
         <p class="login-forgot-wrap"><a href="#" class="login-forgot">Forgot Password?</a></p>
 
         <button type="submit" class="login-submit">
-          <span>Login</span>
+          <span>Sign in</span>
           <span class="login-submit-arrow" aria-hidden="true">&#8250;</span>
         </button>
       </form>
 
-      <p class="login-register">Don't have an account? <a href="#">Register</a></p>
+      <p class="login-support">Need account access? <strong>Contact your system administrator.</strong></p>
 
       <section class="list-panel login-test-users">
         <p>admin@example.com / Pass123!</p>
@@ -59,16 +59,16 @@ $ok = query_param('ok');
       </section>
     </section>
 
-    <aside class="login-column login-column-visual" aria-label="Visual panel">
+    <aside class="login-column login-column-visual" aria-label="System title and branding panel">
       <div class="login-visual-center">
-        <svg viewBox="0 0 96 84" aria-hidden="true" focusable="false">
-          <rect x="14" y="18" width="52" height="40" rx="4" fill="none" stroke="currentColor" stroke-width="6" transform="rotate(-6 14 18)"/>
-          <rect x="28" y="12" width="52" height="40" rx="4" fill="none" stroke="currentColor" stroke-width="6"/>
-          <rect x="36" y="24" width="34" height="22" rx="2" fill="none" stroke="currentColor" stroke-width="4"/>
-          <path d="M42 42l8-9 10 13H42z" fill="currentColor"/>
-          <circle cx="62" cy="31" r="3.5" fill="currentColor"/>
-        </svg>
-        <p>Image Here</p>
+        <p class="login-visual-eyebrow">Equipment Management System</p>
+        <h2 class="login-visual-title">FurtArt<br>Operations Console</h2>
+        <p class="login-visual-subtitle">A role-based platform for stock control, request workflows, maintenance planning, and historical reporting.</p>
+        <div class="login-accent-lines" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
     </aside>
   </div>

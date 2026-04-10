@@ -126,22 +126,24 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Historical Reports - Equipment Management System</title>
-    <link rel="stylesheet" href="/assets/style.css">
+        <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
-    <header class="dashboard-topbar">
-      <div class="dashboard-topbar-left">
-        <p class="dashboard-topbar-title"><?= h($dashboardTitle) ?></p>
-        <div class="dashboard-topbar-meta">
-          <span class="chip chip-role">Role: <?= h($role) ?></span>
-          <span class="chip chip-id">User ID: <?= $userId ?></span>
-        </div>
-      </div>
-      <div class="dashboard-topbar-actions">
-        <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
-        <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
-      </div>
-    </header>
+        <header class="dashboard-topbar">
+            <div class="dashboard-topbar-left">
+                <p class="dashboard-topbar-title"><?= h($dashboardTitle) ?></p>
+            </div>
+            <div class="dashboard-topbar-right">
+                <div class="dashboard-topbar-meta">
+                    <span>Role: <?= h($role) ?></span>
+                    <span>User ID: <?= $userId ?></span>
+                </div>
+                <div class="dashboard-topbar-actions">
+                    <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
+                    <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
+                </div>
+            </div>
+        </header>
     <div class="container">
 
         <?php if ($ok !== ''): ?>

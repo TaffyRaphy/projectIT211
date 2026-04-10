@@ -1,3 +1,4 @@
+@import url('https://fonts.cdnfonts.com/css/euclid-circular-a');
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Manrope:wght@600;700;800&family=Source+Code+Pro:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 :root {
@@ -5,6 +6,7 @@
 
   /* Typography */
   --font-ui: 'Inter', sans-serif;
+  --font-euclid: 'Euclid Circular A', 'Manrope', sans-serif;
   --font-heading: 'Manrope', sans-serif;
   --font-display: 'DM Serif Display', 'Manrope', serif;
   --font-label: 'Source Code Pro', 'Space Grotesk', monospace;
@@ -130,9 +132,45 @@ body {
     radial-gradient(ellipse at 88% 92%, color-mix(in srgb, var(--accent-link) 16%, transparent) 0%, transparent 45%),
     linear-gradient(145deg, var(--bg-canvas) 0%, var(--bg-canvas-2) 56%, var(--bg-canvas-3) 100%);
   background-attachment: fixed;
+  background-size: 180% 180%;
+  animation: gradientShift 24s ease-in-out infinite alternate;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes subtleDrift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 50% 45%;
+  }
+
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes glowFloat {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  100% {
+    transform: translate3d(0, -6px, 0) scale(1.04);
+  }
 }
 
 h1,
@@ -174,6 +212,8 @@ hr {
   border: 0;
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border-subtle), transparent);
+  background-size: 220% 220%;
+  animation: subtleDrift 18s ease-in-out infinite alternate;
   margin: var(--space-8) 0;
 }
 
@@ -213,6 +253,8 @@ main.page {
   font-family: var(--font-display);
   margin-bottom: var(--space-2);
   background: linear-gradient(135deg, var(--text-heading), color-mix(in srgb, var(--text-heading) 68%, var(--accent-primary) 32%));
+  background-size: 180% 180%;
+  animation: subtleDrift 16s ease-in-out infinite alternate;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -317,6 +359,8 @@ input[type='submit'] {
   border: 1px solid color-mix(in srgb, var(--accent-primary) 48%, transparent);
   border-radius: 100px;
   background: linear-gradient(135deg, color-mix(in srgb, var(--accent-primary) 90%, #ffffff 10%), var(--accent-primary-strong));
+  background-size: 180% 180%;
+  animation: subtleDrift 18s ease-in-out infinite alternate;
   color: #01130b;
   cursor: pointer;
   transition: var(--spring);
@@ -340,6 +384,8 @@ button[name='action'][value='retire'],
 button[data-confirm*='Reject'] {
   border-color: color-mix(in srgb, var(--accent-danger) 48%, transparent);
   background: linear-gradient(135deg, color-mix(in srgb, var(--accent-danger) 86%, #fff 14%), #a83b16);
+  background-size: 180% 180%;
+  animation: subtleDrift 18s ease-in-out infinite alternate;
   color: #fff;
   box-shadow: 0 8px 18px color-mix(in srgb, var(--accent-danger) 26%, transparent);
 }
@@ -453,6 +499,8 @@ section,
 .item-card,
 .metric-card {
   background: linear-gradient(160deg, color-mix(in srgb, var(--surface-2) 82%, transparent), color-mix(in srgb, var(--surface-1) 95%, #000 5%));
+  background-size: 180% 180%;
+  animation: subtleDrift 20s ease-in-out infinite alternate;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
@@ -489,6 +537,7 @@ section:hover,
   inset: 0;
   opacity: 0.2;
   transition: opacity 0.3s;
+  animation: glowFloat 9s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
@@ -506,6 +555,27 @@ section:hover,
 
 .metric-card-cool::before {
   background: radial-gradient(circle at top right, color-mix(in srgb, var(--accent-primary) 62%, transparent), transparent 70%);
+}
+
+.page-dashboard > h2:first-of-type {
+  font-family: var(--font-euclid);
+  font-size: clamp(1.45rem, 2.6vw, 1.7rem);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.page-dashboard > .metric-card {
+  display: inline-flex;
+  width: calc((100% - 2rem) / 3);
+  min-width: 260px;
+  min-height: 190px;
+  margin: 0 1rem 1rem 0;
+  padding: 1.85rem;
+  vertical-align: top;
+}
+
+.page-dashboard > .metric-card:nth-of-type(3n) {
+  margin-right: 0;
 }
 
 .metric-label {
@@ -669,7 +739,7 @@ section:hover,
 .dashboard-topbar-left {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
   flex: 0 1 auto;
 }
 
@@ -685,7 +755,26 @@ section:hover,
 .dashboard-topbar-meta {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-right: 0.2rem;
+  font-family: var(--font-label);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.dashboard-topbar-meta span {
+  white-space: nowrap;
+}
+
+.dashboard-topbar-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-left: auto;
   flex-wrap: wrap;
 }
 
@@ -939,6 +1028,8 @@ html[data-theme='light'] .page-login .login-submit {
 
 .page-login .login-column-visual {
   background: var(--login-hero-bg);
+  background-size: 170% 170%;
+  animation: subtleDrift 26s ease-in-out infinite alternate;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -962,6 +1053,7 @@ html[data-theme='light'] .page-login .login-submit {
   right: -130px;
   top: -120px;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.15), transparent 70%);
+  animation: glowFloat 10s ease-in-out infinite alternate;
 }
 
 .page-login .login-column-visual::after {
@@ -970,6 +1062,7 @@ html[data-theme='light'] .page-login .login-submit {
   left: -150px;
   bottom: -130px;
   background: radial-gradient(circle, rgba(0, 237, 100, 0.22), transparent 70%);
+  animation: glowFloat 12s ease-in-out infinite alternate-reverse;
 }
 
 .page-login .login-visual-center {
@@ -1013,6 +1106,8 @@ html[data-theme='light'] .page-login .login-submit {
   height: 3px;
   border-radius: var(--radius-pill);
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0));
+  background-size: 180% 180%;
+  animation: subtleDrift 14s ease-in-out infinite alternate;
 }
 
 .page-login .login-accent-lines span:nth-child(1) {
@@ -1059,8 +1154,30 @@ html[data-theme='light'] .page-login .login-submit {
     gap: 0.75rem;
   }
 
+  .dashboard-topbar-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .dashboard-topbar-meta {
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+  }
+
   .dashboard-topbar-actions {
     justify-content: flex-end;
+  }
+
+  .page-dashboard > .metric-card {
+    width: calc((100% - 1rem) / 2);
+  }
+
+  .page-dashboard > .metric-card:nth-of-type(3n) {
+    margin-right: 1rem;
+  }
+
+  .page-dashboard > .metric-card:nth-of-type(2n) {
+    margin-right: 0;
   }
 
   main.page {
@@ -1069,6 +1186,31 @@ html[data-theme='light'] .page-login .login-submit {
     border-radius: var(--radius-lg);
   }
 
+
+@media (max-width: 620px) {
+  .page-dashboard > .metric-card {
+    width: 100%;
+    margin-right: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body,
+  hr,
+  .page-intro h1,
+  button,
+  input[type='submit'],
+  section,
+  .item-card,
+  .metric-card,
+  .metric-card::before,
+  .page-login .login-column-visual,
+  .page-login .login-column-visual::before,
+  .page-login .login-column-visual::after,
+  .page-login .login-accent-lines span {
+    animation: none !important;
+  }
+}
   h1 {
     font-size: 2rem;
   }

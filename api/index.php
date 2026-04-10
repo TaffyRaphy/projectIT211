@@ -48,8 +48,6 @@ $error = query_param('error');
         </button>
       </form>
 
-      <p class="login-support">Need account access? <strong>Contact your system administrator.</strong></p>
-
       <section class="list-panel login-test-users">
         <button type="button" class="login-seed" data-login-seed data-email="admin@example.com" data-password="Pass123!">admin@example.com / Pass123!</button>
         <button type="button" class="login-seed" data-login-seed data-email="staff@example.com" data-password="Pass123!">staff@example.com / Pass123!</button>

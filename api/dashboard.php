@@ -28,32 +28,32 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
 <header class="dashboard-topbar">
   <div class="dashboard-topbar-left">
     <p class="dashboard-topbar-title"><?= h($dashboardTitle) ?></p>
-    <div class="dashboard-topbar-meta">
-      <span class="chip chip-role">Role: <?= h($role) ?></span>
-      <span class="chip chip-id">User ID: <?= $userId ?></span>
-    </div>
   </div>
-  <div class="dashboard-topbar-actions">
-    <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
-    <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
+  <div class="dashboard-topbar-right">
+    <div class="dashboard-topbar-meta">
+      <span>Role: <?= h($role) ?></span>
+      <span>User ID: <?= $userId ?></span>
+    </div>
+    <div class="dashboard-topbar-actions">
+      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
+      <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
+    </div>
   </div>
 </header>
 <main class="page page-dashboard">
   <h2>Quick Summary</h2>
-  <section class="metrics-grid">
-    <article class="metric-card metric-card-hero">
-      <p class="metric-label">Total Equipment</p>
-      <p class="metric-value"><?= h($inventoryCount) ?></p>
-    </article>
-    <article class="metric-card metric-card-warning">
-      <p class="metric-label">Pending Requests</p>
-      <p class="metric-value"><?= h($pendingRequests) ?></p>
-    </article>
-    <article class="metric-card metric-card-cool">
-      <p class="metric-label">Scheduled Maintenance</p>
-      <p class="metric-value"><?= h($maintenanceCount) ?></p>
-    </article>
-  </section>
+  <article class="metric-card metric-card-hero">
+    <p class="metric-label">Total Equipment</p>
+    <p class="metric-value"><?= h($inventoryCount) ?></p>
+  </article>
+  <article class="metric-card metric-card-warning">
+    <p class="metric-label">Pending Requests</p>
+    <p class="metric-value"><?= h($pendingRequests) ?></p>
+  </article>
+  <article class="metric-card metric-card-cool">
+    <p class="metric-label">Scheduled Maintenance</p>
+    <p class="metric-value"><?= h($maintenanceCount) ?></p>
+  </article>
 
   <hr>
   <h2>Workflow Links</h2>

@@ -32,14 +32,16 @@ $maintenanceRows = db()->query(
 <header class="dashboard-topbar">
   <div class="dashboard-topbar-left">
     <p class="dashboard-topbar-title"><?= h($dashboardTitle) ?></p>
-    <div class="dashboard-topbar-meta">
-      <span class="chip chip-role">Role: <?= h($role) ?></span>
-      <span class="chip chip-id">User ID: <?= $maintenanceUserId ?></span>
-    </div>
   </div>
-  <div class="dashboard-topbar-actions">
-    <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
-    <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
+  <div class="dashboard-topbar-right">
+    <div class="dashboard-topbar-meta">
+      <span>Role: <?= h($role) ?></span>
+      <span>User ID: <?= $maintenanceUserId ?></span>
+    </div>
+    <div class="dashboard-topbar-actions">
+      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
+      <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
+    </div>
   </div>
 </header>
 <main class="page page-maintenance">

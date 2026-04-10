@@ -612,14 +612,17 @@ section:hover,
 }
 
 .page-dashboard-summary {
+  width: min(1000px, 92%);
+  margin-inline: auto;
   margin-top: 0.7rem;
   padding-top: 1rem;
 }
 
 .page-dashboard-summary .metric-card {
   display: inline-flex;
-  width: calc((100% - 2rem) / 3);
-  min-width: 220px;
+  width: calc((100% - 4rem) / 3);
+  min-width: 190px;
+  max-width: 300px;
   min-height: 150px;
   margin: 0 1rem 0 0;
   padding: 1.2rem;
@@ -650,6 +653,8 @@ section:hover,
 }
 
 .dashboard-workflow-panel {
+  width: min(1000px, 92%);
+  margin-inline: auto;
   margin-top: 1rem;
 }
 
@@ -1245,6 +1250,7 @@ html[data-theme='light'] .page-login .login-submit {
 
   .page-dashboard-summary .metric-card {
     width: calc((100% - 1rem) / 2);
+    max-width: none;
     margin-right: 1rem;
     margin-bottom: 1rem;
   }

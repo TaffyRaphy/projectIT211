@@ -12,6 +12,21 @@ $dashboardTitle = match ($role) {
   default => 'Dashboard',
 };
 
+$workflowLinks = match ($role) {
+  'admin' => [
+    'Equipment Management' => '/api/equipment.php',
+    'Request Approval and Allocation' => '/api/admin_requests.php',
+    'Reports' => '/api/reports.php',
+  ],
+  'staff' => [
+    'Equipment Request' => '/api/requests.php',
+  ],
+  'maintenance' => [
+    'Maintenance Scheduling' => '/api/maintenance.php',
+  ],
+  default => [],
+};
+
 $inventoryCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM equipment")->fetch()['total'];
 $pendingRequests = (string) db()->query("SELECT COUNT(*)::text AS total FROM equipment_requests WHERE status = 'pending'")->fetch()['total'];
 $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM maintenance_logs WHERE status = 'scheduled'")->fetch()['total'];
@@ -58,21 +73,10 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
 <section class="page page-dashboard dashboard-workflow-panel">
   <h2>Workflow Links</h2>
   <nav class="workflow-grid">
-    <a class="workflow-link" href="/api/equipment.php">Equipment Management (Admin)</a>
-    <a class="workflow-link" href="/api/requests.php">Equipment Request (Staff)</a>
-    <a class="workflow-link" href="/api/admin_requests.php">Request Approval and Allocation (Admin)</a>
-    <a class="workflow-link" href="/api/maintenance.php">Maintenance Scheduling (Maintenance)</a>
-    <a class="workflow-link" href="/api/reports.php">Reports (Admin)</a>
+    <?php foreach ($workflowLinks as $label => $url): ?>
+      <a class="workflow-link" href="<?= h($url) ?>"><?= h($label) ?></a>
+    <?php endforeach; ?>
   </nav>
-
-  <?php if ($role === 'admin'): ?>
-  <hr>
-  <h2>Administration</h2>
-  <nav class="workflow-grid">
-    <a class="workflow-link" href="/api/notification_logs.php">📧 Notification Logs</a>
-    <a class="workflow-link" href="/api/email_config.php">⚙️ Email Configuration</a>
-  </nav>
-  <?php endif; ?>
 </section>
 <script src="/assets/app.js"></script>
 </body>

@@ -562,6 +562,13 @@ section:hover,
   box-shadow: var(--shadow-standard);
 }
 
+.page-dashboard-summary:hover,
+.dashboard-workflow-panel:hover {
+  transform: none;
+  border-color: var(--border-subtle);
+  box-shadow: none;
+}
+
 .item-title {
   font-family: var(--font-heading);
   font-size: 1.15rem;
@@ -601,9 +608,10 @@ section:hover,
   background: radial-gradient(circle at top right, color-mix(in srgb, var(--accent-primary) 62%, transparent), transparent 70%);
 }
 
-.page-dashboard > h2:first-of-type {
+.page-dashboard-summary > h2,
+.dashboard-workflow-panel > h2 {
   font-family: var(--font-display);
-  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-size: clamp(1.45rem, 3.2vw, 2.1rem);
   font-weight: 400;
   line-height: 1.05;
   letter-spacing: 0;

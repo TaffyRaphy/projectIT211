@@ -32,8 +32,7 @@ $rows = db()->query(
   </div>
   <div class="dashboard-topbar-right">
     <div class="dashboard-topbar-meta">
-      <span>Role: <?= h($role) ?></span>
-      <span>User ID: <?= $adminId ?></span>
+      <span>Role: <?= h($role) ?> | User ID: <?= $adminId ?></span>
     </div>
     <div class="dashboard-topbar-actions">
       <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>

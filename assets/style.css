@@ -227,7 +227,6 @@ main.page {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-forest), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -236,8 +235,6 @@ main.page {
     opacity: 0;
     transform: translateY(30px);
   }
-
-  100% {
     opacity: 1;
     transform: translateY(0);
   }
@@ -253,8 +250,6 @@ main.page {
   font-family: var(--font-display);
   margin-bottom: var(--space-2);
   background: linear-gradient(135deg, var(--text-heading), color-mix(in srgb, var(--text-heading) 68%, var(--accent-primary) 32%));
-  background-size: 180% 180%;
-  animation: subtleDrift 16s ease-in-out infinite alternate;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -359,8 +354,6 @@ input[type='submit'] {
   border: 1px solid color-mix(in srgb, var(--accent-primary) 48%, transparent);
   border-radius: 100px;
   background: linear-gradient(135deg, color-mix(in srgb, var(--accent-primary) 90%, #ffffff 10%), var(--accent-primary-strong));
-  background-size: 180% 180%;
-  animation: subtleDrift 18s ease-in-out infinite alternate;
   color: #01130b;
   cursor: pointer;
   transition: var(--spring);
@@ -384,8 +377,6 @@ button[name='action'][value='retire'],
 button[data-confirm*='Reject'] {
   border-color: color-mix(in srgb, var(--accent-danger) 48%, transparent);
   background: linear-gradient(135deg, color-mix(in srgb, var(--accent-danger) 86%, #fff 14%), #a83b16);
-  background-size: 180% 180%;
-  animation: subtleDrift 18s ease-in-out infinite alternate;
   color: #fff;
   box-shadow: 0 8px 18px color-mix(in srgb, var(--accent-danger) 26%, transparent);
 }
@@ -499,8 +490,6 @@ section,
 .item-card,
 .metric-card {
   background: linear-gradient(160deg, color-mix(in srgb, var(--surface-2) 82%, transparent), color-mix(in srgb, var(--surface-1) 95%, #000 5%));
-  background-size: 180% 180%;
-  animation: subtleDrift 20s ease-in-out infinite alternate;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
@@ -537,7 +526,6 @@ section:hover,
   inset: 0;
   opacity: 0.2;
   transition: opacity 0.3s;
-  animation: glowFloat 9s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
@@ -558,24 +546,24 @@ section:hover,
 }
 
 .page-dashboard > h2:first-of-type {
-  font-family: var(--font-euclid);
-  font-size: clamp(1.45rem, 2.6vw, 1.7rem);
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 400;
+  line-height: 1.05;
   letter-spacing: 0;
+  margin-bottom: 1.2rem;
 }
 
-.page-dashboard > .metric-card {
-  display: inline-flex;
-  width: calc((100% - 2rem) / 3);
-  min-width: 260px;
-  min-height: 190px;
-  margin: 0 1rem 1rem 0;
-  padding: 1.85rem;
-  vertical-align: top;
+.quick-summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin-bottom: var(--space-6);
 }
 
-.page-dashboard > .metric-card:nth-of-type(3n) {
-  margin-right: 0;
+.quick-summary-row .metric-card {
+  min-height: 155px;
+  padding: 1.25rem;
 }
 
 .metric-label {
@@ -590,11 +578,22 @@ section:hover,
 
 .metric-value {
   font-family: var(--font-ui);
-  font-size: 3.2rem;
+  font-size: 2.7rem;
   font-weight: 800;
   line-height: 1;
   color: var(--text-heading);
   z-index: 1;
+}
+
+.dashboard-workflow-panel {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.1rem, 2.6vw, 1.6rem);
+}
+
+.dashboard-workflow-panel h2:first-child {
+  margin-top: 0;
 }
 
 .metric-card-hero .metric-value {
@@ -755,7 +754,7 @@ section:hover,
 .dashboard-topbar-meta {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0;
   flex-wrap: wrap;
   margin-right: 0.2rem;
   font-family: var(--font-label);
@@ -903,6 +902,20 @@ main.page.page-login {
   margin-bottom: 0;
 }
 
+.page-login .login-column-form {
+  animation: loginPanelFloat 12s ease-in-out infinite alternate;
+}
+
+@keyframes loginPanelFloat {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(-4px);
+  }
+}
+
 .page-login .login-form label {
   color: var(--text-muted);
   text-transform: none;
@@ -976,6 +989,7 @@ html[data-theme='light'] .page-login .login-submit {
 
 .page-login .login-test-users {
   max-width: 380px;
+  margin-top: 1.15rem;
   background: var(--login-card-bg);
   border: 1px dashed var(--border-subtle);
   border-radius: 12px;
@@ -1168,16 +1182,8 @@ html[data-theme='light'] .page-login .login-submit {
     justify-content: flex-end;
   }
 
-  .page-dashboard > .metric-card {
-    width: calc((100% - 1rem) / 2);
-  }
-
-  .page-dashboard > .metric-card:nth-of-type(3n) {
-    margin-right: 1rem;
-  }
-
-  .page-dashboard > .metric-card:nth-of-type(2n) {
-    margin-right: 0;
+  .quick-summary-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   main.page {
@@ -1188,22 +1194,14 @@ html[data-theme='light'] .page-login .login-submit {
 
 
 @media (max-width: 620px) {
-  .page-dashboard > .metric-card {
-    width: 100%;
-    margin-right: 0;
+  .quick-summary-row {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   body,
-  hr,
-  .page-intro h1,
-  button,
-  input[type='submit'],
-  section,
-  .item-card,
-  .metric-card,
-  .metric-card::before,
+  .page-login .login-column-form,
   .page-login .login-column-visual,
   .page-login .login-column-visual::before,
   .page-login .login-column-visual::after,

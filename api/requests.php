@@ -38,8 +38,7 @@ $requestRows = $stmt->fetchAll();
   </div>
   <div class="dashboard-topbar-right">
     <div class="dashboard-topbar-meta">
-      <span>Role: <?= h($role) ?></span>
-      <span>User ID: <?= $staffId ?></span>
+      <span>Role: <?= h($role) ?> | User ID: <?= $staffId ?></span>
     </div>
     <div class="dashboard-topbar-actions">
       <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>

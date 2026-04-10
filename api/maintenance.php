@@ -27,6 +27,9 @@ $maintenanceRows = db()->query(
   <title>Maintenance Scheduling</title>
 </head>
 <body>
+<div class="theme-toolbar">
+  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">Light mode</button>
+</div>
 <main class="page page-maintenance">
   <div class="page-intro">
     <h1>Maintenance Management</h1>
@@ -71,5 +74,6 @@ $maintenanceRows = db()->query(
   </div>
   <p class="back-link"><a href="/api/dashboard.php">Back to dashboard</a></p>
 </main>
+<script src="/assets/app.js"></script>
 </body>
 </html>

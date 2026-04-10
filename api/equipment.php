@@ -22,6 +22,9 @@ $hasLocations = count($locationRows) > 0;
   <title>Equipment Management</title>
 </head>
 <body>
+<div class="theme-toolbar">
+  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">Light mode</button>
+</div>
 <main class="page page-equipment">
   <div class="page-intro">
     <h1>Equipment Management</h1>

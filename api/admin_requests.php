@@ -24,6 +24,9 @@ $rows = db()->query(
   <title>Admin Requests</title>
 </head>
 <body>
+<div class="theme-toolbar">
+  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">Light mode</button>
+</div>
 <main class="page page-admin-requests">
   <div class="page-intro">
     <h1>Admin Request Workflow</h1>

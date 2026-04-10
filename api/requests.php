@@ -30,6 +30,9 @@ $requestRows = $stmt->fetchAll();
   <title>Equipment Request</title>
 </head>
 <body>
+<div class="theme-toolbar">
+  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">Light mode</button>
+</div>
 <main class="page page-requests">
   <div class="page-intro">
     <h1>Equipment Request Center</h1>
@@ -70,5 +73,6 @@ $requestRows = $stmt->fetchAll();
   </div>
   <p class="back-link"><a href="/api/dashboard.php">Back to dashboard</a></p>
 </main>
+<script src="/assets/app.js"></script>
 </body>
 </html>

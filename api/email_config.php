@@ -29,6 +29,9 @@ if (post_string('action') === 'test') {
     <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
+    <div class="theme-toolbar">
+        <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">Light mode</button>
+    </div>
     <div class="container">
         <header>
             <h1>📧 Email Configuration</h1>

@@ -19,6 +19,9 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
   <title>Dashboard</title>
 </head>
 <body>
+<div class="theme-toolbar">
+  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">Light mode</button>
+</div>
 <main class="page page-dashboard">
   <div class="page-intro">
     <h1>Admin Dashboard</h1>
@@ -69,5 +72,6 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
 
   <p class="back-link"><a href="/api/actions/logout.php">Logout</a></p>
 </main>
+<script src="/assets/app.js"></script>
 </body>
 </html>

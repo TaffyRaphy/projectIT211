@@ -19,6 +19,9 @@ $ok = query_param('ok');
   <title>Equipment Management Systemm</title>
 </head>
 <body>
+<div class="theme-toolbar">
+  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">Light mode</button>
+</div>
 <main class="page page-login">
   <div class="page-intro">
     <h1>Equipment Management System</h1>

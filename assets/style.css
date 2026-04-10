@@ -622,7 +622,7 @@ section:hover,
 .page-dashboard-summary {
   width: min(1000px, 92%);
   margin-inline: auto;
-  margin-top: 1.35rem;
+  margin-top: 5rem;
   padding-top: 1rem;
 }
 

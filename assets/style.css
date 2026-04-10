@@ -392,6 +392,15 @@ button[data-confirm*='Reject']:hover {
   margin-bottom: var(--space-4);
 }
 
+.password-field-wrap {
+  position: relative;
+  display: block;
+}
+
+.password-field-wrap input {
+  padding-right: 3.15rem;
+}
+
 .toggle-password {
   width: 2.6rem;
   min-width: 2.6rem;
@@ -413,6 +422,27 @@ button[data-confirm*='Reject']:hover {
 .toggle-password:hover {
   background: color-mix(in srgb, var(--accent-teal) 22%, var(--surface-3));
   border-color: color-mix(in srgb, var(--accent-teal) 55%, transparent);
+}
+
+.toggle-password-inside {
+  position: absolute;
+  top: 50%;
+  right: 0.45rem;
+  transform: translateY(-50%);
+  width: 2.1rem;
+  min-width: 2.1rem;
+  height: 2.1rem;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.toggle-password-inside:hover {
+  transform: translateY(-50%);
+  background: color-mix(in srgb, var(--accent-teal) 22%, transparent);
+  border: 0;
+  box-shadow: none;
 }
 
 .inline-form {

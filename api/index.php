@@ -35,9 +35,9 @@ $error = query_param('error');
         <p><input id="email" name="email" type="email" required></p>
 
         <p><label for="password">Password</label></p>
-        <div class="password-row login-password-row">
+        <div class="password-row login-password-row password-field-wrap">
           <input id="password" name="password" type="password" required>
-          <button type="button" class="toggle-password" data-target="password" aria-pressed="false" aria-label="Show password">👁</button>
+          <button type="button" class="toggle-password toggle-password-inside" data-target="password" aria-pressed="false" aria-label="Show password">👁</button>
         </div>
 
         <p class="login-forgot-wrap"><a href="#" class="login-forgot">Forgot Password?</a></p>

@@ -24,10 +24,6 @@ $ok = query_param('ok');
 </div>
 <main class="page page-login">
   <div class="login-shell">
-    <div class="login-decor login-decor-orange" aria-hidden="true"></div>
-    <div class="login-decor login-decor-teal" aria-hidden="true"></div>
-    <div class="login-decor login-decor-peach" aria-hidden="true"></div>
-
     <section class="login-column login-column-form" aria-label="Login panel">
       <div class="login-brand">
         <h1>Dashboard<br>FurtArt</h1>

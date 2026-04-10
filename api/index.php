@@ -11,14 +11,14 @@ $error = query_param('error');
 $ok = query_param('ok');
 ?>
 <!doctype html>
-<html lang="en">
+<html lang="en" class="login-page">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/assets/style.css">
   <title>Equipment Management System</title>
 </head>
-<body>
+<body class="login-page">
 <div class="theme-toolbar">
   <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">Light mode</button>
 </div>
@@ -53,16 +53,16 @@ $ok = query_param('ok');
       <p class="login-support">Need account access? <strong>Contact your system administrator.</strong></p>
 
       <section class="list-panel login-test-users">
-        <p>admin@example.com / Pass123!</p>
-        <p>staff@example.com / Pass123!</p>
-        <p>maintenance@example.com / Pass123!</p>
+        <button type="button" class="login-seed" data-login-seed data-email="admin@example.com" data-password="Pass123!">admin@example.com / Pass123!</button>
+        <button type="button" class="login-seed" data-login-seed data-email="staff@example.com" data-password="Pass123!">staff@example.com / Pass123!</button>
+        <button type="button" class="login-seed" data-login-seed data-email="maintenance@example.com" data-password="Pass123!">maintenance@example.com / Pass123!</button>
       </section>
     </section>
 
     <aside class="login-column login-column-visual" aria-label="System title and branding panel">
       <div class="login-visual-center">
-        <p class="login-visual-eyebrow">Equipment Management System</p>
-        <h2 class="login-visual-title">FurtArt<br>Operations Console</h2>
+        <p class="login-visual-eyebrow">Web Systems and Technology</p>
+        <h2 class="login-visual-title">Equipement Management System</h2>
         <p class="login-visual-subtitle">A role-based platform for stock control, request workflows, maintenance planning, and historical reporting.</p>
         <div class="login-accent-lines" aria-hidden="true">
           <span></span>

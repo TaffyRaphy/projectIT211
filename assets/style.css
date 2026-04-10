@@ -670,6 +670,12 @@ section:hover,
   color: var(--text-heading);
 }
 
+html.login-page,
+body.login-page {
+  height: 100%;
+  overflow: hidden;
+}
+
 main.page.page-login {
   width: 100%;
   max-width: none;
@@ -693,10 +699,19 @@ main.page.page-login {
 .page-login .login-column-form {
   background: var(--login-form-bg);
   border-right: 1px solid var(--border-subtle);
+  border-radius: 0;
   padding: clamp(2rem, 5vw, 4.2rem);
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+.page-login section:hover,
+.page-login .item-card:hover,
+.page-login .metric-card:hover {
+  transform: none;
+  border-color: var(--border-subtle);
+  box-shadow: none;
 }
 
 .page-login .login-auth-kicker {
@@ -761,6 +776,10 @@ main.page.page-login {
   border: 1px solid color-mix(in srgb, var(--accent-primary) 48%, transparent);
 }
 
+html[data-theme='light'] .page-login .login-submit {
+  color: #ffffff;
+}
+
 .page-login .login-submit > span {
   min-height: 46px;
   display: inline-flex;
@@ -797,6 +816,36 @@ main.page.page-login {
   border: 1px dashed var(--border-subtle);
   border-radius: 12px;
   padding: 0.75rem 0.95rem;
+}
+
+.page-login .login-seed {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 0.35rem;
+  padding: 0.35rem 0.1rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--text-main);
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  justify-content: flex-start;
+}
+
+.page-login .login-seed:last-child {
+  margin-bottom: 0;
+}
+
+.page-login .login-seed:hover {
+  transform: none;
+  background: transparent;
+  box-shadow: none;
+  color: var(--accent-link);
 }
 
 .page-login .login-test-users p {

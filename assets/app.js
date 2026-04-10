@@ -52,6 +52,30 @@ document.addEventListener('click', (event) => {
     return;
   }
 
+  const seedButton = rawTarget.closest('[data-login-seed]');
+  if (seedButton instanceof HTMLElement) {
+    const email = seedButton.getAttribute('data-email') ?? '';
+    const password = seedButton.getAttribute('data-password') ?? '';
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    if (!(emailInput instanceof HTMLInputElement) || !(passwordInput instanceof HTMLInputElement)) {
+      return;
+    }
+
+    emailInput.value = email;
+    passwordInput.value = password;
+    passwordInput.type = 'password';
+
+    const passwordToggle = document.querySelector('.toggle-password');
+    if (passwordToggle instanceof HTMLElement) {
+      passwordToggle.textContent = 'Show';
+      passwordToggle.setAttribute('aria-pressed', 'false');
+    }
+
+    emailInput.focus();
+    return;
+  }
+
   const confirmTarget = rawTarget.closest('[data-confirm]');
   if (!(confirmTarget instanceof HTMLElement)) return;
 

@@ -8,7 +8,6 @@ if ($user !== null) {
 }
 
 $error = query_param('error');
-$ok = query_param('ok');
 ?>
 <!doctype html>
 <html lang="en" class="login-page">
@@ -20,7 +19,7 @@ $ok = query_param('ok');
 </head>
 <body class="login-page">
 <div class="theme-toolbar">
-  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">Light mode</button>
+  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
 </div>
 <main class="page page-login">
   <div class="login-shell">
@@ -29,7 +28,6 @@ $ok = query_param('ok');
       <h1 class="login-auth-title">Welcome back</h1>
       <p class="login-auth-copy">Sign in to manage equipment inventory, approvals, maintenance schedules, and reports.</p>
 
-      <?php if ($ok !== ''): ?><p class="alert alert-success"><?= h($ok) ?></p><?php endif; ?>
       <?php if ($error !== ''): ?><p class="alert alert-error">Login Error: <?= h($error) ?></p><?php endif; ?>
 
       <form class="login-form" action="/api/actions/login.php" method="post">
@@ -39,7 +37,7 @@ $ok = query_param('ok');
         <p><label for="password">Password</label></p>
         <div class="password-row login-password-row">
           <input id="password" name="password" type="password" required>
-          <button type="button" class="toggle-password" data-target="password" aria-pressed="false">Show</button>
+          <button type="button" class="toggle-password" data-target="password" aria-pressed="false" aria-label="Show password">👁</button>
         </div>
 
         <p class="login-forgot-wrap"><a href="#" class="login-forgot">Forgot Password?</a></p>
@@ -76,3 +74,4 @@ $ok = query_param('ok');
 <script src="/assets/app.js"></script>
 </body>
 </html>
+

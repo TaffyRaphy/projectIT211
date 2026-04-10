@@ -30,7 +30,7 @@ if (post_string('action') === 'test') {
 </head>
 <body>
     <div class="theme-toolbar">
-        <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">Light mode</button>
+        <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">??</button>
     </div>
     <div class="container">
         <header>
@@ -128,3 +128,4 @@ if (post_string('action') === 'test') {
     <script src="/assets/app.js"></script>
 </body>
 </html>
+

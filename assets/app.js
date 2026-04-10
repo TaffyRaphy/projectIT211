@@ -15,10 +15,10 @@ function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', nextTheme);
   window.localStorage.setItem(THEME_KEY, nextTheme);
 
-  const nextLabel = nextTheme === 'dark' ? 'Light mode' : 'Dark mode';
+  const icon = nextTheme === 'dark' ? '🌙' : '☀';
   document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
     if (!(button instanceof HTMLButtonElement)) return;
-    button.textContent = nextLabel;
+    button.textContent = icon;
     button.setAttribute('aria-pressed', nextTheme === 'light' ? 'true' : 'false');
     button.setAttribute('aria-label', 'Switch to ' + (nextTheme === 'dark' ? 'light' : 'dark') + ' mode');
   });
@@ -47,8 +47,9 @@ document.addEventListener('click', (event) => {
     if (!(input instanceof HTMLInputElement)) return;
     const show = input.type === 'password';
     input.type = show ? 'text' : 'password';
-    toggleButton.textContent = show ? 'Hide' : 'Show';
+    toggleButton.textContent = show ? '🙈' : '👁';
     toggleButton.setAttribute('aria-pressed', show ? 'true' : 'false');
+    toggleButton.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
     return;
   }
 
@@ -68,8 +69,9 @@ document.addEventListener('click', (event) => {
 
     const passwordToggle = document.querySelector('.toggle-password');
     if (passwordToggle instanceof HTMLElement) {
-      passwordToggle.textContent = 'Show';
+      passwordToggle.textContent = '👁';
       passwordToggle.setAttribute('aria-pressed', 'false');
+      passwordToggle.setAttribute('aria-label', 'Show password');
     }
 
     emailInput.focus();

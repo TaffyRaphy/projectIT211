@@ -96,7 +96,7 @@ try {
 </head>
 <body>
 <div class="theme-toolbar">
-  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">Light mode</button>
+  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">??</button>
 </div>
 <main class="page page-reports">
   <div class="page-intro">
@@ -282,3 +282,4 @@ try {
 <script src="/assets/app.js"></script>
 </body>
 </html>
+

@@ -23,7 +23,7 @@ $hasLocations = count($locationRows) > 0;
 </head>
 <body>
 <div class="theme-toolbar">
-  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">Light mode</button>
+  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">??</button>
 </div>
 <main class="page page-equipment">
   <div class="page-intro">
@@ -80,3 +80,4 @@ $hasLocations = count($locationRows) > 0;
 <script src="/assets/app.js"></script>
 </body>
 </html>
+

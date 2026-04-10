@@ -5,6 +5,12 @@ require dirname(__DIR__) . '/includes/bootstrap.php';
 $user = require_login();
 $role = (string) $user['role'];
 $userId = (int) $user['id'];
+$dashboardTitle = match ($role) {
+  'admin' => 'Admin Dashboard',
+  'staff' => 'Staff Dashboard',
+  'maintenance' => 'Maintenance Dashboard',
+  default => 'Dashboard',
+};
 
 $inventoryCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM equipment")->fetch()['total'];
 $pendingRequests = (string) db()->query("SELECT COUNT(*)::text AS total FROM equipment_requests WHERE status = 'pending'")->fetch()['total'];
@@ -19,16 +25,20 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
   <title>Dashboard</title>
 </head>
 <body>
-<div class="theme-toolbar">
-  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">Light mode</button>
-</div>
+<header class="dashboard-topbar">
+  <p class="dashboard-role-title"><?= h($dashboardTitle) ?></p>
+  <div class="dashboard-topbar-actions">
+    <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
+    <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
+  </div>
+</header>
 <main class="page page-dashboard">
   <div class="page-intro">
-    <h1>Admin Dashboard</h1>
+    <h1><?= h($dashboardTitle) ?></h1>
     <p class="page-tagline">Overview of equipment stock, requests and maintenance status.</p>
   </div>
   <header class="page-header">
-    <h1>Dashboard</h1>
+    <h2>Dashboard</h2>
     <div class="meta-row">
       <span class="chip chip-role">Role: <?= h($role) ?></span>
       <span class="chip chip-id">User ID: <?= $userId ?></span>
@@ -70,8 +80,8 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
   </nav>
   <?php endif; ?>
 
-  <p class="back-link"><a href="/api/actions/logout.php">Logout</a></p>
 </main>
 <script src="/assets/app.js"></script>
 </body>
 </html>
+

@@ -86,7 +86,7 @@ $logs = $stmt->fetchAll();
 </head>
 <body>
     <div class="theme-toolbar">
-        <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">Light mode</button>
+        <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">??</button>
     </div>
     <div class="container">
         <header>
@@ -226,3 +226,4 @@ $logs = $stmt->fetchAll();
     <script src="/assets/app.js"></script>
 </body>
 </html>
+

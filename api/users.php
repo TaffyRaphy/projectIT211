@@ -2,32 +2,32 @@
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 
-$user   = require_login();
 require_role(['admin']);
+$user   = require_login();
 $userId = (int) $user['id'];
 $ok     = query_param('ok');
 $error  = query_param('error');
 
 // Search
-$search = post_string('search') ?: query_param('search');
+$search     = post_string('search') ?: query_param('search');
 $roleFilter = post_string('role_filter') ?: query_param('role_filter');
 
 $where  = [];
 $params = [];
 
 if ($search !== '') {
-    $where[]         = "(u.full_name ILIKE :search OR u.email ILIKE :search)";
+    $where[]           = "(u.full_name ILIKE :search OR u.email ILIKE :search OR u.employee_id ILIKE :search)";
     $params[':search'] = '%' . $search . '%';
 }
 if ($roleFilter !== '' && in_array($roleFilter, ['admin', 'staff', 'maintenance'], true)) {
-    $where[]           = "u.role = :role";
-    $params[':role']   = $roleFilter;
+    $where[]         = "u.role = :role";
+    $params[':role'] = $roleFilter;
 }
 
 $whereClause = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
 
 $stmt = db()->prepare(
-    "SELECT u.id, u.full_name, u.email, u.role, u.created_at,
+    "SELECT u.id, u.full_name, u.email, u.role, u.created_at, u.employee_id, u.department, u.job_title,
             COUNT(DISTINCT er.id) AS request_count,
             COUNT(DISTINCT al.id) AS allocation_count,
             COUNT(DISTINCT ml.id) AS maintenance_count
@@ -36,7 +36,7 @@ $stmt = db()->prepare(
      LEFT JOIN allocations         al ON al.staff_id = u.id
      LEFT JOIN maintenance_logs    ml ON ml.maintenance_user_id = u.id
      {$whereClause}
-     GROUP BY u.id, u.full_name, u.email, u.role, u.created_at
+     GROUP BY u.id, u.full_name, u.email, u.role, u.created_at, u.employee_id, u.department, u.job_title
      ORDER BY u.created_at DESC"
 );
 $stmt->execute($params);
@@ -52,6 +52,8 @@ $roleIcon = [
     'staff'       => '👤',
     'maintenance' => '🔧',
 ];
+
+$unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -73,6 +75,7 @@ $roleIcon = [
     }
     .user-stat-chip span { font-weight: 700; color: var(--text-color, #eee); }
     .user-row-email { font-size: .82rem; color: var(--text-muted, #888); }
+    .user-row-meta  { font-size: .78rem; color: var(--text-muted, #888); }
     .summary-bar {
       display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;
     }
@@ -84,18 +87,36 @@ $roleIcon = [
       font-size: .85rem;
     }
     .summary-chip strong { color: var(--accent, #cafd00); font-size: 1.1rem; }
+    .add-user-toggle {
+      display: flex; align-items: center; gap: .5rem;
+      cursor: pointer; user-select: none;
+    }
+    .add-user-toggle h2 { margin: 0; }
+    .create-user-form { display: none; }
+    .create-user-form.open { display: block; }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 640px) { .form-grid-2 { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 <header class="dashboard-topbar">
   <div class="dashboard-topbar-left">
-    <p class="dashboard-topbar-title">👥 User Management</p>
+    <a href="/api/dashboard.php" class="dashboard-topbar-title" style="text-decoration:none; color:inherit;">
+      🏠 Equipment Management System
+    </a>
   </div>
   <div class="dashboard-topbar-right">
     <div class="dashboard-topbar-meta">
-      <span>Role: <?= h($user['role']) ?> | User ID: <?= $userId ?></span>
+      <span>Role: <?= h($user['role']) ?> | <?= h($user['full_name']) ?></span>
     </div>
     <div class="dashboard-topbar-actions">
+      <a class="bell-btn" href="/api/my_notifications.php" aria-label="Notifications">
+        🔔
+        <?php if ($unreadCount > 0): ?>
+          <span class="bell-badge"><?= $unreadCount > 99 ? '99+' : $unreadCount ?></span>
+        <?php endif; ?>
+      </a>
+      <a class="profile-link" href="/api/profile.php">🪪 Profile</a>
       <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
       <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
     </div>
@@ -120,12 +141,63 @@ $roleIcon = [
     <div class="summary-chip">🔧 Maintenance: <strong><?= $maintCount ?></strong></div>
   </div>
 
+  <!-- ── Add New User ── -->
+  <section class="card">
+    <div class="add-user-toggle" id="add-user-toggle" onclick="toggleAddUser()" aria-expanded="false">
+      <h2>➕ Add New User</h2>
+      <span id="add-user-chevron" style="font-size:1.2rem; transition: transform .2s;">▼</span>
+    </div>
+    <div class="create-user-form" id="create-user-form">
+      <br>
+      <form action="/api/actions/user_create.php" method="post" class="form">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="cu_full_name">Full Name *</label>
+            <input type="text" id="cu_full_name" name="full_name" required placeholder="e.g. Juan Dela Cruz">
+          </div>
+          <div class="form-group">
+            <label for="cu_email">Email Address *</label>
+            <input type="email" id="cu_email" name="email" required placeholder="e.g. juan@example.com">
+          </div>
+          <div class="form-group">
+            <label for="cu_password">Temporary Password * (min 8 chars)</label>
+            <input type="password" id="cu_password" name="password" required minlength="8" placeholder="Temporary password">
+          </div>
+          <div class="form-group">
+            <label for="cu_role">Role *</label>
+            <select id="cu_role" name="role" required>
+              <option value="">Select role…</option>
+              <option value="admin">👑 Admin</option>
+              <option value="staff">👤 Staff</option>
+              <option value="maintenance">🔧 Maintenance</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="cu_department">Department</label>
+            <input type="text" id="cu_department" name="department" placeholder="e.g. IT, Operations">
+          </div>
+          <div class="form-group">
+            <label for="cu_job_title">Job Title / Position</label>
+            <input type="text" id="cu_job_title" name="job_title" placeholder="e.g. IT Technician">
+          </div>
+        </div>
+        <p style="font-size:.82rem; color: var(--text-muted, #888); margin-top:.5rem;">
+          💡 An Employee ID will be automatically generated upon creation. The user will be prompted to complete their profile on first login.
+        </p>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">➕ Create User</button>
+          <button type="button" class="btn btn-secondary" onclick="toggleAddUser()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
   <!-- Search + Filter -->
   <section class="card">
     <h2>Search Users</h2>
     <form method="post" class="filter-form">
       <div class="form-group">
-        <label for="search">Name / Email:</label>
+        <label for="search">Name / Email / Employee ID:</label>
         <input type="text" id="search" name="search" placeholder="Search..." value="<?= h($search) ?>">
       </div>
       <div class="form-group">
@@ -151,10 +223,11 @@ $roleIcon = [
     <table class="table">
       <thead>
         <tr>
-          <th>ID</th>
+          <th>Emp ID</th>
           <th>Name</th>
           <th>Email</th>
           <th>Role</th>
+          <th>Dept / Title</th>
           <th>Activity</th>
           <th>Joined</th>
           <th>Actions</th>
@@ -163,7 +236,7 @@ $roleIcon = [
       <tbody>
         <?php foreach ($users as $u): ?>
         <tr>
-          <td><?= (int) $u['id'] ?></td>
+          <td style="font-size:.82rem; font-weight:600; color:var(--accent);"><?= h($u['employee_id'] ?? '—') ?></td>
           <td>
             <strong><?= h($u['full_name']) ?></strong>
             <?php if ((int) $u['id'] === $userId): ?>
@@ -175,6 +248,17 @@ $roleIcon = [
             <span class="badge <?= $roleBadge[$u['role']] ?? 'badge-info' ?>">
               <?= $roleIcon[$u['role']] ?? '' ?> <?= h(ucfirst($u['role'])) ?>
             </span>
+          </td>
+          <td class="user-row-meta">
+            <?php if (!empty($u['department'])): ?>
+              <div><?= h($u['department']) ?></div>
+            <?php endif; ?>
+            <?php if (!empty($u['job_title'])): ?>
+              <div style="color: var(--text-muted);"><?= h($u['job_title']) ?></div>
+            <?php endif; ?>
+            <?php if (empty($u['department']) && empty($u['job_title'])): ?>
+              <span style="color: var(--text-muted);">—</span>
+            <?php endif; ?>
           </td>
           <td>
             <div class="user-stats">
@@ -201,6 +285,16 @@ $roleIcon = [
   <p class="back-link"><a href="/api/dashboard.php">← Back to Dashboard</a></p>
 </main>
 
+<script>
+function toggleAddUser() {
+  const form     = document.getElementById('create-user-form');
+  const toggle   = document.getElementById('add-user-toggle');
+  const chevron  = document.getElementById('add-user-chevron');
+  const isOpen   = form.classList.toggle('open');
+  toggle.setAttribute('aria-expanded', isOpen);
+  chevron.style.transform = isOpen ? 'rotate(180deg)' : '';
+}
+</script>
 <script src="/assets/app.js"></script>
 </body>
 </html>

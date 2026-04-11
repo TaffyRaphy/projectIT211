@@ -168,24 +168,145 @@ try {
         }
         echo '</tbody></table>';
     } elseif ($reportType === 'summary') {
-        echo '<h2>Executive Summary</h2>';
+        $reportingPeriod = date('F Y');
+        $reportMonth     = (int) date('n');
+        $reportYear      = (int) date('Y');
+        $prevMonthLabel  = date('F Y', strtotime('first day of last month'));
 
-        $stmt = db()->query("SELECT COUNT(*) as total FROM equipment");
-        $totalEquipment = $stmt->fetch()['total'] ?? 0;
+        // --- Equipment KPIs ---
+        $eqRow = db()->query(
+            "SELECT COUNT(*) AS total,
+                    COUNT(*) FILTER (WHERE status = 'available')   AS available,
+                    COUNT(*) FILTER (WHERE status = 'allocated')   AS allocated,
+                    COUNT(*) FILTER (WHERE status = 'maintenance') AS under_repair,
+                    COUNT(*) FILTER (WHERE status = 'retired')     AS retired
+             FROM equipment"
+        )->fetch();
+        $eqTotal       = (int) ($eqRow['total'] ?? 0);
+        $eqAvailable   = (int) ($eqRow['available'] ?? 0);
+        $eqAllocated   = (int) ($eqRow['allocated'] ?? 0);
+        $eqUnderRepair = (int) ($eqRow['under_repair'] ?? 0);
+        $utilizationRate   = $eqTotal > 0 ? round(($eqAllocated / $eqTotal) * 100, 1) : 0;
+        $availabilityRate  = $eqTotal > 0 ? round(($eqAvailable / $eqTotal) * 100, 1) : 0;
 
-        $stmt = db()->query("SELECT COUNT(*) as total FROM allocations");
-        $totalAllocations = $stmt->fetch()['total'] ?? 0;
+        // --- Maintenance KPIs ---
+        $mRow = db()->query(
+            "SELECT COUNT(*) FILTER (WHERE status = 'completed') AS completed,
+                    COUNT(*) FILTER (WHERE status = 'scheduled') AS scheduled,
+                    COALESCE(SUM(CASE WHEN status = 'completed' THEN cost ELSE 0 END), 0) AS actual_cost,
+                    COALESCE(SUM(cost), 0) AS total_cost_all
+             FROM maintenance_logs"
+        )->fetch();
+        $maintCompleted    = (int) ($mRow['completed'] ?? 0);
+        $maintScheduled    = (int) ($mRow['scheduled'] ?? 0);
+        $maintTotal        = $maintCompleted + $maintScheduled;
+        $maintRate         = $maintTotal > 0 ? round(($maintCompleted / $maintTotal) * 100, 1) : 0;
+        $actualCost        = (float) ($mRow['actual_cost'] ?? 0);
 
-        $stmt = db()->query("SELECT COUNT(*) as total FROM maintenance_logs WHERE status = 'completed'");
-        $totalMaintenance = $stmt->fetch()['total'] ?? 0;
+        // Previous month cost
+        $prevMonthCostRow = db()->query(
+            "SELECT COALESCE(SUM(cost), 0) AS cost
+             FROM maintenance_logs
+             WHERE status = 'completed'
+               AND EXTRACT(MONTH FROM completed_date) = " . ($reportMonth === 1 ? 12 : $reportMonth - 1) . "
+               AND EXTRACT(YEAR FROM completed_date)  = " . ($reportMonth === 1 ? $reportYear - 1 : $reportYear)
+        )->fetch();
+        $prevMonthCost = (float) ($prevMonthCostRow['cost'] ?? 0);
+        $costTrend = $actualCost > $prevMonthCost ? '↑ Increasing' : ($actualCost < $prevMonthCost ? '↓ Decreasing' : '→ Stable');
+        $costTrendColor = $actualCost > $prevMonthCost ? '#ef4444' : ($actualCost < $prevMonthCost ? '#22c55e' : '#888');
 
-        $stmt = db()->query("SELECT SUM(cost) as total FROM maintenance_logs WHERE status = 'completed'");
-        $maintenanceCost = (float) ($stmt->fetch()['total'] ?? 0);
+        // --- Total Allocations ---
+        $totalAllocations = (int) db()->query("SELECT COUNT(*) FROM allocations")->fetchColumn();
 
-        echo '<p><strong>Total Equipment:</strong> ' . $totalEquipment . '</p>';
-        echo '<p><strong>Total Allocations:</strong> ' . $totalAllocations . '</p>';
-        echo '<p><strong>Completed Maintenance Tasks:</strong> ' . $totalMaintenance . '</p>';
-        echo '<p><strong>Total Maintenance Cost:</strong> $' . number_format($maintenanceCost, 2) . '</p>';
+        // --- Overdue allocations ---
+        $overdueRows = db()->query(
+            "SELECT a.id, u.full_name AS staff_name, e.name AS equipment_name, a.expected_return_date
+             FROM allocations a
+             JOIN users u ON u.id = a.staff_id
+             JOIN equipment e ON e.id = a.equipment_id
+             WHERE a.expected_return_date < CURRENT_DATE
+               AND a.expected_return_date IS NOT NULL
+               AND a.status = 'active'
+             ORDER BY a.expected_return_date ASC"
+        )->fetchAll();
+
+        // --- Idle / underutilized ---
+        $idleRows = db()->query(
+            "SELECT e.name, e.quantity_available, e.quantity_total
+             FROM equipment e
+             WHERE e.status = 'available'
+               AND e.quantity_available = e.quantity_total
+               AND e.quantity_total > 0
+             ORDER BY e.quantity_total DESC
+             LIMIT 10"
+        )->fetchAll();
+
+        // --- Who is generating ---
+        $generatorRow = db()->query("SELECT full_name, role, department, job_title FROM users WHERE id = " . require_login()['id'])->fetch();
+
+        // ── HTML Output ──
+        echo '<style>
+            .kpi-grid { display: flex; gap: 20px; flex-wrap: wrap; margin: 20px 0; }
+            .kpi-box  { border: 1px solid #ddd; border-radius: 8px; padding: 16px 22px; min-width: 140px; text-align: center; }
+            .kpi-val  { font-size: 28px; font-weight: 800; color: #111; display: block; }
+            .kpi-lbl  { font-size: 12px; color: #777; margin-top: 4px; }
+            .kpi-sub  { font-size: 13px; color: #555; }
+            .alert-box { border-left: 4px solid #ef4444; background: #fff5f5; padding: 10px 16px; margin: 8px 0; border-radius: 0 6px 6px 0; }
+            .alert-box.warn { border-color: #f59e0b; background: #fffbeb; }
+            .section-card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px 20px; margin: 16px 0; }
+            .period-badge { display: inline-block; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 6px; padding: 4px 12px; font-size: 13px; color: #374151; margin-bottom: 12px; }
+            .prepared-by { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 20px; margin-top: 20px; font-size: 13px; }
+        </style>';
+
+        echo '<div class="period-badge">📅 Reporting Period: <strong>' . $reportingPeriod . '</strong></div>';
+        echo '<p style="font-size:13px; color:#555;">Compared to previous period: <strong>' . $prevMonthLabel . '</strong></p>';
+
+        echo '<h2>Enhanced KPIs</h2>';
+        echo '<div class="kpi-grid">';
+        echo '<div class="kpi-box"><span class="kpi-val">' . $utilizationRate . '%</span><span class="kpi-lbl">Equipment Utilization Rate</span><br><span class="kpi-sub">' . $eqAllocated . ' in use, ' . $eqAvailable . ' idle</span></div>';
+        echo '<div class="kpi-box"><span class="kpi-val">' . $availabilityRate . '%</span><span class="kpi-lbl">Equipment Availability</span><br><span class="kpi-sub">Available: ' . $eqAvailable . ' | Deployed: ' . $eqAllocated . ' | Repair: ' . $eqUnderRepair . '</span></div>';
+        echo '<div class="kpi-box"><span class="kpi-val">' . $maintRate . '%</span><span class="kpi-lbl">Maintenance Completion Rate</span><br><span class="kpi-sub">' . $maintCompleted . ' of ' . $maintTotal . ' tasks completed</span></div>';
+        echo '<div class="kpi-box"><span class="kpi-val">$' . number_format($actualCost, 2) . '</span><span class="kpi-lbl">Actual Maintenance Cost</span><br><span class="kpi-sub" style="color:' . $costTrendColor . ';">' . $costTrend . ' vs prev month</span></div>';
+        echo '<div class="kpi-box"><span class="kpi-val">' . $eqTotal . '</span><span class="kpi-lbl">Total Equipment</span><br><span class="kpi-sub">' . $totalAllocations . ' total allocations</span></div>';
+        echo '</div>';
+
+        // Trend indicator
+        echo '<div class="section-card">';
+        echo '<h3>Quick Trend Indicators</h3>';
+        echo '<p>📈 <strong>Maintenance Cost:</strong> <span style="color:' . $costTrendColor . ';">' . $costTrend . '</span> vs ' . $prevMonthLabel . ' ($' . number_format($prevMonthCost, 2) . ')</p>';
+        echo '<p>📦 <strong>Equipment Availability:</strong> ' . $availabilityRate . '% available — ' . ($availabilityRate >= 50 ? '✅ Healthy' : '⚠️ Low availability') . '</p>';
+        echo '<p>🔧 <strong>Pending Maintenance:</strong> ' . $maintScheduled . ' task(s) pending completion.</p>';
+        echo '</div>';
+
+        // Alerts & Action Items
+        echo '<h2>⚠️ Alerts & Action Items</h2>';
+        if (count($overdueRows) > 0) {
+            echo '<h3 style="color:#ef4444;">Equipment Overdue for Return (' . count($overdueRows) . ')</h3>';
+            foreach ($overdueRows as $r) {
+                $daysOver = max(0, (int) ((time() - strtotime($r['expected_return_date'])) / 86400));
+                echo '<div class="alert-box">' . h($r['equipment_name']) . ' — allocated to <strong>' . h($r['staff_name']) . '</strong> — overdue by <strong>' . $daysOver . ' day(s)</strong> (due: ' . h($r['expected_return_date']) . ')</div>';
+            }
+        } else {
+            echo '<p style="color:#22c55e;">✅ No overdue equipment returns.</p>';
+        }
+
+        if (count($idleRows) > 0) {
+            echo '<h3 style="color:#f59e0b;">Underutilized / Idle Equipment (' . count($idleRows) . ')</h3>';
+            foreach ($idleRows as $r) {
+                echo '<div class="alert-box warn"><strong>' . h($r['name']) . '</strong> — ' . (int) $r['quantity_available'] . ' of ' . (int) $r['quantity_total'] . ' units sitting idle</div>';
+            }
+        } else {
+            echo '<p style="color:#22c55e;">✅ All equipment is actively utilized.</p>';
+        }
+
+        // Report Prepared By
+        echo '<div class="prepared-by">';
+        echo '<strong>Report Prepared By:</strong><br>';
+        echo h($generatorRow['full_name'] ?? 'System') . ' &nbsp;·&nbsp; ';
+        echo h(ucfirst($generatorRow['role'] ?? 'Admin')) . ' &nbsp;·&nbsp; ';
+        echo h($generatorRow['department'] ?? '') . (($generatorRow['job_title'] ?? '') ? ' — ' . h($generatorRow['job_title']) : '');
+        echo '<br><small style="color:#888;">Generated: ' . date('F j, Y g:i A') . ' (Asia/Manila)</small>';
+        echo '</div>';
     }
 
     echo '<div class="footer">';

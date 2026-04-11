@@ -9,19 +9,42 @@ $currentRole   = (string) $currentUser['role'];
 // Admins can view any profile; others can only view their own
 $viewId = int_query_param('id', $currentUserId);
 if ($currentRole !== 'admin' && $viewId !== $currentUserId) {
-    redirect_to('/api/profile.php'); // redirect to own profile
+    redirect_to('/api/profile.php');
 }
 
 $ok    = query_param('ok');
 $error = query_param('error');
+$setup = query_param('setup'); // '1' = mandatory profile fill mode
 
-// Fetch the profile user
-$profileStmt = db()->prepare('SELECT id, full_name, email, role, created_at FROM users WHERE id = :id');
+// Fetch the profile user (now includes new fields)
+$profileStmt = db()->prepare(
+    'SELECT id, full_name, email, role, created_at, employee_id, department, job_title, profile_photo
+     FROM users WHERE id = :id'
+);
 $profileStmt->execute([':id' => $viewId]);
 $profileUser = $profileStmt->fetch();
 
 if (!$profileUser) {
     redirect_to('/api/dashboard.php', ['error' => 'User not found']);
+}
+
+// Detect if profile is incomplete (for Staff and Maintenance)
+$profileIncomplete = in_array($profileUser['role'], ['staff', 'maintenance'], true)
+    && (empty($profileUser['department']) || empty($profileUser['job_title']));
+
+// If it's own profile and incomplete, force setup mode
+if ($viewId === $currentUserId && $profileIncomplete && $setup !== '1') {
+    $setup = '1';
+}
+
+// Auto-generate employee_id if missing
+if (empty($profileUser['employee_id'])) {
+    $generatedEmpId = (string) ((int) $profileUser['id'] + 113000);
+    try {
+        db()->prepare('UPDATE users SET employee_id = :eid WHERE id = :id')
+            ->execute([':eid' => $generatedEmpId, ':id' => $viewId]);
+        $profileUser['employee_id'] = $generatedEmpId;
+    } catch (Throwable) {}
 }
 
 // Recent audit log activity (last 15)
@@ -58,6 +81,8 @@ $actionTypeIcon = [
     'complete' => '✔️',
     'snapshot' => '📸',
 ];
+
+$unreadCount = NotificationService::getInstance()->getUnreadCount($currentUserId);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -77,15 +102,25 @@ $actionTypeIcon = [
       margin-bottom: 1.5rem;
     }
     .profile-avatar {
-      width: 72px; height: 72px;
+      width: 80px; height: 80px;
       border-radius: 50%;
       background: var(--accent, #cafd00);
       display: flex; align-items: center; justify-content: center;
-      font-size: 2rem; font-weight: 700; color: #111;
+      font-size: 2.2rem; font-weight: 700; color: #111;
       flex-shrink: 0;
+      overflow: hidden;
     }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .profile-info h1 { margin: 0 0 .3rem; font-size: 1.4rem; }
     .profile-info p  { margin: 0; font-size: .9rem; color: var(--text-muted, #888); }
+    .profile-info .info-row { display: flex; gap: 1.2rem; flex-wrap: wrap; margin-top: .4rem; }
+    .profile-info .info-chip {
+      font-size: .82rem; color: var(--text-muted, #888);
+      background: var(--bg-alt, #111);
+      border: 1px solid var(--border-color, #2a2a2a);
+      border-radius: 6px; padding: .15rem .55rem;
+    }
+    .profile-info .info-chip strong { color: var(--text-color, #eee); margin-right: .3rem; }
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -103,18 +138,42 @@ $actionTypeIcon = [
     .stat-card .stat-label { font-size: .78rem; color: var(--text-muted, #888); margin-top: .2rem; }
     .audit-row td:first-child { font-size: 1.1rem; text-align: center; }
     .audit-action { text-transform: capitalize; font-weight: 600; }
+    .mandatory-banner {
+      background: linear-gradient(135deg, #1a1a1a, #111);
+      border: 2px solid var(--accent, #cafd00);
+      border-radius: 14px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    .mandatory-banner h2 { color: var(--accent, #cafd00); margin: 0 0 .5rem; }
+    .mandatory-banner p  { color: var(--text-muted, #888); margin: 0 0 1rem; }
+    .edit-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 640px) { .edit-form-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 <header class="dashboard-topbar">
   <div class="dashboard-topbar-left">
-    <p class="dashboard-topbar-title">🪪 <?= $isOwnProfile ? 'My Profile' : 'User Profile' ?></p>
+    <a href="/api/dashboard.php" class="dashboard-topbar-title" style="text-decoration:none; color:inherit;">
+      🏠 Equipment Management System
+    </a>
   </div>
   <div class="dashboard-topbar-right">
     <div class="dashboard-topbar-meta">
-      <span>Role: <?= h($currentRole) ?> | User ID: <?= $currentUserId ?></span>
+      <span><?= h($profileUser['employee_id'] ?? '') ?> | Role: <?= h($currentRole) ?></span>
     </div>
     <div class="dashboard-topbar-actions">
+      <a class="bell-btn" href="/api/my_notifications.php" aria-label="Notifications">
+        🔔
+        <?php if ($unreadCount > 0): ?>
+          <span class="bell-badge"><?= $unreadCount > 99 ? '99+' : $unreadCount ?></span>
+        <?php endif; ?>
+      </a>
       <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
       <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
     </div>
@@ -125,15 +184,36 @@ $actionTypeIcon = [
   <?php if ($ok !== ''): ?><p class="alert alert-success"><?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 
+  <?php if ($setup === '1' && $isOwnProfile && $profileIncomplete): ?>
+  <!-- ── Mandatory Profile Completion Banner ── -->
+  <div class="mandatory-banner">
+    <h2>👤 Complete Your Profile</h2>
+    <p>Your profile is incomplete. Please fill in the required fields below before using the system.</p>
+  </div>
+  <?php endif; ?>
+
   <!-- Profile header card -->
   <div class="profile-header">
     <div class="profile-avatar">
-      <?= mb_strtoupper(mb_substr($profileUser['full_name'], 0, 1)) ?>
+      <?php if (!empty($profileUser['profile_photo'])): ?>
+        <img src="<?= h($profileUser['profile_photo']) ?>" alt="Profile Photo">
+      <?php else: ?>
+        <?= mb_strtoupper(mb_substr($profileUser['full_name'], 0, 1)) ?>
+      <?php endif; ?>
     </div>
     <div class="profile-info">
       <h1><?= h($profileUser['full_name']) ?></h1>
       <p><?= h($profileUser['email']) ?></p>
-      <p style="margin-top:.4rem;">
+      <div class="info-row">
+        <span class="info-chip"><strong>Employee ID:</strong><?= h($profileUser['employee_id'] ?? '—') ?></span>
+        <?php if (!empty($profileUser['department'])): ?>
+        <span class="info-chip"><strong>Dept:</strong><?= h($profileUser['department']) ?></span>
+        <?php endif; ?>
+        <?php if (!empty($profileUser['job_title'])): ?>
+        <span class="info-chip"><strong>Title:</strong><?= h($profileUser['job_title']) ?></span>
+        <?php endif; ?>
+      </div>
+      <p style="margin-top:.5rem;">
         <span class="badge <?= match($profileUser['role']) { 'admin' => 'badge-warning', 'maintenance' => 'badge-success', default => 'badge-info' } ?>">
           <?= match($profileUser['role']) { 'admin' => '👑', 'maintenance' => '🔧', default => '👤' } ?>
           <?= h(ucfirst($profileUser['role'])) ?>
@@ -144,6 +224,59 @@ $actionTypeIcon = [
       </p>
     </div>
   </div>
+
+  <!-- Edit / Complete Profile Form -->
+  <?php if ($isOwnProfile || $currentRole === 'admin'): ?>
+  <section class="card">
+    <h2>
+      <?= ($setup === '1' && $profileIncomplete) ? '📝 Complete Profile (Required)' : '✏️ Edit Profile' ?>
+    </h2>
+    <form action="/api/actions/profile_update.php" method="post" class="form">
+      <input type="hidden" name="target_id" value="<?= $viewId ?>">
+      <?php if ($setup === '1' && $profileIncomplete): ?>
+        <input type="hidden" name="mandatory_fill" value="1">
+      <?php endif; ?>
+      <div class="edit-form-grid">
+        <div class="form-group">
+          <label for="full_name">Full Name *</label>
+          <input type="text" id="full_name" name="full_name" required
+                 value="<?= h($profileUser['full_name']) ?>"
+                 placeholder="Enter full name">
+        </div>
+        <div class="form-group">
+          <label for="profile_photo_url">Profile Photo URL</label>
+          <input type="url" id="profile_photo_url" name="profile_photo"
+                 value="<?= h($profileUser['profile_photo'] ?? '') ?>"
+                 placeholder="https://...">
+        </div>
+        <?php if (in_array($profileUser['role'], ['staff', 'maintenance'], true)): ?>
+        <div class="form-group">
+          <label for="department">Department <?= ($setup === '1') ? '*' : '' ?></label>
+          <input type="text" id="department" name="department"
+                 <?= ($setup === '1') ? 'required' : '' ?>
+                 value="<?= h($profileUser['department'] ?? '') ?>"
+                 placeholder="e.g. IT, Operations, Engineering">
+        </div>
+        <div class="form-group">
+          <label for="job_title">Job Title / Position <?= ($setup === '1') ? '*' : '' ?></label>
+          <input type="text" id="job_title" name="job_title"
+                 <?= ($setup === '1') ? 'required' : '' ?>
+                 value="<?= h($profileUser['job_title'] ?? '') ?>"
+                 placeholder="e.g. IT Technician, Lab Manager">
+        </div>
+        <?php endif; ?>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          <?= ($setup === '1' && $profileIncomplete) ? '💾 Save & Continue' : '💾 Save Changes' ?>
+        </button>
+      </div>
+    </form>
+  </section>
+  <?php endif; ?>
+
+  <!-- Rest of profile only shown when profile is complete OR admin -->
+  <?php if (!($setup === '1' && $profileIncomplete)): ?>
 
   <!-- Activity Stats -->
   <h2>Activity Stats</h2>
@@ -223,7 +356,6 @@ $actionTypeIcon = [
               <?php
                 $newVals = is_string($entry['new_values']) ? json_decode($entry['new_values'], true) : null;
                 if (is_array($newVals)) {
-                    // Show key details only
                     $show = array_filter($newVals, fn($k) => in_array($k, ['status', 'name', 'equipment_name', 'role', 'email']), ARRAY_FILTER_USE_KEY);
                     if (!empty($show)) {
                         foreach ($show as $k => $v) {
@@ -246,15 +378,29 @@ $actionTypeIcon = [
     <?php endif; ?>
   </section>
 
+  <?php endif; // end profile complete check ?>
+
   <p class="back-link">
     <?php if ($currentRole === 'admin' && !$isOwnProfile): ?>
       <a href="/api/users.php">← Back to User Management</a>
-    <?php else: ?>
+    <?php elseif (!($setup === '1' && $profileIncomplete)): ?>
       <a href="/api/dashboard.php">← Back to Dashboard</a>
     <?php endif; ?>
   </p>
 </main>
 
+<script>
+  // Warn user on navigation away if in mandatory fill mode and form not submitted
+  <?php if ($setup === '1' && $profileIncomplete): ?>
+  window.addEventListener('beforeunload', function(e) {
+    e.preventDefault();
+    e.returnValue = '';
+  });
+  document.querySelector('form').addEventListener('submit', function() {
+    window.removeEventListener('beforeunload', arguments.callee);
+  });
+  <?php endif; ?>
+</script>
 <script src="/assets/app.js"></script>
 </body>
 </html>

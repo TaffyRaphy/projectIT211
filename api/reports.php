@@ -100,13 +100,23 @@ try {
 <body>
 <header class="dashboard-topbar">
   <div class="dashboard-topbar-left">
-    <p class="dashboard-topbar-title"><?= h($dashboardTitle) ?></p>
+    <a href="/api/dashboard.php" class="dashboard-topbar-title" style="text-decoration:none; color:inherit;">
+      🏠 Equipment Management System
+    </a>
   </div>
   <div class="dashboard-topbar-right">
     <div class="dashboard-topbar-meta">
-      <span>Role: <?= h($role) ?> | User ID: <?= $userId ?></span>
+      <span><?= h($user['full_name']) ?> | <?= h($role) ?></span>
     </div>
     <div class="dashboard-topbar-actions">
+      <?php $unreadCount = NotificationService::getInstance()->getUnreadCount($userId); ?>
+      <a class="bell-btn" href="/api/my_notifications.php">
+        🔔
+        <?php if ($unreadCount > 0): ?>
+          <span class="bell-badge"><?= $unreadCount > 99 ? '99+' : $unreadCount ?></span>
+        <?php endif; ?>
+      </a>
+      <a class="profile-link" href="/api/profile.php">🪪 Profile</a>
       <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
       <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
     </div>
@@ -279,8 +289,8 @@ try {
   <!-- Admin Tools -->
   <!-- Audit Trail Report -->
   <hr>
-  <h2>Audit Trail</h2>
-  <p style="color: var(--text-muted, #888); margin-bottom: 1rem;">Recent system actions across all users — last 50 entries.</p>
+  <h2>Audit Trail <small style="font-size:.8rem; font-weight:400;">(Last 50 — <a href="/api/audit_trail.php" style="color:var(--accent)">View Full Trail →</a>)</small></h2>
+  <p style="color: var(--text-muted, #888); margin-bottom: 1rem;">Recent system actions across all users.</p>
   <?php
     $auditRows = [];
     try {
@@ -360,11 +370,13 @@ try {
     <h2>Admin Tools</h2>
     <p>
       <a href="/api/actions/snapshot_daily.php"          class="btn btn-secondary">📸 Capture Metrics Snapshot</a>
-      <a href="/api/reports_historical.php"              class="btn btn-primary">📈 View Historical Trends</a>
+      <a href="/api/snapshots.php"                       class="btn btn-primary">📊 View All Snapshots</a>
+      <a href="/api/audit_trail.php"                     class="btn btn-primary">📋 Full Audit Trail</a>
+      <a href="/api/reports_historical.php"              class="btn btn-secondary">📈 Historical Trends</a>
       <a href="/api/actions/check_overdue_allocations.php" class="btn btn-warning">⚠️ Check Overdue Items</a>
       <a href="/api/notification_logs.php"               class="btn btn-secondary">📧 Notification Logs</a>
       <a href="/api/users.php"                           class="btn btn-secondary">👥 User Management</a>
-      <a href="/api/actions/generate_report_pdf.php?report_type=summary" class="btn btn-primary">📄 Export Summary</a>
+      <a href="/api/actions/generate_report_pdf.php?report_type=summary" class="btn btn-primary">📄 Export Summary (HTML)</a>
     </p>
   </section>
 

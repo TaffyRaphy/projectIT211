@@ -684,6 +684,10 @@ section:hover,
   margin-bottom: 0.65rem;
 }
 
+.page-equipment > h2:first-of-type {
+  margin-top: 0;
+}
+
 .page-equipment > .panel button[type='submit'] {
   color: #fff;
 }

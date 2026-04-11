@@ -726,6 +726,40 @@ section:hover,
   color: #fff;
 }
 
+html[data-theme='light'] .page-admin-requests .inline-form button[type='submit'] {
+  color: #fff;
+}
+
+.page-admin-requests .inline-form {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.page-admin-requests .inline-form p {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.page-admin-requests .inline-form label {
+  margin-bottom: 0;
+  white-space: nowrap;
+  font-size: 0.75rem;
+}
+
+.page-admin-requests .inline-form input[type='date'] {
+  width: 150px;
+  flex-shrink: 0;
+}
+
+.page-admin-requests .inline-form button {
+  flex-shrink: 0;
+}
+
 .metric-card-hero .metric-value {
   color: var(--accent-link);
 }

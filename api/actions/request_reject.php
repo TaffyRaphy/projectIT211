@@ -39,6 +39,8 @@ log_audit('reject', 'equipment_requests', $requestId, $adminId,
         'equipment_id'   => $request ? (int) $request['equipment_id'] : null,
         'equipment_name' => $request ? $request['equipment_name'] : null,
         'qty_requested'  => $request ? (int) $request['qty_requested'] : null,
+        'staff_name'     => $request ? $request['full_name'] : null,
+        'email'          => $request ? $request['email'] : null,
     ]
 );
 

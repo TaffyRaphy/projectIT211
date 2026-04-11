@@ -31,10 +31,10 @@ if (user_exists_by_email($email)) {
 try {
     $passwordHash = password_hash($password, PASSWORD_BCRYPT);
 
-    // Generate employee_id: 113000 + next user id (approximate via sequence)
-    $maxIdRow = db()->query('SELECT COALESCE(MAX(id), 112999) AS max_id FROM users')->fetch();
-    $nextId   = (int) ($maxIdRow['max_id'] ?? 112999) + 1;
-    $employeeId = (string) ($nextId + 113000);
+    // Generate employee_id: 402000 + next user id (approximate via sequence)
+    $maxIdRow = db()->query('SELECT COALESCE(MAX(id), 0) AS max_id FROM users')->fetch();
+    $nextId   = (int) ($maxIdRow['max_id'] ?? 0) + 1;
+    $employeeId = (string) ($nextId + 402000);
 
     db()->prepare(
         "INSERT INTO users (full_name, email, password_hash, role, department, job_title, employee_id)

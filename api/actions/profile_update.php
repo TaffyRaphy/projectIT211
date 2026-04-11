@@ -13,6 +13,7 @@ if ($currentRole !== 'admin' && $targetId !== $currentId) {
 }
 
 $fullName   = post_string('full_name');
+$email      = post_string('email');
 $department = post_string('department');
 $jobTitle   = post_string('job_title');
 $redirectTo = $currentRole === 'admin' && $targetId !== $currentId
@@ -23,6 +24,18 @@ $redirectTo = $currentRole === 'admin' && $targetId !== $currentId
 $isMandatoryFill = (bool) ($_POST['mandatory_fill'] ?? false);
 if ($fullName === '') {
     redirect_to('/api/profile.php', ['error' => 'Full name is required']);
+}
+if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    redirect_to('/api/profile.php', ['error' => 'Invalid email address']);
+}
+if ($email !== '' && user_exists_by_email($email)) {
+    // Check if it's already their email
+    $checkStmt = db()->prepare('SELECT id FROM users WHERE LOWER(email) = LOWER(:email)');
+    $checkStmt->execute([':email' => $email]);
+    $existing = $checkStmt->fetch();
+    if ($existing && (int)$existing['id'] !== $targetId) {
+        redirect_to('/api/profile.php', ['error' => 'Email is already in use by another account']);
+    }
 }
 if ($isMandatoryFill && ($department === '' || $jobTitle === '')) {
     redirect_to('/api/profile.php', ['error' => 'Department and Job Title are required to complete your profile', 'setup' => '1']);
@@ -45,12 +58,9 @@ if ($jobTitle !== '') {
     $setClauses[] = 'job_title = :job_title';
     $params[':job_title'] = $jobTitle;
 }
-
-// Handle profile_photo (base64 data URL or URL string)
-$profilePhoto = post_string('profile_photo');
-if ($profilePhoto !== '') {
-    $setClauses[] = 'profile_photo = :profile_photo';
-    $params[':profile_photo'] = $profilePhoto;
+if ($email !== '') {
+    $setClauses[] = 'email = :email';
+    $params[':email'] = $email;
 }
 
 try {
@@ -60,6 +70,7 @@ try {
 
     log_audit('update', 'users', $targetId, $currentId, $oldVals ?: null, [
         'full_name'  => $fullName,
+        'email'      => $email !== '' ? $email : null,
         'department' => $department,
         'job_title'  => $jobTitle,
     ]);

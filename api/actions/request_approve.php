@@ -18,6 +18,7 @@ try {
         'SELECT r.id, r.equipment_id, r.staff_id, r.qty_requested, r.status, e.quantity_available, e.name AS equipment_name
          FROM equipment_requests r
          JOIN equipment e ON e.id = r.equipment_id
+         JOIN users u ON u.id = r.staff_id
          WHERE r.id = :id
          FOR UPDATE'
     );
@@ -77,6 +78,7 @@ try {
         'allocation_id'        => $allocationId,
         'equipment_id'         => (int) $reqRow['equipment_id'],
         'equipment_name'       => $reqRow['equipment_name'],
+        'staff_name'           => $reqRow['full_name'] ?? 'Unknown',
         'qty_allocated'        => (int) $reqRow['qty_requested'],
         'expected_return_date' => $dueDate !== '' ? $dueDate : null,
     ]);
@@ -84,11 +86,9 @@ try {
     $pdo->commit();
 
     // Notify staff member (in-app + email)
-    $staffStmt = $pdo->prepare('SELECT email, full_name FROM users WHERE id = :id');
-    $staffStmt->execute(['id' => (int) $reqRow['staff_id']]);
-    $staffUser = $staffStmt->fetch();
+    $staffUser = $reqRow;
 
-    if ($staffUser) {
+    if ($staffUser && isset($staffUser['email'])) {
         NotificationService::getInstance()->send(
             'request_approved',
             $staffUser['email'],

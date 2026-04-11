@@ -66,6 +66,7 @@ try {
             'status'           => 'returned',
             'actual_return'    => date('Y-m-d'),
             'equipment_name'   => $alloc['equipment_name'],
+            'staff_name'       => $alloc['staff_name'],
             'qty_returned'     => (int) $alloc['qty_allocated'],
         ]
     );

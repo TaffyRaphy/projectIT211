@@ -195,11 +195,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($currentUserId
   <!-- Profile header card -->
   <div class="profile-header">
     <div class="profile-avatar">
-      <?php if (!empty($profileUser['profile_photo'])): ?>
-        <img src="<?= h($profileUser['profile_photo']) ?>" alt="Profile Photo">
-      <?php else: ?>
         <?= mb_strtoupper(mb_substr($profileUser['full_name'], 0, 1)) ?>
-      <?php endif; ?>
     </div>
     <div class="profile-info">
       <h1><?= h($profileUser['full_name']) ?></h1>
@@ -244,10 +240,10 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($currentUserId
                  placeholder="Enter full name">
         </div>
         <div class="form-group">
-          <label for="profile_photo_url">Profile Photo URL</label>
-          <input type="url" id="profile_photo_url" name="profile_photo"
-                 value="<?= h($profileUser['profile_photo'] ?? '') ?>"
-                 placeholder="https://...">
+          <label for="email">Email Address *</label>
+          <input type="email" id="email" name="email" required
+                 value="<?= h($profileUser['email']) ?>"
+                 placeholder="name@example.com">
         </div>
         <?php if (in_array($profileUser['role'], ['staff', 'maintenance'], true)): ?>
         <div class="form-group">

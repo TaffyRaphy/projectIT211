@@ -6,7 +6,7 @@ require_role(['maintenance']);
 $currentUser       = require_login();
 $maintenanceUserId = (int) $currentUser['id'];
 
-// ── Read POST directly ──────────────────────────────────────────────────────
+// ── Read POST ───────────────────────────────────────────────────────────────
 $equipmentId     = isset($_POST['equipment_id'])     ? (int) $_POST['equipment_id']              : 0;
 $maintenanceType = isset($_POST['maintenance_type']) ? trim((string) $_POST['maintenance_type']) : '';
 $scheduleDate    = isset($_POST['schedule_date'])    ? trim((string) $_POST['schedule_date'])    : '';
@@ -19,17 +19,17 @@ if ($equipmentId <= 0) {
     redirect_to('/api/maintenance.php', ['error' => 'Please select an equipment item']);
 }
 if (!in_array($maintenanceType, ['scheduled', 'repair'], true)) {
-    redirect_to('/api/maintenance.php', ['error' => 'Invalid maintenance type']);
+    redirect_to('/api/maintenance.php', ['error' => 'Invalid maintenance type: ' . $maintenanceType]);
 }
 if ($scheduleDate === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $scheduleDate)) {
     redirect_to('/api/maintenance.php', ['error' => 'Invalid schedule date']);
 }
 
+// ── NO transaction — each query runs independently (Neon pooler safe) ───────
 $pdo = db();
-$pdo->beginTransaction();
 
+// 1. Insert maintenance log
 try {
-    // 1. Insert maintenance log — use RETURNING for reliable ID
     $stmt = $pdo->prepare(
         "INSERT INTO maintenance_logs
              (equipment_id, maintenance_user_id, maintenance_type, schedule_date, notes, cost, status)
@@ -46,8 +46,13 @@ try {
         ':cost'         => $cost,
     ]);
     $newLogId = (int) $stmt->fetchColumn();
+} catch (Throwable $e) {
+    error_log('maintenance_create INSERT error: ' . $e->getMessage());
+    redirect_to('/api/maintenance.php', ['error' => 'Insert failed: ' . $e->getMessage()]);
+}
 
-    // 2. Mark equipment as under maintenance
+// 2. Mark equipment as under maintenance
+try {
     $pdo->prepare(
         "UPDATE equipment
          SET status = 'maintenance',
@@ -55,22 +60,22 @@ try {
              updated_at = NOW()
          WHERE id = :eid AND status <> 'retired'"
     )->execute([':sdate' => $scheduleDate, ':eid' => $equipmentId]);
+} catch (Throwable $e) {
+    error_log('maintenance_create UPDATE equipment error: ' . $e->getMessage());
+    // Non-fatal — log was already created
+}
 
-    // 3. Get equipment name (for notifications)
+// 3. Get equipment name
+$equipName = 'Unknown';
+try {
     $eqStmt = $pdo->prepare('SELECT name FROM equipment WHERE id = :eid');
     $eqStmt->execute([':eid' => $equipmentId]);
     $equipName = (string) ($eqStmt->fetchColumn() ?: 'Unknown');
-
-    $pdo->commit();
 } catch (Throwable $e) {
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
-    error_log('maintenance_create error: ' . $e->getMessage());
-    redirect_to('/api/maintenance.php', ['error' => 'Failed to schedule: ' . $e->getMessage()]);
+    // Non-fatal
 }
 
-// ── After commit: audit + notifications (non-critical) ──────────────────────
+// 4. Audit log
 log_audit('create', 'maintenance_logs', $newLogId, $maintenanceUserId, null, [
     'equipment_id'     => $equipmentId,
     'equipment_name'   => $equipName,
@@ -80,6 +85,7 @@ log_audit('create', 'maintenance_logs', $newLogId, $maintenanceUserId, null, [
     'status'           => 'scheduled',
 ]);
 
+// 5. Notifications
 try {
     $ns = NotificationService::getInstance();
     $recipients = $ns->getMaintenanceEmails() + $ns->getAdminsEmails();

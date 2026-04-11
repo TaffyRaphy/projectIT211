@@ -5,7 +5,7 @@ require dirname(__DIR__, 2) . '/includes/bootstrap.php';
 require_role(['maintenance']);
 $currentUser = require_login();
 
-// Read ID — try query string first, then POST, then REQUEST
+// Read ID
 $maintenanceId = 0;
 if (isset($_GET['id']))     $maintenanceId = (int) $_GET['id'];
 if ($maintenanceId <= 0 && isset($_POST['id']))    $maintenanceId = (int) $_POST['id'];
@@ -16,12 +16,9 @@ if ($maintenanceId <= 0) {
 }
 
 $pdo = db();
-$pdo->beginTransaction();
 
-$equipmentId = 0;
-
+// 1. Cancel the log — any status that is 'scheduled' (regardless of date)
 try {
-    // 1. Cancel the log
     $stmt = $pdo->prepare(
         "UPDATE maintenance_logs
          SET status = 'cancelled'
@@ -30,24 +27,32 @@ try {
     );
     $stmt->execute([':mid' => $maintenanceId]);
     $row = $stmt->fetch();
+} catch (Throwable $e) {
+    error_log('maintenance_cancel UPDATE error: ' . $e->getMessage());
+    redirect_to('/api/maintenance.php', ['error' => 'Cancel failed: ' . $e->getMessage()]);
+}
 
-    if (!$row) {
-        $pdo->rollBack();
-        redirect_to('/api/maintenance.php', ['error' => 'Log not found or already completed/cancelled']);
-    }
+if (!$row) {
+    redirect_to('/api/maintenance.php', ['error' => 'Task not found or not in scheduled status']);
+}
 
-    $equipmentId = (int) $row['equipment_id'];
+$equipmentId = (int) $row['equipment_id'];
 
-    // 2. Check if any other scheduled logs remain for this equipment
+// 2. Check remaining scheduled logs
+$remaining = 0;
+try {
     $countStmt = $pdo->prepare(
-        "SELECT COUNT(*) FROM maintenance_logs
-         WHERE equipment_id = :eid AND status = 'scheduled'"
+        "SELECT COUNT(*) FROM maintenance_logs WHERE equipment_id = :eid AND status = 'scheduled'"
     );
     $countStmt->execute([':eid' => $equipmentId]);
     $remaining = (int) $countStmt->fetchColumn();
+} catch (Throwable $e) {
+    error_log('maintenance_cancel COUNT error: ' . $e->getMessage());
+}
 
-    // 3. Restore equipment status only if no other active maintenance
-    if ($remaining === 0) {
+// 3. Restore equipment if no other scheduled tasks
+if ($remaining === 0) {
+    try {
         $pdo->prepare(
             "UPDATE equipment
              SET status = CASE WHEN quantity_available > 0 THEN 'available' ELSE 'allocated' END,
@@ -55,18 +60,12 @@ try {
                  updated_at = NOW()
              WHERE id = :eid AND status = 'maintenance'"
         )->execute([':eid' => $equipmentId]);
+    } catch (Throwable $e) {
+        error_log('maintenance_cancel UPDATE equipment error: ' . $e->getMessage());
     }
-
-    $pdo->commit();
-} catch (Throwable $e) {
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
-    error_log('maintenance_cancel error: ' . $e->getMessage());
-    redirect_to('/api/maintenance.php', ['error' => 'Failed to cancel: ' . $e->getMessage()]);
 }
 
-// ── After commit: audit (non-critical) ──────────────────────────────────────
+// 4. Audit
 log_audit('cancel', 'maintenance_logs', $maintenanceId, (int) $currentUser['id'],
     ['status' => 'scheduled'],
     ['status' => 'cancelled']

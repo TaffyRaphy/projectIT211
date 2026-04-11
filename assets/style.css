@@ -674,6 +674,20 @@ section:hover,
   margin-top: 0;
 }
 
+.page-equipment > h2:first-of-type {
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 3.2vw, 2.1rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 0;
+  margin-top: 0.35rem;
+  margin-bottom: 0.65rem;
+}
+
+.page-equipment > .panel button[type='submit'] {
+  color: #fff;
+}
+
 .metric-card-hero .metric-value {
   color: var(--accent-link);
 }

@@ -71,7 +71,7 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
 </section>
 
 <section class="page page-dashboard dashboard-workflow-panel">
-  <h2>Function Pages</h2>
+  <h2>Quick Actions</h2>
   <nav class="workflow-grid">
     <?php foreach ($workflowLinks as $label => $url): ?>
       <a class="workflow-link" href="<?= h($url) ?>"><?= h($label) ?></a>

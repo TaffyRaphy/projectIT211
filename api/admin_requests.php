@@ -2,8 +2,10 @@
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 
+$user = require_login();
 $role = require_role(['admin']);
-$adminId = (int) require_login()['id'];
+$adminId = (int) $user['id'];
+$dashboardTitle = 'Request Workflow';
 $ok = query_param('ok');
 $error = query_param('error');
 
@@ -24,13 +26,21 @@ $rows = db()->query(
   <title>Admin Requests</title>
 </head>
 <body>
-<main class="page page-admin-requests">
-  <div class="page-intro">
-    <h1>Admin Request Workflow</h1>
-    <p class="page-tagline">Approve, allocate, and manage staff equipment requests efficiently.</p>
+<header class="dashboard-topbar">
+  <div class="dashboard-topbar-left">
+    <p class="dashboard-topbar-title"><?= h($dashboardTitle) ?></p>
   </div>
-  <p class="meta-note">Role: <?= h($role) ?></p>
-  <p class="meta-note">Admin ID: <?= $adminId ?></p>
+  <div class="dashboard-topbar-right">
+    <div class="dashboard-topbar-meta">
+      <span>Role: <?= h($role) ?> | User ID: <?= $adminId ?></span>
+    </div>
+    <div class="dashboard-topbar-actions">
+      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
+      <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
+    </div>
+  </div>
+</header>
+<main class="page page-admin-requests">
   <?php if ($ok !== ''): ?><p class="alert alert-success">Success: <?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 
@@ -59,3 +69,4 @@ $rows = db()->query(
 <script src="/assets/app.js"></script>
 </body>
 </html>
+

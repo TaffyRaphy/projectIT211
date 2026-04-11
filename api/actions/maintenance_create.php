@@ -44,6 +44,29 @@ try {
     $update->execute(['equipment_id' => $equipmentId, 'schedule_date' => $scheduleDate]);
 
     $pdo->commit();
+    
+    // Send notification to maintenance team
+    $equipStmt = $pdo->prepare('SELECT name FROM equipment WHERE id = :id');
+    $equipStmt->execute(['id' => $equipmentId]);
+    $equipment = $equipStmt->fetch();
+    
+    if ($equipment) {
+        $maintEmails = NotificationService::getInstance()->getMaintenanceEmails();
+        foreach ($maintEmails as $maintId => $maintEmail) {
+            NotificationService::getInstance()->send(
+                'maintenance_scheduled',
+                $maintEmail,
+                (int) $maintId,
+                [
+                    'equipment_name' => $equipment['name'],
+                    'schedule_date' => $scheduleDate,
+                    'maintenance_type' => $maintenanceType,
+                    'notes' => $notes !== '' ? $notes : 'No additional notes',
+                ]
+            );
+        }
+    }
+    
     redirect_to('api/maintenance.php', ['ok' => 'Maintenance scheduled']);
 } catch (Throwable $e) {
     if ($pdo->inTransaction()) {

@@ -2,8 +2,10 @@
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 
+$user = require_login();
 $role = require_role(['maintenance']);
-$maintenanceUserId = (int) require_login()['id'];
+$maintenanceUserId = (int) $user['id'];
+$dashboardTitle = 'Maintenance Management';
 $ok = query_param('ok');
 $error = query_param('error');
 
@@ -27,13 +29,21 @@ $maintenanceRows = db()->query(
   <title>Maintenance Scheduling</title>
 </head>
 <body>
-<main class="page page-maintenance">
-  <div class="page-intro">
-    <h1>Maintenance Management</h1>
-    <p class="page-tagline">Track maintenance logs and schedule repairs for higher uptime.</p>
+<header class="dashboard-topbar">
+  <div class="dashboard-topbar-left">
+    <p class="dashboard-topbar-title"><?= h($dashboardTitle) ?></p>
   </div>
-  <p class="meta-note">Role: <?= h($role) ?></p>
-  <p class="meta-note">Maintenance User ID: <?= $maintenanceUserId ?></p>
+  <div class="dashboard-topbar-right">
+    <div class="dashboard-topbar-meta">
+      <span>Role: <?= h($role) ?> | User ID: <?= $maintenanceUserId ?></span>
+    </div>
+    <div class="dashboard-topbar-actions">
+      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
+      <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
+    </div>
+  </div>
+</header>
+<main class="page page-maintenance">
   <?php if ($ok !== ''): ?><p class="alert alert-success">Success: <?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 
@@ -71,5 +81,7 @@ $maintenanceRows = db()->query(
   </div>
   <p class="back-link"><a href="/api/dashboard.php">Back to dashboard</a></p>
 </main>
+<script src="/assets/app.js"></script>
 </body>
 </html>
+

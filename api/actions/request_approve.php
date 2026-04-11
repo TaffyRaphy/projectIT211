@@ -70,6 +70,30 @@ try {
     ]);
 
     $pdo->commit();
+    
+    // Send approval notification to staff member
+    $staffStmt = $pdo->prepare('SELECT email, full_name FROM users WHERE id = :id');
+    $staffStmt->execute(['id' => (int) $reqRow['staff_id']]);
+    $staffUser = $staffStmt->fetch();
+    
+    $equipStmt = $pdo->prepare('SELECT name FROM equipment WHERE id = :id');
+    $equipStmt->execute(['id' => (int) $reqRow['equipment_id']]);
+    $equipment = $equipStmt->fetch();
+    
+    if ($staffUser && $equipment) {
+        NotificationService::getInstance()->send(
+            'request_approved',
+            $staffUser['email'],
+            (int) $reqRow['staff_id'],
+            [
+                'staff_name' => $staffUser['full_name'],
+                'equipment_name' => $equipment['name'],
+                'qty_allocated' => (int) $reqRow['qty_requested'],
+                'expected_return_date' => $dueDate !== '' ? $dueDate : 'To be determined',
+            ]
+        );
+    }
+    
     redirect_to('api/admin_requests.php', ['ok' => 'Request approved and allocated']);
 } catch (Throwable $e) {
     if ($pdo->inTransaction()) {

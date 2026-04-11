@@ -33,7 +33,36 @@ try {
          WHERE id = :equipment_id AND status <> 'retired'"
     );
     $updateEquipment->execute(['equipment_id' => (int) $row['equipment_id']]);
+    
+    // Get maintenance log details for notification
+    $logStmt = $pdo->prepare('SELECT cost, completed_date FROM maintenance_logs WHERE id = :id');
+    $logStmt->execute(['id' => $maintenanceId]);
+    $log = $logStmt->fetch();
+    
+    // Get equipment name
+    $equipStmt = $pdo->prepare('SELECT name FROM equipment WHERE id = :id');
+    $equipStmt->execute(['id' => (int) $row['equipment_id']]);
+    $equipment = $equipStmt->fetch();
+    
     $pdo->commit();
+    
+    // Send notification to admins
+    if ($log && $equipment) {
+        $adminsEmails = NotificationService::getInstance()->getAdminsEmails();
+        foreach ($adminsEmails as $adminId => $adminEmail) {
+            NotificationService::getInstance()->send(
+                'maintenance_completed',
+                $adminEmail,
+                (int) $adminId,
+                [
+                    'equipment_name' => $equipment['name'],
+                    'completed_date' => $log['completed_date'],
+                    'cost' => $log['cost'] !== null ? '$' . number_format((float) $log['cost'], 2) : 'Not specified',
+                ]
+            );
+        }
+    }
+    
     redirect_to('api/maintenance.php', ['ok' => 'Maintenance completed']);
 } catch (Throwable $e) {
     if ($pdo->inTransaction()) {

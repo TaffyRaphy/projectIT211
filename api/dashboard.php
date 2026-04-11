@@ -5,6 +5,27 @@ require dirname(__DIR__) . '/includes/bootstrap.php';
 $user = require_login();
 $role = (string) $user['role'];
 $userId = (int) $user['id'];
+$dashboardTitle = match ($role) {
+  'admin' => 'Admin Dashboard',
+  'staff' => 'Staff Dashboard',
+  'maintenance' => 'Maintenance Dashboard',
+  default => 'Dashboard',
+};
+
+$workflowLinks = match ($role) {
+  'admin' => [
+    'Equipment Management' => '/api/equipment.php',
+    'Request Approval and Allocation' => '/api/admin_requests.php',
+    'Reports' => '/api/reports.php',
+  ],
+  'staff' => [
+    'Equipment Request' => '/api/requests.php',
+  ],
+  'maintenance' => [
+    'Maintenance Scheduling' => '/api/maintenance.php',
+  ],
+  default => [],
+};
 
 $inventoryCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM equipment")->fetch()['total'];
 $pendingRequests = (string) db()->query("SELECT COUNT(*)::text AS total FROM equipment_requests WHERE status = 'pending'")->fetch()['total'];
@@ -19,45 +40,45 @@ $maintenanceCount = (string) db()->query("SELECT COUNT(*)::text AS total FROM ma
   <title>Dashboard</title>
 </head>
 <body>
-<main class="page page-dashboard">
-  <div class="page-intro">
-    <h1>Admin Dashboard</h1>
-    <p class="page-tagline">Overview of equipment stock, requests and maintenance status.</p>
+<header class="dashboard-topbar">
+  <div class="dashboard-topbar-left">
+    <p class="dashboard-topbar-title"><?= h($dashboardTitle) ?></p>
   </div>
-  <header class="page-header">
-    <h1>Dashboard</h1>
-    <div class="meta-row">
-      <span class="chip chip-role">Role: <?= h($role) ?></span>
-      <span class="chip chip-id">User ID: <?= $userId ?></span>
+  <div class="dashboard-topbar-right">
+    <div class="dashboard-topbar-meta">
+      <span>Role: <?= h($role) ?> | User ID: <?= $userId ?></span>
     </div>
-  </header>
-
+    <div class="dashboard-topbar-actions">
+      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
+      <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
+    </div>
+  </div>
+</header>
+<section class="page page-dashboard page-dashboard-summary">
   <h2>Quick Summary</h2>
-  <section class="metrics-grid">
-    <article class="metric-card metric-card-hero">
-      <p class="metric-label">Total Equipment</p>
-      <p class="metric-value"><?= h($inventoryCount) ?></p>
-    </article>
-    <article class="metric-card metric-card-warning">
-      <p class="metric-label">Pending Requests</p>
-      <p class="metric-value"><?= h($pendingRequests) ?></p>
-    </article>
-    <article class="metric-card metric-card-cool">
-      <p class="metric-label">Scheduled Maintenance</p>
-      <p class="metric-value"><?= h($maintenanceCount) ?></p>
-    </article>
-  </section>
+  <article class="metric-card metric-card-hero">
+    <p class="metric-label">TOTAL EQUIPMENT</p>
+    <p class="metric-value"><?= h($inventoryCount) ?></p>
+  </article>
+  <article class="metric-card metric-card-warning">
+    <p class="metric-label">PENDING REQUESTS</p>
+    <p class="metric-value"><?= h($pendingRequests) ?></p>
+  </article>
+  <article class="metric-card metric-card-cool">
+    <p class="metric-label">SCHEDULE MAINTENANCE</p>
+    <p class="metric-value"><?= h($maintenanceCount) ?></p>
+  </article>
+</section>
 
-  <hr>
-  <h2>Workflow Links</h2>
+<section class="page page-dashboard dashboard-workflow-panel">
+  <h2>Quick Actions</h2>
   <nav class="workflow-grid">
-    <a class="workflow-link" href="/api/equipment.php">Equipment Management (Admin)</a>
-    <a class="workflow-link" href="/api/requests.php">Equipment Request (Staff)</a>
-    <a class="workflow-link" href="/api/admin_requests.php">Request Approval and Allocation (Admin)</a>
-    <a class="workflow-link" href="/api/maintenance.php">Maintenance Scheduling (Maintenance)</a>
-    <a class="workflow-link" href="/api/reports.php">Reports (Admin)</a>
+    <?php foreach ($workflowLinks as $label => $url): ?>
+      <a class="workflow-link" href="<?= h($url) ?>"><?= h($label) ?></a>
+    <?php endforeach; ?>
   </nav>
-  <p class="back-link"><a href="/api/actions/logout.php">Logout</a></p>
-</main>
+</section>
+<script src="/assets/app.js"></script>
 </body>
 </html>
+

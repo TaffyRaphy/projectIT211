@@ -364,3 +364,7 @@ function user_exists_by_email(string $email): bool
     $stmt->execute(['email' => $email]);
     return $stmt->fetchColumn() !== false;
 }
+
+// Load notification and SMTP configuration helpers
+require_once dirname(__FILE__) . '/SMTPConfig.php';
+require_once dirname(__FILE__) . '/NotificationService.php';

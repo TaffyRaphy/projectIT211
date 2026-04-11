@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #81ecff; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .header h1 { margin: 0; color: #000; }
+        .content { background-color: #f5f5f5; padding: 20px; border-radius: 8px; }
+        .detail { margin: 15px 0; }
+        .label { font-weight: bold; color: #666; }
+        .value { color: #333; margin-top: 5px; }
+        .important { background-color: #e8f4f8; padding: 10px; border-left: 4px solid #81ecff; margin: 15px 0; }
+        .button-link { display: inline-block; background-color: #cafd00; color: #000; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin-top: 15px; }
+        .footer { margin-top: 20px; font-size: 12px; color: #999; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Your Equipment Request Has Been Approved</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hello {staff_name},</p>
+            
+            <p>Great news! Your equipment request has been <strong>approved</strong>.</p>
+            
+            <div class="detail">
+                <div class="label">Equipment:</div>
+                <div class="value">{equipment_name}</div>
+            </div>
+            
+            <div class="detail">
+                <div class="label">Quantity Allocated:</div>
+                <div class="value">{qty_allocated}</div>
+            </div>
+            
+            <div class="important">
+                <strong>Important:</strong> Please ensure you return this equipment by <strong>{expected_return_date}</strong>
+            </div>
+            
+            <p>You may now proceed to collect the equipment from the designated location on the system.</p>
+            
+            <p>Thank you!</p>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated message. Please do not reply directly to this email.</p>
+        </div>
+    </div>
+</body>
+</html>

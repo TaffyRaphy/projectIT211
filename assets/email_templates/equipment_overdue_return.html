@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #ff7351; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .header h1 { margin: 0; color: #fff; }
+        .content { background-color: #f5f5f5; padding: 20px; border-radius: 8px; }
+        .detail { margin: 15px 0; }
+        .label { font-weight: bold; color: #666; }
+        .value { color: #333; margin-top: 5px; }
+        .overdue-box { background-color: #ffcccc; padding: 15px; border-left: 4px solid #ff7351; margin: 15px 0; border-radius: 4px; }
+        .overdue-box .value { color: #cc0000; font-weight: bold; font-size: 16px; }
+        .button-link { display: inline-block; background-color: #ff7351; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin-top: 15px; }
+        .footer { margin-top: 20px; font-size: 12px; color: #999; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚠️ EQUIPMENT RETURN OVERDUE</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hello {staff_name},</p>
+            
+            <p><strong>URGENT:</strong> Equipment checked out to you is now <strong>OVERDUE</strong> for return.</p>
+            
+            <div class="detail">
+                <div class="label">Equipment:</div>
+                <div class="value">{equipment_name}</div>
+            </div>
+            
+            <div class="overdue-box">
+                <div class="label">Expected Return Date:</div>
+                <div class="value">{expected_return_date}</div>
+                <div class="label" style="margin-top: 10px;">Days Overdue:</div>
+                <div class="value">{days_overdue}</div>
+            </div>
+            
+            <p style="color: #ff0000; font-weight: bold;">⚠️ This equipment must be returned immediately.</p>
+            
+            <p>Failure to return equipment in a timely manner:</p>
+            <ul>
+                <li>Impacts other staff who may need the equipment</li>
+                <li>May result in disciplinary action</li>
+                <li>Will be recorded in your equipment history</li>
+            </ul>
+            
+            <p>
+                <a href="{allocation_link}" class="button-link">Confirm Return</a>
+            </p>
+            
+            <p>If you have already returned this equipment, please disregard this message and report it to your administrator.</p>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated message. Please do not reply directly to this email.</p>
+        </div>
+    </div>
+</body>
+</html>

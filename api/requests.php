@@ -2,8 +2,10 @@
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 
+$user = require_login();
 $role = require_role(['staff']);
-$staffId = (int) require_login()['id'];
+$staffId = (int) $user['id'];
+$dashboardTitle = 'Equipment Request Center';
 $ok = query_param('ok');
 $error = query_param('error');
 
@@ -30,13 +32,21 @@ $requestRows = $stmt->fetchAll();
   <title>Equipment Request</title>
 </head>
 <body>
-<main class="page page-requests">
-  <div class="page-intro">
-    <h1>Equipment Request Center</h1>
-    <p class="page-tagline">Make requisitions quickly and track your request history in one place.</p>
+<header class="dashboard-topbar">
+  <div class="dashboard-topbar-left">
+    <p class="dashboard-topbar-title"><?= h($dashboardTitle) ?></p>
   </div>
-  <p class="meta-note">Role: <?= h($role) ?></p>
-  <p class="meta-note">Staff ID: <?= $staffId ?></p>
+  <div class="dashboard-topbar-right">
+    <div class="dashboard-topbar-meta">
+      <span>Role: <?= h($role) ?> | User ID: <?= $staffId ?></span>
+    </div>
+    <div class="dashboard-topbar-actions">
+      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
+      <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
+    </div>
+  </div>
+</header>
+<main class="page page-requests">
   <?php if ($ok !== ''): ?><p class="alert alert-success">Success: <?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 
@@ -70,5 +80,7 @@ $requestRows = $stmt->fetchAll();
   </div>
   <p class="back-link"><a href="/api/dashboard.php">Back to dashboard</a></p>
 </main>
+<script src="/assets/app.js"></script>
 </body>
 </html>
+

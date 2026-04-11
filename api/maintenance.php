@@ -4,6 +4,11 @@ require dirname(__DIR__) . '/includes/bootstrap.php';
 
 $user   = require_login();
 $role   = require_role(['maintenance', 'admin']);
+
+// Prevent browser from caching this page — always show fresh data
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
 $userId = (int) $user['id'];
 
 $ok    = isset($_GET['ok'])    && is_string($_GET['ok'])    ? trim($_GET['ok'])    : '';

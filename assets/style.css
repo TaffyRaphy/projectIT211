@@ -619,6 +619,10 @@ section:hover,
   margin-bottom: 0.65rem;
 }
 
+.page-dashboard-summary > h2 {
+  margin-bottom: 1.25rem;
+}
+
 .page-dashboard-summary {
   width: min(1000px, 92%);
   margin-inline: auto;

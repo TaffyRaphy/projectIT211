@@ -35,6 +35,11 @@ if (
     redirect_to('api/equipment.php', ['error' => 'Invalid equipment update']);
 }
 
+// Fetch old values for audit log
+$oldRow = db()->prepare('SELECT name, category, status, quantity_total, quantity_available, location FROM equipment WHERE id = :id');
+$oldRow->execute(['id' => $equipmentId]);
+$oldValues = $oldRow->fetch() ?: [];
+
 $stmt = db()->prepare(
     'UPDATE equipment
      SET name = :name,
@@ -47,13 +52,22 @@ $stmt = db()->prepare(
      WHERE id = :id'
 );
 $stmt->execute([
-    'name' => $name,
-    'category' => $category,
-    'status' => $status,
-    'quantity_total' => $quantityTotal,
+    'name'               => $name,
+    'category'           => $category,
+    'status'             => $status,
+    'quantity_total'     => $quantityTotal,
     'quantity_available' => $quantityAvailable,
-    'location' => $location,
-    'id' => $equipmentId,
+    'location'           => $location,
+    'id'                 => $equipmentId,
+]);
+
+log_audit('update', 'equipment', $equipmentId, null, $oldValues ?: null, [
+    'name'               => $name,
+    'category'           => $category,
+    'status'             => $status,
+    'quantity_total'     => $quantityTotal,
+    'quantity_available' => $quantityAvailable,
+    'location'           => $location,
 ]);
 
 redirect_to('api/equipment.php', ['ok' => 'Equipment updated']);

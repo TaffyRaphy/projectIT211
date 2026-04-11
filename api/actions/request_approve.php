@@ -4,8 +4,8 @@ require dirname(__DIR__, 2) . '/includes/bootstrap.php';
 
 require_role(['admin']);
 $requestId = int_query_param('id', 0);
-$adminId = (int) require_login()['id'];
-$dueDate = post_string('due_date');
+$adminId   = (int) require_login()['id'];
+$dueDate   = post_string('due_date');
 
 if ($requestId <= 0) {
     redirect_to('api/admin_requests.php', ['error' => 'Invalid approval input']);
@@ -15,7 +15,7 @@ $pdo = db();
 $pdo->beginTransaction();
 try {
     $stmt = $pdo->prepare(
-        'SELECT r.id, r.equipment_id, r.staff_id, r.qty_requested, r.status, e.quantity_available
+        'SELECT r.id, r.equipment_id, r.staff_id, r.qty_requested, r.status, e.quantity_available, e.name AS equipment_name
          FROM equipment_requests r
          JOIN equipment e ON e.id = r.equipment_id
          WHERE r.id = :id
@@ -45,7 +45,7 @@ try {
          WHERE id = :equipment_id"
     );
     $updateEquipment->execute([
-        'qty' => (int) $reqRow['qty_requested'],
+        'qty'          => (int) $reqRow['qty_requested'],
         'equipment_id' => (int) $reqRow['equipment_id'],
     ]);
 
@@ -61,43 +61,52 @@ try {
          VALUES (:request_id, :equipment_id, :staff_id, :qty_allocated, :allocated_by, NOW(), :expected_return_date)'
     );
     $insertAllocation->execute([
-        'request_id' => $requestId,
-        'equipment_id' => (int) $reqRow['equipment_id'],
-        'staff_id' => (int) $reqRow['staff_id'],
-        'qty_allocated' => (int) $reqRow['qty_requested'],
-        'allocated_by' => $adminId,
+        'request_id'           => $requestId,
+        'equipment_id'         => (int) $reqRow['equipment_id'],
+        'staff_id'             => (int) $reqRow['staff_id'],
+        'qty_allocated'        => (int) $reqRow['qty_requested'],
+        'allocated_by'         => $adminId,
+        'expected_return_date' => $dueDate !== '' ? $dueDate : null,
+    ]);
+    $allocationId = (int) $pdo->lastInsertId();
+
+    // Audit log — request approval + allocation created
+    log_audit('approve', 'equipment_requests', $requestId, $adminId, ['status' => 'pending'], [
+        'status'               => 'allocated',
+        'reviewed_by'          => $adminId,
+        'allocation_id'        => $allocationId,
+        'equipment_id'         => (int) $reqRow['equipment_id'],
+        'equipment_name'       => $reqRow['equipment_name'],
+        'qty_allocated'        => (int) $reqRow['qty_requested'],
         'expected_return_date' => $dueDate !== '' ? $dueDate : null,
     ]);
 
     $pdo->commit();
-    
-    // Send approval notification to staff member
+
+    // Notify staff member (in-app + email)
     $staffStmt = $pdo->prepare('SELECT email, full_name FROM users WHERE id = :id');
     $staffStmt->execute(['id' => (int) $reqRow['staff_id']]);
     $staffUser = $staffStmt->fetch();
-    
-    $equipStmt = $pdo->prepare('SELECT name FROM equipment WHERE id = :id');
-    $equipStmt->execute(['id' => (int) $reqRow['equipment_id']]);
-    $equipment = $equipStmt->fetch();
-    
-    if ($staffUser && $equipment) {
+
+    if ($staffUser) {
         NotificationService::getInstance()->send(
             'request_approved',
             $staffUser['email'],
             (int) $reqRow['staff_id'],
             [
-                'staff_name' => $staffUser['full_name'],
-                'equipment_name' => $equipment['name'],
-                'qty_allocated' => (int) $reqRow['qty_requested'],
+                'staff_name'           => $staffUser['full_name'],
+                'equipment_name'       => $reqRow['equipment_name'],
+                'qty_allocated'        => (int) $reqRow['qty_requested'],
                 'expected_return_date' => $dueDate !== '' ? $dueDate : 'To be determined',
             ]
         );
     }
-    
+
     redirect_to('api/admin_requests.php', ['ok' => 'Request approved and allocated']);
 } catch (Throwable $e) {
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
+    error_log('request_approve error: ' . $e->getMessage());
     redirect_to('api/admin_requests.php', ['error' => 'Failed to approve request']);
 }

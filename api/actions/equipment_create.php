@@ -37,11 +37,21 @@ $stmt = db()->prepare(
      VALUES (:code, :name, :category, 'available', :qty, :qty, :location)"
 );
 $stmt->execute([
-    'code' => $code,
-    'name' => $name,
+    'code'     => $code,
+    'name'     => $name,
     'category' => $category,
-    'qty' => $quantityTotal,
+    'qty'      => $quantityTotal,
     'location' => $location,
+]);
+$newId = (int) db()->lastInsertId();
+
+log_audit('create', 'equipment', $newId, null, null, [
+    'code'             => $code,
+    'name'             => $name,
+    'category'         => $category,
+    'quantity_total'   => $quantityTotal,
+    'location'         => $location,
+    'status'           => 'available',
 ]);
 
 redirect_to('api/equipment.php', ['ok' => 'Equipment added']);

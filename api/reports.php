@@ -277,12 +277,94 @@ try {
   <hr>
 
   <!-- Admin Tools -->
+  <!-- Audit Trail Report -->
+  <hr>
+  <h2>Audit Trail</h2>
+  <p style="color: var(--text-muted, #888); margin-bottom: 1rem;">Recent system actions across all users — last 50 entries.</p>
+  <?php
+    $auditRows = [];
+    try {
+        $auditRows = db()->query(
+            "SELECT al.id, al.action_type, al.table_name, al.record_id, al.new_values, al.created_at,
+                    u.full_name AS user_name, u.email AS user_email, u.role AS user_role
+             FROM audit_logs al
+             JOIN users u ON u.id = al.user_id
+             ORDER BY al.created_at DESC
+             LIMIT 50"
+        )->fetchAll();
+    } catch (Throwable $e) {
+        error_log('Audit trail query error: ' . $e->getMessage());
+    }
+    $actionTypeIcon = [
+        'login'    => '🔑', 'create'   => '➕',
+        'update'   => '✏️', 'approve'  => '✅',
+        'reject'   => '❌', 'complete' => '✔️', 'snapshot' => '📸',
+    ];
+  ?>
+  <?php if (count($auditRows) === 0): ?>
+    <p class="empty-state">No audit log entries yet. Actions will appear here after users interact with the system.</p>
+  <?php else: ?>
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>User</th>
+          <th>Role</th>
+          <th>Action</th>
+          <th>Table</th>
+          <th>Record</th>
+          <th>Details</th>
+          <th>When</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($auditRows as $entry): ?>
+        <tr>
+          <td><?= $actionTypeIcon[$entry['action_type']] ?? '📌' ?></td>
+          <td>
+            <strong><?= h($entry['user_name']) ?></strong><br>
+            <small style="color:var(--text-muted)"><?= h($entry['user_email']) ?></small>
+          </td>
+          <td>
+            <span class="badge <?= match($entry['user_role']) { 'admin' => 'badge-warning', 'maintenance' => 'badge-success', default => 'badge-info' } ?>">
+              <?= h(ucfirst($entry['user_role'])) ?>
+            </span>
+          </td>
+          <td style="text-transform:capitalize; font-weight:600;"><?= h($entry['action_type']) ?></td>
+          <td><code><?= h($entry['table_name']) ?></code></td>
+          <td><?= (int) $entry['record_id'] ?></td>
+          <td style="max-width:220px; font-size:.8rem; color:var(--text-muted);">
+            <?php
+              $nv = is_string($entry['new_values']) ? json_decode($entry['new_values'], true) : null;
+              if (is_array($nv)) {
+                  $show = array_filter($nv, fn($k) => in_array($k, ['status', 'name', 'equipment_name', 'role', 'email']), ARRAY_FILTER_USE_KEY);
+                  foreach ($show as $k => $v) {
+                      echo '<strong>' . h($k) . '</strong>: ' . h((string)$v) . ' ';
+                  }
+              }
+            ?>
+          </td>
+          <td><?= h(utc_to_ph($entry['created_at'])) ?></td>
+        </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
+  <?php endif; ?>
+
+  <hr>
+
+  <!-- Admin Tools -->
   <section class="card">
     <h2>Admin Tools</h2>
     <p>
-      <a href="/api/actions/snapshot_daily.php" class="btn btn-secondary">📸 Capture Metrics Snapshot</a>
-      <a href="/api/reports_historical.php" class="btn btn-primary">📈 View Historical Trends</a>
+      <a href="/api/actions/snapshot_daily.php"          class="btn btn-secondary">📸 Capture Metrics Snapshot</a>
+      <a href="/api/reports_historical.php"              class="btn btn-primary">📈 View Historical Trends</a>
       <a href="/api/actions/check_overdue_allocations.php" class="btn btn-warning">⚠️ Check Overdue Items</a>
+      <a href="/api/notification_logs.php"               class="btn btn-secondary">📧 Notification Logs</a>
+      <a href="/api/users.php"                           class="btn btn-secondary">👥 User Management</a>
+      <a href="/api/actions/generate_report_pdf.php?report_type=summary" class="btn btn-primary">📄 Export Summary</a>
     </p>
   </section>
 

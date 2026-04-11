@@ -365,6 +365,51 @@ function user_exists_by_email(string $email): bool
     return $stmt->fetchColumn() !== false;
 }
 
+/**
+ * Write an entry to the audit_logs table.
+ * Silently swallows all errors so it never crashes the main workflow.
+ *
+ * @param string   $actionType  e.g. 'login', 'create', 'update', 'approve', 'reject', 'complete', 'snapshot'
+ * @param string   $tableName   e.g. 'equipment', 'equipment_requests', 'allocations', 'maintenance_logs', 'users'
+ * @param int      $recordId    Primary key of the affected row
+ * @param int|null $userId      The user performing the action (null = system)
+ * @param array|null $oldValues Previous state (for updates)
+ * @param array|null $newValues New state
+ */
+function log_audit(
+    string $actionType,
+    string $tableName,
+    int $recordId,
+    ?int $userId = null,
+    ?array $oldValues = null,
+    ?array $newValues = null
+): void {
+    // Resolve userId from session if not provided
+    if ($userId === null) {
+        $currentUser = current_user();
+        $userId = $currentUser !== null ? (int) $currentUser['id'] : 0;
+    }
+    if ($userId <= 0) {
+        return; // Cannot log without a user
+    }
+
+    try {
+        db()->prepare(
+            'INSERT INTO audit_logs (user_id, action_type, table_name, record_id, old_values, new_values)
+             VALUES (:user_id, :action_type, :table_name, :record_id, :old_values, :new_values)'
+        )->execute([
+            ':user_id'     => $userId,
+            ':action_type' => $actionType,
+            ':table_name'  => $tableName,
+            ':record_id'   => $recordId,
+            ':old_values'  => $oldValues !== null ? json_encode($oldValues, JSON_UNESCAPED_UNICODE) : null,
+            ':new_values'  => $newValues !== null ? json_encode($newValues, JSON_UNESCAPED_UNICODE) : null,
+        ]);
+    } catch (Throwable $e) {
+        error_log('log_audit failed: ' . $e->getMessage());
+    }
+}
+
 // Load notification and SMTP configuration helpers
 require_once dirname(__FILE__) . '/SMTPConfig.php';
 require_once dirname(__FILE__) . '/NotificationService.php';

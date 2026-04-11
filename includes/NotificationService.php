@@ -194,13 +194,16 @@ class NotificationService
     private function getTemplate(string $eventType): ?array
     {
         static $subjects = [
-            'request_submitted'       => 'New Equipment Request Submitted',
-            'request_approved'        => 'Your Equipment Request Was Approved',
-            'request_rejected'        => 'Your Equipment Request Was Rejected',
-            'maintenance_scheduled'   => 'Maintenance Scheduled',
-            'maintenance_completed'   => 'Maintenance Completed',
-            'equipment_due_return'    => 'Equipment Return Reminder',
-            'equipment_overdue_return'=> 'Equipment Return Overdue — Action Required',
+            'request_submitted'        => 'New Equipment Request Submitted',
+            'request_approved'         => 'Your Equipment Request Was Approved',
+            'request_rejected'         => 'Your Equipment Request Was Rejected',
+            'maintenance_scheduled'    => 'Maintenance Scheduled',
+            'maintenance_completed'    => 'Maintenance Completed',
+            'maintenance_due'          => 'Maintenance Due — Action Required',
+            'maintenance_overdue'      => 'Maintenance Overdue — Immediate Attention Needed',
+            'maintenance_cancelled'    => 'Maintenance Task Cancelled',
+            'equipment_due_return'     => 'Equipment Return Reminder',
+            'equipment_overdue_return' => 'Equipment Return Overdue — Action Required',
         ];
 
         // Sanitize eventType to prevent path traversal

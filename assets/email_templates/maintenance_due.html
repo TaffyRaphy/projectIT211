@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #ffbf00, #ff9000); padding: 24px 28px; border-radius: 10px 10px 0 0; margin-bottom: 0; }
+    .header h1 { margin: 0; color: #1a0a00; font-size: 20px; font-weight: 800; }
+    .header p  { margin: 6px 0 0; color: #3d2000; font-size: 13px; }
+    .body-card { background: #fff8f0; padding: 24px 28px; border-radius: 0 0 10px 10px; border: 1px solid #ffe4b5; border-top: none; }
+    .due-box { background: #fff3cd; border-left: 4px solid #ffbf00; border-radius: 6px; padding: 14px 16px; margin: 18px 0; }
+    .due-box .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #7a5800; margin-bottom: 4px; }
+    .due-box .date  { font-size: 22px; font-weight: 800; color: #cc8000; }
+    .detail-row { display: flex; gap: 12px; margin: 10px 0; font-size: 13px; }
+    .detail-row .det-label { font-weight: 600; color: #666; min-width: 110px; }
+    .detail-row .det-val   { color: #333; }
+    .cta { display: inline-block; background: #ffbf00; color: #1a0a00; font-weight: 800; font-size: 13px; padding: 10px 22px; border-radius: 999px; text-decoration: none; margin-top: 18px; }
+    .footer { margin-top: 22px; font-size: 11px; color: #aaa; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>⏰ Maintenance Due</h1>
+      <p>Equipment maintenance task is coming up</p>
+    </div>
+    <div class="body-card">
+      <p>Hello,</p>
+      <p>A maintenance task is due soon. Please prepare and ensure it is completed on time.</p>
+      <div class="due-box">
+        <div class="label">Scheduled Date</div>
+        <div class="date">{schedule_date}</div>
+      </div>
+      <div class="detail-row"><span class="det-label">Equipment:</span><span class="det-val"><strong>{equipment_name}</strong></span></div>
+      <div class="detail-row"><span class="det-label">Type:</span><span class="det-val">{maintenance_type}</span></div>
+      <div class="detail-row"><span class="det-label">Assigned To:</span><span class="det-val">{assigned_technician}</span></div>
+      <p style="margin-top:18px; font-size:13px; color:#555;">Please log into the system to mark this task as complete once finished.</p>
+      <a href="#" class="cta">View Maintenance Task →</a>
+    </div>
+    <div class="footer"><p>This is an automated message from the Equipment Management System. Do not reply.</p></div>
+  </div>
+</body>
+</html>

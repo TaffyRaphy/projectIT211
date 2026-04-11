@@ -27,6 +27,7 @@ $workflowLinks = match ($role) {
     'admin' => [
         '📦 Equipment Management'         => '/api/equipment.php',
         '✅ Request Approval & Allocation'  => '/api/admin_requests.php',
+        '🔧 Maintenance Overview'           => '/api/admin_maintenance.php',
         '📊 Reports'                       => '/api/reports.php',
         '📸 Metric Snapshots'              => '/api/snapshots.php',
         '📋 Full Audit Trail'              => '/api/audit_trail.php',

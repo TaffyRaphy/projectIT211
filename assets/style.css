@@ -763,6 +763,32 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
   flex-shrink: 0;
 }
 
+.page-reports > h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 3.2vw, 2.1rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 0;
+  margin-top: 0.1rem;
+  margin-bottom: 0.65rem;
+}
+
+.page-reports > h2:first-of-type {
+  margin-top: 0;
+}
+
+.page-reports .card {
+  padding: 1.25rem;
+}
+
+.page-reports .card > h2 {
+  margin-bottom: 0.65rem;
+}
+
+.page-reports .card p {
+  margin-bottom: 0.75rem;
+}
+
 .metric-card-hero .metric-value {
   color: var(--accent-link);
 }

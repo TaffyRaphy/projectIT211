@@ -753,10 +753,12 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
 
 .page-admin-requests .inline-form input[type='date'] {
   width: 150px;
+  height: 2.75rem;
   flex-shrink: 0;
 }
 
 .page-admin-requests .inline-form button {
+  height: 2.75rem;
   flex-shrink: 0;
 }
 

@@ -13,7 +13,7 @@ $scheduleDate    = isset($_POST['schedule_date'])    ? trim((string) $_POST['sch
 $notes           = isset($_POST['notes'])            ? trim((string) $_POST['notes'])            : '';
 $cost            = isset($_POST['cost']) && $_POST['cost'] !== '' ? (float) $_POST['cost']        : 0.0;
 
-$validTypes = ['scheduled', 'repair', 'inspection', 'calibration'];
+$validTypes = ['scheduled', 'repair'];
 
 if ($equipmentId <= 0 || !in_array($maintenanceType, $validTypes, true) || $scheduleDate === '') {
     redirect_to('/api/maintenance.php', ['error' => 'Invalid input — equipment, type and date required']);

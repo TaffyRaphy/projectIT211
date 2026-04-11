@@ -82,7 +82,7 @@ function days_diff(string $dateStr): int {
     return (int) ceil((strtotime($dateStr) - strtotime(date('Y-m-d'))) / 86400);
 }
 
-$validTypes = ['scheduled' => 'Scheduled', 'repair' => 'Repair', 'inspection' => 'Inspection', 'calibration' => 'Calibration'];
+$validTypes = ['scheduled' => 'Scheduled', 'repair' => 'Repair'];
 ?>
 <!doctype html>
 <html lang="en">

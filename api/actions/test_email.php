@@ -7,10 +7,22 @@ require_role(['admin']);
 
 // Fetch admin email
 $adminEmail = $user['email'];
+$testRecipient = app_env('RESEND_TEST_EMAIL');
+$recipient = $testRecipient !== '' ? $testRecipient : $adminEmail;
 
 $resendApiKey = app_env('RESEND_API_KEY');
 if ($resendApiKey === '') {
     redirect_to('/api/reports.php', ['error' => 'RESEND_API_KEY is not configured in the environment variables.']);
+}
+
+$fromEmail = app_env('RESEND_FROM_EMAIL');
+if ($fromEmail === '') {
+    $fromEmail = 'onboarding@resend.dev';
+}
+
+$fromName = app_env('RESEND_FROM_NAME');
+if ($fromName === '') {
+    $fromName = 'Equipment Management System';
 }
 
 try {
@@ -26,8 +38,8 @@ try {
     curl_setopt($ch, CURLOPT_POST, true);
 
     $payload = [
-        'from'    => 'Equipment Management System <onboarding@resend.dev>',
-        'to'      => [$adminEmail],
+        'from'    => sprintf('%s <%s>', $fromName, $fromEmail),
+        'to'      => [$recipient],
         'subject' => $subject,
         'html'    => $htmlBody
     ];
@@ -39,10 +51,16 @@ try {
     curl_close($ch);
 
     if ($httpCode === 200 || $httpCode === 201) {
-        log_audit('create', 'notifications', 0, (int)$user['id'], null, ['type' => 'test_email', 'status' => 'success', 'to' => $adminEmail]);
-        redirect_to('/api/reports.php', ['ok' => "Test email successfully sent to {$adminEmail}! Check your inbox."]);
+        log_audit('create', 'notifications', 0, (int)$user['id'], null, ['type' => 'test_email', 'status' => 'success', 'to' => $recipient]);
+        redirect_to('/api/reports.php', ['ok' => "Test email successfully sent to {$recipient}! Check your inbox."]);
     } else {
-        $errorMsg = 'Failed to send test email. HTTP Code: ' . $httpCode . ' Response: ' . h((string)$response);
+        $responseBody = is_string($response) ? $response : '';
+        $errorMsg = 'Failed to send test email. HTTP Code: ' . $httpCode . ' Response: ' . h($responseBody);
+
+        if ($httpCode === 403 && stripos($responseBody, 'You can only send testing emails to your own email address') !== false) {
+            $errorMsg = 'Resend sandbox restriction: with onboarding@resend.dev you can only send to your own Resend account email. Set RESEND_TEST_EMAIL to that address, or verify domain in Resend and set RESEND_FROM_EMAIL to that domain.';
+        }
+
         log_audit('create', 'notifications', 0, (int)$user['id'], null, ['type' => 'test_email', 'status' => 'failed', 'details' => $errorMsg]);
         redirect_to('/api/reports.php', ['error' => $errorMsg]);
     }

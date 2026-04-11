@@ -377,7 +377,7 @@ try {
       <a href="/api/notification_logs.php"               class="btn btn-secondary">📧 Notification Logs</a>
       <a href="/api/users.php"                           class="btn btn-secondary">👥 User Management</a>
       <a href="/api/actions/generate_report_pdf.php?report_type=summary" class="btn btn-primary">📄 Export Summary (HTML)</a>
-      <a href="/api/actions/test_email.php"                              class="btn btn-warning">✉️ Test Email Config</a>
+      <a href="/api/actions/test_email.php"                              class="btn btn-warning">✉️ Test Resend Email</a>
     </p>
   </section>
 

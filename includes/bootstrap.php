@@ -410,6 +410,5 @@ function log_audit(
     }
 }
 
-// Load notification and SMTP configuration helpers
-require_once dirname(__FILE__) . '/SMTPConfig.php';
+// Load notification helpers
 require_once dirname(__FILE__) . '/NotificationService.php';

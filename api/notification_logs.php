@@ -242,7 +242,7 @@ $typeIcons = [
   <section class="card">
     <h2>Notification Actions</h2>
     <p>
-      <a href="/api/email_config.php"                              class="btn btn-primary">Configure SMTP / Resend</a>
+      <a href="/api/actions/test_email.php"                        class="btn btn-primary">Test Resend Email</a>
       <a href="/api/actions/check_overdue_allocations.php"         class="btn btn-secondary">Check Overdue Returns Now</a>
       <a href="/api/my_notifications.php"                          class="btn btn-secondary">My Notification Inbox</a>
     </p>

@@ -781,6 +781,12 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
   padding: 1.25rem;
 }
 
+.page-reports .card:hover {
+  transform: none;
+  border-color: var(--border-subtle);
+  box-shadow: var(--shadow-soft);
+}
+
 .page-reports {
   display: flex;
   flex-direction: column;
@@ -788,6 +794,7 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
 }
 
 .page-reports .card > h2 {
+  margin-top: 0;
   margin-bottom: 0.65rem;
 }
 
@@ -950,6 +957,11 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
   background: var(--status-danger-bg);
   color: var(--status-danger-text);
   border-color: color-mix(in srgb, var(--accent-danger) 42%, transparent);
+}
+
+.page-reports .card > h2 {
+  font-family: var(--font-heading);
+  font-weight: 700;
 }
 
 .page-reports .metrics-grid {

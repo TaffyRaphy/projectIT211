@@ -781,12 +781,189 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
   padding: 1.25rem;
 }
 
+.page-reports {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
 .page-reports .card > h2 {
   margin-bottom: 0.65rem;
 }
 
 .page-reports .card p {
   margin-bottom: 0.75rem;
+}
+
+.page-reports .filter-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
+  align-items: end;
+}
+
+.page-reports .filter-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.page-reports .filter-form label {
+  margin-bottom: 0;
+  color: var(--text-heading);
+}
+
+.page-reports .filter-form select {
+  min-width: 0;
+}
+
+.page-reports .filter-form .btn,
+.page-reports .filter-form a.btn {
+  justify-self: start;
+  margin-top: 0.25rem;
+}
+
+.page-reports .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.78rem 1.15rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  font-family: var(--font-label);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: var(--spring);
+}
+
+.page-reports .btn:hover {
+  transform: translateY(-2px);
+}
+
+.page-reports .btn-primary {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-primary) 90%, #fff 10%), var(--accent-primary-strong));
+  color: #fff;
+  border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--accent-primary) 18%, transparent);
+}
+
+.page-reports .btn-primary:hover {
+  color: #fff;
+  box-shadow: 0 14px 24px color-mix(in srgb, var(--accent-primary) 24%, transparent);
+}
+
+.page-reports .btn-secondary {
+  background: var(--surface-soft);
+  color: var(--text-heading);
+  border-color: var(--border-subtle);
+}
+
+.page-reports .btn-secondary:hover {
+  color: var(--text-heading);
+  border-color: var(--border-strong);
+}
+
+.page-reports .btn-warning {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-warning) 85%, #fff 15%), color-mix(in srgb, var(--accent-warning) 72%, #a86a00 28%));
+  color: #1d1600;
+  border-color: color-mix(in srgb, var(--accent-warning) 52%, transparent);
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--accent-warning) 16%, transparent);
+}
+
+.page-reports .btn-warning:hover {
+  color: #1d1600;
+  box-shadow: 0 14px 24px color-mix(in srgb, var(--accent-warning) 22%, transparent);
+}
+
+.page-reports .table-responsive {
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+  box-shadow: var(--shadow-soft);
+}
+
+.page-reports .table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 680px;
+}
+
+.page-reports .table thead th {
+  position: sticky;
+  top: 0;
+  background: color-mix(in srgb, var(--surface-2) 90%, #000 10%);
+  color: var(--text-heading);
+  text-align: left;
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 0.95rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.page-reports .table tbody td {
+  padding: 0.95rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: top;
+}
+
+.page-reports .table tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--surface-soft) 60%, transparent);
+}
+
+.page-reports .table tbody tr:hover {
+  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
+}
+
+.page-reports .table strong {
+  color: var(--text-heading);
+}
+
+.page-reports .badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  font-family: var(--font-label);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.page-reports .badge-success {
+  background: var(--status-success-bg);
+  color: var(--status-success-text);
+  border-color: color-mix(in srgb, var(--accent-primary) 42%, transparent);
+}
+
+.page-reports .badge-error {
+  background: var(--status-danger-bg);
+  color: var(--status-danger-text);
+  border-color: color-mix(in srgb, var(--accent-danger) 42%, transparent);
+}
+
+.page-reports .metrics-grid {
+  gap: 1rem;
+}
+
+.page-reports .metric-card {
+  min-height: 140px;
+  padding: 1.25rem;
+}
+
+.page-reports .metric-detail {
+  margin-bottom: 0;
+  font-size: 0.92rem;
 }
 
 .metric-card-hero .metric-value {

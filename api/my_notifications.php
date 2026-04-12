@@ -45,6 +45,22 @@ $stmt->bindValue(':offset', $offset,  PDO::PARAM_INT);
 $stmt->execute();
 $notifications = $stmt->fetchAll();
 
+// Persistent types: stay unread until the underlying issue is resolved
+$persistentTypes = ['equipment_overdue_return', 'maintenance_overdue', 'equipment_due_return'];
+
+// Auto-mark non-persistent unread notifications as read on page open
+try {
+    $placeholders = implode(',', array_fill(0, count($persistentTypes), '?'));
+    $markStmt = db()->prepare(
+        "UPDATE notifications SET is_read = true
+         WHERE user_id = ? AND is_read = false
+         AND type NOT IN ({$placeholders})"
+    );
+    $markStmt->execute(array_merge([$userId], $persistentTypes));
+} catch (Throwable $e) {
+    error_log('auto-read notifications error: ' . $e->getMessage());
+}
+
 $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
 
 // Icon map per notification type
@@ -52,8 +68,12 @@ $typeIcons = [
     'request_submitted'        => '📋',
     'request_approved'         => '✅',
     'request_rejected'         => '❌',
+    'request_return_notify'    => '📦',
     'maintenance_scheduled'    => '🔧',
     'maintenance_completed'    => '✔️',
+    'maintenance_cancelled'    => '✖️',
+    'maintenance_due'          => '⏰',
+    'maintenance_overdue'      => '🚨',
     'equipment_due_return'     => '⏰',
     'equipment_overdue_return' => '🚨',
 ];

@@ -58,14 +58,17 @@ $auditStmt = db()->prepare(
 $auditStmt->execute([':uid' => $viewId]);
 $auditRows = $auditStmt->fetchAll();
 
-// Activity stats
+// Activity stats — role-specific
 $statsStmt = db()->prepare(
     "SELECT
-       (SELECT COUNT(*) FROM equipment_requests WHERE staff_id = :uid)                    AS requests_made,
-       (SELECT COUNT(*) FROM allocations WHERE staff_id = :uid)                           AS allocations,
-       (SELECT COUNT(*) FROM maintenance_logs WHERE maintenance_user_id = :uid)           AS maintenance_done,
-       (SELECT COUNT(*) FROM notifications WHERE user_id = :uid AND is_read = false)      AS unread_notifications,
-       (SELECT COUNT(*) FROM audit_logs WHERE user_id = :uid)                             AS audit_entries"
+       (SELECT COUNT(*) FROM equipment_requests  WHERE staff_id = :uid)                AS requests_made,
+       (SELECT COUNT(*) FROM allocations         WHERE staff_id = :uid)                AS allocations_received,
+       (SELECT COUNT(*) FROM allocations         WHERE staff_id = :uid AND status = 'active') AS active_allocations,
+       (SELECT COUNT(*) FROM maintenance_logs    WHERE maintenance_user_id = :uid)     AS maintenance_done,
+       (SELECT COUNT(*) FROM maintenance_logs    WHERE maintenance_user_id = :uid AND status = 'scheduled') AS maintenance_pending,
+       (SELECT COUNT(*) FROM equipment_requests  WHERE reviewed_by = :uid)             AS requests_reviewed,
+       (SELECT COUNT(*) FROM notifications       WHERE user_id = :uid AND is_read = false) AS unread_notifications,
+       (SELECT COUNT(*) FROM audit_logs          WHERE user_id = :uid)                 AS audit_entries"
 );
 $statsStmt->execute([':uid' => $viewId]);
 $stats = $statsStmt->fetch();
@@ -274,21 +277,37 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($currentUserId
   <!-- Rest of profile only shown when profile is complete OR admin -->
   <?php if (!($setup === '1' && $profileIncomplete)): ?>
 
-  <!-- Activity Stats -->
+  <!-- Activity Stats — role-specific -->
   <h2>Activity Stats</h2>
   <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-value"><?= (int) ($stats['requests_made'] ?? 0) ?></div>
-      <div class="stat-label">Requests Made</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value"><?= (int) ($stats['allocations'] ?? 0) ?></div>
-      <div class="stat-label">Allocations</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value"><?= (int) ($stats['maintenance_done'] ?? 0) ?></div>
-      <div class="stat-label">Maintenance Tasks</div>
-    </div>
+    <?php if ($profileUser['role'] === 'staff'): ?>
+      <div class="stat-card">
+        <div class="stat-value"><?= (int) ($stats['requests_made'] ?? 0) ?></div>
+        <div class="stat-label">Requests Made</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value"><?= (int) ($stats['allocations_received'] ?? 0) ?></div>
+        <div class="stat-label">Equipment Allocated</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value"><?= (int) ($stats['active_allocations'] ?? 0) ?></div>
+        <div class="stat-label">Currently Holding</div>
+      </div>
+    <?php elseif ($profileUser['role'] === 'maintenance'): ?>
+      <div class="stat-card">
+        <div class="stat-value"><?= (int) ($stats['maintenance_done'] ?? 0) ?></div>
+        <div class="stat-label">Tasks Completed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value"><?= (int) ($stats['maintenance_pending'] ?? 0) ?></div>
+        <div class="stat-label">Tasks Pending</div>
+      </div>
+    <?php elseif ($profileUser['role'] === 'admin'): ?>
+      <div class="stat-card">
+        <div class="stat-value"><?= (int) ($stats['requests_reviewed'] ?? 0) ?></div>
+        <div class="stat-label">Requests Reviewed</div>
+      </div>
+    <?php endif; ?>
     <div class="stat-card">
       <div class="stat-value"><?= (int) ($stats['unread_notifications'] ?? 0) ?></div>
       <div class="stat-label">Unread Notifications</div>

@@ -33,11 +33,17 @@ $inventoryRows = db()->query(
      ORDER BY category ASC"
 )->fetchAll();
 
-// Equipment usage with allocation details
+// Equipment usage with allocation details (overdue = active allocations past due date)
 $usageRows = db()->query(
-    "SELECT e.id, e.name AS equipment_name, e.quantity_available, COUNT(DISTINCT a.id)::text AS allocations, 
-            COALESCE(SUM(a.qty_allocated), 0)::text AS allocated_qty,
-            COALESCE(COUNT(DISTINCT a.id) FILTER (WHERE a.expected_return_date < CURRENT_DATE AND a.expected_return_date IS NOT NULL), 0)::text AS overdue_count
+    "SELECT e.id, e.name AS equipment_name, e.quantity_available,
+            COALESCE(COUNT(DISTINCT a.id) FILTER (WHERE a.status = 'active'), 0)::text AS active_allocations,
+            COALESCE(COUNT(DISTINCT a.id), 0)::text AS total_allocations,
+            COALESCE(SUM(a.qty_allocated) FILTER (WHERE a.status = 'active'), 0)::text AS currently_allocated_qty,
+            COALESCE(COUNT(DISTINCT a.id) FILTER (
+                WHERE a.status = 'active'
+                  AND a.expected_return_date < CURRENT_DATE
+                  AND a.expected_return_date IS NOT NULL
+            ), 0)::text AS overdue_count
      FROM equipment e
      LEFT JOIN allocations a ON a.equipment_id = e.id
      WHERE 1=1 $categoryWhere $statusWhere
@@ -45,13 +51,15 @@ $usageRows = db()->query(
      ORDER BY e.name ASC"
 )->fetchAll();
 
-// Maintenance history with costs
+// Maintenance history with costs (exclude cancelled from cost totals)
 $maintenanceRows = db()->query(
-    "SELECT e.name AS equipment_name, COUNT(m.id)::text AS total_logs,
-            COALESCE(SUM(CASE WHEN m.status = 'completed' THEN 1 ELSE 0 END), 0)::text AS completed_logs,
-            COALESCE(SUM(CASE WHEN m.status = 'scheduled' THEN 1 ELSE 0 END), 0)::text AS scheduled_logs,
-            COALESCE(SUM(m.cost), 0)::text AS total_cost,
-            COALESCE(SUM(CASE WHEN m.status = 'completed' THEN m.cost ELSE 0 END), 0)::text AS completed_cost
+    "SELECT e.name AS equipment_name,
+            COUNT(m.id)::text AS total_logs,
+            COALESCE(COUNT(m.id) FILTER (WHERE m.status = 'completed'),  0)::text AS completed_logs,
+            COALESCE(COUNT(m.id) FILTER (WHERE m.status = 'scheduled'),  0)::text AS scheduled_logs,
+            COALESCE(COUNT(m.id) FILTER (WHERE m.status = 'cancelled'),  0)::text AS cancelled_logs,
+            COALESCE(SUM(CASE WHEN m.status <> 'cancelled' THEN m.cost ELSE 0 END), 0)::text AS total_cost,
+            COALESCE(SUM(CASE WHEN m.status = 'completed'  THEN m.cost ELSE 0 END), 0)::text AS completed_cost
      FROM equipment e
      LEFT JOIN maintenance_logs m ON m.equipment_id = e.id
      WHERE 1=1 $categoryWhere $statusWhere
@@ -67,13 +75,13 @@ try {
     $result = $stmt->fetch();
     $slaMetrics['avg_approval_hours'] = $result ? (int) ($result['avg_hours'] ?? 0) : 0;
     
-    // Overdue allocations
-    $stmt = db()->query("SELECT COUNT(*) as count FROM allocations WHERE expected_return_date < CURRENT_DATE AND expected_return_date IS NOT NULL");
+    // Overdue allocations (active only)
+    $stmt = db()->query("SELECT COUNT(*) as count FROM allocations WHERE status = 'active' AND expected_return_date < CURRENT_DATE AND expected_return_date IS NOT NULL");
     $result = $stmt->fetch();
     $slaMetrics['overdue_count'] = $result['count'] ?? 0;
-    
-    // Utilization rate (allocated / total)
-    $stmt = db()->query("SELECT COUNT(DISTINCT equipment_id) as allocated FROM allocations WHERE checkout_date <= CURRENT_DATE AND (expected_return_date IS NULL OR expected_return_date >= CURRENT_DATE)");
+
+    // Utilization rate (active allocations / total equipment)
+    $stmt = db()->query("SELECT COUNT(DISTINCT equipment_id) as allocated FROM allocations WHERE status = 'active'");
     $allocated = (int) ($stmt->fetch()['allocated'] ?? 0);
     $stmt = db()->query("SELECT COUNT(*) as total FROM equipment");
     $total = (int) ($stmt->fetch()['total'] ?? 1);
@@ -222,15 +230,17 @@ try {
 
   <!-- Equipment Usage Summary -->
   <h2>Equipment Usage Summary</h2>
+  <p style="color:var(--text-muted); font-size:.88rem; margin-bottom:.75rem;">Active allocations only. Historical total includes returned equipment.</p>
   <div class="table-responsive">
     <table class="table">
       <thead>
         <tr>
           <th>Equipment Name</th>
-          <th>Available</th>
-          <th>Total Allocations</th>
-          <th>Total Allocated Qty</th>
-          <th>Overdue</th>
+          <th>Currently Available</th>
+          <th>Active Allocations</th>
+          <th>Currently Allocated Qty</th>
+          <th>Historical Total</th>
+          <th>Overdue (Active)</th>
         </tr>
       </thead>
       <tbody>
@@ -238,8 +248,9 @@ try {
           <tr>
             <td><strong><?= h((string) $row['equipment_name']) ?></strong></td>
             <td><?= h((string) $row['quantity_available']) ?></td>
-            <td><?= h((string) $row['allocations']) ?></td>
-            <td><?= h((string) $row['allocated_qty']) ?></td>
+            <td><?= h((string) $row['active_allocations']) ?></td>
+            <td><?= h((string) $row['currently_allocated_qty']) ?></td>
+            <td style="color:var(--text-muted);"><?= h((string) $row['total_allocations']) ?></td>
             <td>
               <?php if ((int) $row['overdue_count'] > 0): ?>
                 <span class="badge badge-error"><?= h((string) $row['overdue_count']) ?></span>
@@ -257,6 +268,7 @@ try {
 
   <!-- Maintenance History & Cost Summary -->
   <h2>Maintenance Summary</h2>
+  <p style="color:var(--text-muted); font-size:.88rem; margin-bottom:.75rem;">Costs exclude cancelled tasks. Total Tasks includes all historical records.</p>
   <div class="table-responsive">
     <table class="table">
       <thead>
@@ -265,19 +277,22 @@ try {
           <th>Total Tasks</th>
           <th>Completed</th>
           <th>Scheduled</th>
-          <th>Total Cost</th>
+          <th>Cancelled</th>
+          <th>Total Cost (excl. cancelled)</th>
           <th>Completed Cost</th>
         </tr>
       </thead>
       <tbody>
         <?php foreach ($maintenanceRows as $row): ?>
+          <?php if ((int)$row['total_logs'] === 0) continue; ?>
           <tr>
             <td><strong><?= h((string) $row['equipment_name']) ?></strong></td>
             <td><?= h((string) $row['total_logs']) ?></td>
             <td><?= h((string) $row['completed_logs']) ?></td>
             <td><?= h((string) $row['scheduled_logs']) ?></td>
-            <td>$<?= number_format((float) $row['total_cost'], 2) ?></td>
-            <td>$<?= number_format((float) $row['completed_cost'], 2) ?></td>
+            <td style="color:var(--text-muted);"><?= h((string) $row['cancelled_logs']) ?></td>
+            <td>₱<?= number_format((float) $row['total_cost'], 2) ?></td>
+            <td>₱<?= number_format((float) $row['completed_cost'], 2) ?></td>
           </tr>
         <?php endforeach; ?>
       </tbody>

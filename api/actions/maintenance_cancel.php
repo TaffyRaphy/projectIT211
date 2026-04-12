@@ -71,4 +71,23 @@ log_audit('cancel', 'maintenance_logs', $maintenanceId, (int) $currentUser['id']
     ['status' => 'cancelled']
 );
 
+// 5. Notify maintenance team + admins
+try {
+    // Get equipment name for notification
+    $eqStmt = db()->prepare('SELECT name FROM equipment WHERE id = :eid');
+    $eqStmt->execute([':eid' => $equipmentId]);
+    $equipName = (string) ($eqStmt->fetchColumn() ?: 'Unknown');
+
+    $ns = NotificationService::getInstance();
+    $recipients = $ns->getMaintenanceEmails() + $ns->getAdminsEmails();
+    foreach ($recipients as $uid => $email) {
+        $ns->send('maintenance_cancelled', $email, (int) $uid, [
+            'equipment_name' => $equipName,
+            'cancelled_by'   => $currentUser['full_name'],
+        ]);
+    }
+} catch (Throwable $e) {
+    error_log('maintenance_cancel notification error: ' . $e->getMessage());
+}
+
 redirect_to('/api/maintenance.php', ['ok' => 'Maintenance task cancelled']);

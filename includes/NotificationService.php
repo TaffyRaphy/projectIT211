@@ -197,6 +197,7 @@ class NotificationService
             'request_submitted'        => 'New Equipment Request Submitted',
             'request_approved'         => 'Your Equipment Request Was Approved',
             'request_rejected'         => 'Your Equipment Request Was Rejected',
+            'request_return_notify'    => 'Equipment Return Request from Staff',
             'maintenance_scheduled'    => 'Maintenance Scheduled',
             'maintenance_completed'    => 'Maintenance Completed',
             'maintenance_due'          => 'Maintenance Due — Action Required',

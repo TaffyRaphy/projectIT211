@@ -93,6 +93,27 @@ try {
     $equipName = (string) ($eqStmt->fetchColumn() ?: 'Unknown');
 } catch (Throwable $e) { /* non-fatal */ }
 
+// 6. Mark maintenance_overdue persistent notifications as read for this equipment's maintenance users
+try {
+    $userStmt = $pdo->prepare(
+        "SELECT DISTINCT maintenance_user_id FROM maintenance_logs WHERE equipment_id = :eid"
+    );
+    $userStmt->execute([':eid' => $equipmentId]);
+    $maintUserIds = $userStmt->fetchAll(PDO::FETCH_COLUMN);
+    if (!empty($maintUserIds)) {
+        $placeholders = implode(',', array_fill(0, count($maintUserIds), '?'));
+        $readStmt = $pdo->prepare(
+            "UPDATE notifications SET is_read = true
+             WHERE user_id IN ({$placeholders})
+               AND type = 'maintenance_overdue'
+               AND is_read = false"
+        );
+        $readStmt->execute($maintUserIds);
+    }
+} catch (Throwable $e) {
+    error_log('maintenance_complete mark-overdue-read error: ' . $e->getMessage());
+}
+
 // 6. Audit
 log_audit('complete', 'maintenance_logs', $maintenanceId, (int) $currentUser['id'],
     ['status' => 'scheduled'],

@@ -2,49 +2,63 @@
 declare(strict_types=1);
 require dirname(__DIR__, 2) . '/includes/bootstrap.php';
 
-require_role(['admin']);
-$adminUser     = require_login();
-$adminId       = (int) $adminUser['id'];
-$allocationId  = int_query_param('id', 0);
+// Both admin and staff can access (admin processes, staff can request)
+$user = require_login();
+$role = (string) $user['role'];
+if (!in_array($role, ['admin', 'staff'], true)) {
+    http_response_code(403); echo 'Forbidden'; exit;
+}
 
+$allocationId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+if ($allocationId <= 0 && isset($_POST['id'])) $allocationId = (int) $_POST['id'];
 if ($allocationId <= 0) {
     redirect_to('/api/admin_requests.php', ['error' => 'Invalid allocation ID']);
 }
 
+$currentUserId = (int) $user['id'];
 $pdo = db();
-$pdo->beginTransaction();
 
+// 1. Fetch the allocation
 try {
-    // Lock and fetch the allocation
     $stmt = $pdo->prepare(
         'SELECT a.id, a.equipment_id, a.qty_allocated, a.status, a.staff_id,
-                e.name AS equipment_name, u.full_name AS staff_name
+                e.name AS equipment_name, u.full_name AS staff_name, u.email AS staff_email
          FROM allocations a
          JOIN equipment e ON e.id = a.equipment_id
          JOIN users u ON u.id = a.staff_id
-         WHERE a.id = :id
-         FOR UPDATE'
+         WHERE a.id = :id'
     );
     $stmt->execute([':id' => $allocationId]);
     $alloc = $stmt->fetch();
+} catch (Throwable $e) {
+    error_log('allocation_return FETCH error: ' . $e->getMessage());
+    redirect_to('/api/admin_requests.php', ['error' => 'DB error: ' . $e->getMessage()]);
+}
 
-    if (!$alloc) {
-        $pdo->rollBack();
-        redirect_to('/api/admin_requests.php', ['error' => 'Allocation not found']);
-    }
-    if ((string) $alloc['status'] !== 'active') {
-        $pdo->rollBack();
-        redirect_to('/api/admin_requests.php', ['error' => 'Allocation already returned or inactive']);
-    }
+if (!$alloc) {
+    redirect_to('/api/admin_requests.php', ['error' => 'Allocation not found']);
+}
+if ((string) $alloc['status'] !== 'active') {
+    redirect_to('/api/admin_requests.php', ['error' => 'Allocation already returned or inactive']);
+}
 
-    // Mark allocation as returned
+// Admin only can actually process the return
+if ($role !== 'admin') {
+    redirect_to('/api/admin_requests.php', ['error' => 'Only admin can process returns']);
+}
+
+// 2. Mark allocation as returned
+try {
     $pdo->prepare(
-        "UPDATE allocations
-         SET status = 'returned', actual_return_date = NOW()
-         WHERE id = :id"
+        "UPDATE allocations SET status = 'returned', actual_return_date = NOW() WHERE id = :id"
     )->execute([':id' => $allocationId]);
+} catch (Throwable $e) {
+    error_log('allocation_return UPDATE alloc error: ' . $e->getMessage());
+    redirect_to('/api/admin_requests.php', ['error' => 'Failed to mark returned: ' . $e->getMessage()]);
+}
 
-    // Restore quantity_available & update equipment status
+// 3. Restore quantity + equipment status
+try {
     $pdo->prepare(
         "UPDATE equipment
          SET quantity_available = quantity_available + :qty,
@@ -56,28 +70,48 @@ try {
              updated_at = NOW()
          WHERE id = :equipment_id"
     )->execute([
-        ':qty'           => (int) $alloc['qty_allocated'],
-        ':equipment_id'  => (int) $alloc['equipment_id'],
+        ':qty'          => (int) $alloc['qty_allocated'],
+        ':equipment_id' => (int) $alloc['equipment_id'],
     ]);
-
-    log_audit('update', 'allocations', $allocationId, $adminId,
-        ['status' => 'active'],
-        [
-            'status'           => 'returned',
-            'actual_return'    => date('Y-m-d'),
-            'equipment_name'   => $alloc['equipment_name'],
-            'staff_name'       => $alloc['staff_name'],
-            'qty_returned'     => (int) $alloc['qty_allocated'],
-        ]
-    );
-
-    $pdo->commit();
-
-    redirect_to('/api/admin_requests.php', ['ok' => "Equipment '{$alloc['equipment_name']}' returned by {$alloc['staff_name']} — inventory restored"]);
 } catch (Throwable $e) {
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
-    error_log('allocation_return error: ' . $e->getMessage());
-    redirect_to('/api/admin_requests.php', ['error' => 'Failed to process return']);
+    error_log('allocation_return UPDATE equipment error: ' . $e->getMessage());
+    // Non-fatal — allocation already marked returned
 }
+
+// 4. Update the request status to 'returned'
+try {
+    $pdo->prepare(
+        "UPDATE equipment_requests SET status = 'returned' WHERE id = (
+             SELECT request_id FROM allocations WHERE id = :id
+         )"
+    )->execute([':id' => $allocationId]);
+} catch (Throwable $e) {
+    error_log('allocation_return UPDATE request status error: ' . $e->getMessage());
+}
+
+// 5. Mark persistent notifications as read for this staff member
+try {
+    $pdo->prepare(
+        "UPDATE notifications
+         SET is_read = true
+         WHERE user_id = :uid
+           AND is_read = false
+           AND type IN ('equipment_overdue_return', 'equipment_due_return')"
+    )->execute([':uid' => (int) $alloc['staff_id']]);
+} catch (Throwable $e) {
+    error_log('allocation_return mark-notif-read error: ' . $e->getMessage());
+}
+
+// 6. Audit
+log_audit('update', 'allocations', $allocationId, $currentUserId,
+    ['status' => 'active'],
+    [
+        'status'         => 'returned',
+        'actual_return'  => date('Y-m-d'),
+        'equipment_name' => $alloc['equipment_name'],
+        'staff_name'     => $alloc['staff_name'],
+        'qty_returned'   => (int) $alloc['qty_allocated'],
+    ]
+);
+
+redirect_to('/api/admin_requests.php', ['ok' => "'{$alloc['equipment_name']}' returned by {$alloc['staff_name']} — inventory restored"]);

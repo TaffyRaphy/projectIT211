@@ -209,8 +209,8 @@ try {
           <tr>
             <td><strong><?= h($row['day']) ?></strong></td>
             <td><?= $tasks ?></td>
-            <td>$<?= number_format($cost, 2) ?></td>
-            <td><?= $tasks > 0 ? '$' . number_format($cost / $tasks, 2) : '–' ?></td>
+            <td>₱<?= number_format($cost, 2) ?></td>
+            <td><?= $tasks > 0 ? '₱' . number_format($cost / $tasks, 2) : '–' ?></td>
           </tr>
           <?php endforeach; ?>
         </tbody>

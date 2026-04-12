@@ -47,7 +47,7 @@ try {
 
     $markReturned = $pdo->prepare(
         "UPDATE allocations
-         SET status = 'returned', actual_return_date = NOW()
+            SET status = 'returned', actual_return_date = CURRENT_DATE
          WHERE id = :id AND status = 'active'"
     );
     $markReturned->execute([':id' => $allocationId]);
@@ -78,14 +78,6 @@ try {
          WHERE id = :request_id AND status = 'allocated'"
     )->execute([':request_id' => (int) $alloc['request_id']]);
 
-    $pdo->prepare(
-        "UPDATE notifications
-         SET is_read = true
-         WHERE user_id = :uid
-           AND is_read = false
-           AND type IN ('equipment_overdue_return', 'equipment_due_return')"
-    )->execute([':uid' => (int) $alloc['staff_id']]);
-
     $pdo->commit();
 } catch (Throwable $e) {
     if ($pdo->inTransaction()) {
@@ -106,5 +98,17 @@ log_audit('update', 'allocations', $allocationId, $currentUserId,
         'qty_returned'   => (int) $alloc['qty_allocated'],
     ]
 );
+
+try {
+    $pdo->prepare(
+        "UPDATE notifications
+         SET is_read = true
+         WHERE user_id = :uid
+           AND is_read = false
+           AND type IN ('equipment_overdue_return', 'equipment_due_return')"
+    )->execute([':uid' => (int) $alloc['staff_id']]);
+} catch (Throwable $e) {
+    error_log('allocation_return notification update error: ' . $e->getMessage());
+}
 
 redirect_to('/api/admin_requests.php', ['ok' => "'{$alloc['equipment_name']}' returned by {$alloc['staff_name']} — inventory restored"]);

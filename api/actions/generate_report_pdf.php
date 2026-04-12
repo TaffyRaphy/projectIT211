@@ -125,7 +125,7 @@ try {
             echo '<td>' . $row['total_logs'] . '</td>';
             echo '<td>' . $row['completed'] . '</td>';
             echo '<td>' . $row['scheduled'] . '</td>';
-            echo '<td>$' . number_format((float) $row['total_cost'], 2) . '</td>';
+            echo '<td>₱' . number_format((float) $row['total_cost'], 2) . '</td>';
             echo '</tr>';
         }
         echo '</tbody></table>';

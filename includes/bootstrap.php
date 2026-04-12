@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+date_default_timezone_set('Asia/Manila');
+
 ini_set('session.cookie_path', '/');
 ini_set('session.cookie_samesite', 'Lax');
 
@@ -50,6 +52,7 @@ function db(): PDO
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]);
+    $pdo->exec("SET TIME ZONE 'Asia/Manila'");
 
     return $pdo;
 }

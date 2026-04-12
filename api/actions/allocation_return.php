@@ -42,19 +42,22 @@ try {
     if (!$alloc) {
         throw new RuntimeException('Allocation not found');
     }
-    if ((string) $alloc['status'] !== 'active') {
-        throw new RuntimeException('Allocation already returned or inactive');
+    if ((string) $alloc['status'] === 'returned') {
+        throw new RuntimeException('Allocation already returned');
     }
 
     $markReturned = $pdo->prepare(
         "UPDATE allocations
-            SET status = 'returned', actual_return_date = CURRENT_DATE
-         WHERE id = :id AND status = 'active'"
+            SET status = 'returned', actual_return_date = COALESCE(actual_return_date, CURRENT_DATE)
+         WHERE id = :id
+                     AND status <> 'returned'
+         RETURNING status"
     );
     $markReturned->execute([':id' => $allocationId]);
+    $newStatus = (string) ($markReturned->fetchColumn() ?: '');
 
-    if ($markReturned->rowCount() !== 1) {
-        throw new RuntimeException('Allocation already returned or inactive');
+    if ($newStatus !== 'returned') {
+        throw new RuntimeException('Unable to mark allocation as returned');
     }
 
     $restoreEquipment = $pdo->prepare(
@@ -76,7 +79,7 @@ try {
     $pdo->prepare(
         "UPDATE equipment_requests
          SET status = 'returned'
-         WHERE id = :request_id AND status = 'allocated'"
+            WHERE id = :request_id AND status IN ('allocated', 'approved')"
     )->execute([':request_id' => (int) $alloc['request_id']]);
 
     $pdo->commit();
@@ -110,19 +113,6 @@ try {
     )->execute([':uid' => (int) $alloc['staff_id']]);
 } catch (Throwable $e) {
     error_log('allocation_return notification update error: ' . $e->getMessage());
-}
-
-try {
-    $statusCheck = $pdo->prepare('SELECT status FROM allocations WHERE id = :id');
-    $statusCheck->execute([':id' => $allocationId]);
-    $savedStatus = (string) ($statusCheck->fetchColumn() ?: '');
-    if ($savedStatus !== 'returned') {
-        error_log('allocation_return post-commit mismatch: allocation ' . $allocationId . ' status=' . $savedStatus);
-        redirect_to('/api/admin_requests.php', ['error' => 'Return did not persist. Please refresh and try again.']);
-    }
-} catch (Throwable $e) {
-    error_log('allocation_return verify status error: ' . $e->getMessage());
-    redirect_to('/api/admin_requests.php', ['error' => 'Unable to verify return status. Please refresh and check allocation list.']);
 }
 
 redirect_to('/api/admin_requests.php', ['ok' => "'{$alloc['equipment_name']}' returned by {$alloc['staff_name']} — inventory restored"]);

@@ -19,69 +19,68 @@ if ($requestId <= 0) {
 if ($dueDate === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate)) {
     redirect_to('/api/admin_requests.php', ['error' => 'Expected return date is required']);
 }
+if ($dueDate < date('Y-m-d')) {
+    redirect_to('/api/admin_requests.php', ['error' => 'Expected return date cannot be in the past']);
+}
 
 $pdo = db();
 
-// 1. Fetch request — NO FOR UPDATE (breaks Neon pooler)
+$allocationId = 0;
 try {
+    $pdo->beginTransaction();
+
     $stmt = $pdo->prepare(
         'SELECT r.id, r.equipment_id, r.staff_id, r.qty_requested, r.status,
-                e.quantity_available, e.name AS equipment_name,
+                e.quantity_available, e.status AS equipment_status, e.name AS equipment_name,
                 u.full_name AS staff_name, u.email AS staff_email
          FROM equipment_requests r
          JOIN equipment e ON e.id = r.equipment_id
          JOIN users u ON u.id = r.staff_id
-         WHERE r.id = :id'
+         WHERE r.id = :id
+         FOR UPDATE'
     );
     $stmt->execute([':id' => $requestId]);
     $reqRow = $stmt->fetch();
-} catch (Throwable $e) {
-    error_log('request_approve FETCH error: ' . $e->getMessage());
-    redirect_to('/api/admin_requests.php', ['error' => 'DB error: ' . $e->getMessage()]);
-}
 
-if (!$reqRow) {
-    redirect_to('/api/admin_requests.php', ['error' => 'Request not found']);
-}
-if ((string) $reqRow['status'] !== 'pending') {
-    redirect_to('/api/admin_requests.php', ['error' => 'Request already processed']);
-}
-if ((int) $reqRow['quantity_available'] < (int) $reqRow['qty_requested']) {
-    redirect_to('/api/admin_requests.php', ['error' => 'Not enough stock available']);
-}
+    if (!$reqRow) {
+        throw new RuntimeException('Request not found');
+    }
+    if ((string) $reqRow['status'] !== 'pending') {
+        throw new RuntimeException('Request already processed');
+    }
+    if ((string) $reqRow['equipment_status'] !== 'available') {
+        throw new RuntimeException('Equipment is not currently requestable');
+    }
 
-// 2. Decrement equipment qty
-try {
-    $pdo->prepare(
+    $eqUpdate = $pdo->prepare(
         "UPDATE equipment
          SET quantity_available = quantity_available - :qty,
              status = CASE WHEN quantity_available - :qty = 0 THEN 'allocated' ELSE status END,
              updated_at = NOW()
-         WHERE id = :eid"
-    )->execute([
+         WHERE id = :eid
+           AND status = 'available'
+           AND quantity_available >= :qty"
+    );
+    $eqUpdate->execute([
         ':qty' => (int) $reqRow['qty_requested'],
         ':eid' => (int) $reqRow['equipment_id'],
     ]);
-} catch (Throwable $e) {
-    error_log('request_approve UPDATE equipment error: ' . $e->getMessage());
-    redirect_to('/api/admin_requests.php', ['error' => 'Failed to update equipment: ' . $e->getMessage()]);
-}
 
-// 3. Mark request as allocated
-try {
-    $pdo->prepare(
+    if ($eqUpdate->rowCount() !== 1) {
+        throw new RuntimeException('Not enough stock available');
+    }
+
+    $reqUpdate = $pdo->prepare(
         "UPDATE equipment_requests
          SET status = 'allocated', reviewed_by = :admin_id, reviewed_at = NOW()
-         WHERE id = :id"
-    )->execute([':admin_id' => $adminId, ':id' => $requestId]);
-} catch (Throwable $e) {
-    error_log('request_approve UPDATE request error: ' . $e->getMessage());
-    redirect_to('/api/admin_requests.php', ['error' => 'Failed to update request: ' . $e->getMessage()]);
-}
+         WHERE id = :id AND status = 'pending'"
+    );
+    $reqUpdate->execute([':admin_id' => $adminId, ':id' => $requestId]);
 
-// 4. Create allocation — RETURNING id (lastInsertId unreliable on Postgres)
-$allocationId = 0;
-try {
+    if ($reqUpdate->rowCount() !== 1) {
+        throw new RuntimeException('Request already processed');
+    }
+
     $ins = $pdo->prepare(
         'INSERT INTO allocations
              (request_id, equipment_id, staff_id, qty_allocated, allocated_by, checkout_date, expected_return_date)
@@ -98,9 +97,19 @@ try {
         ':due_date'    => $dueDate,
     ]);
     $allocationId = (int) $ins->fetchColumn();
+
+    if ($allocationId <= 0) {
+        throw new RuntimeException('Failed to create allocation');
+    }
+
+    $pdo->commit();
 } catch (Throwable $e) {
-    error_log('request_approve INSERT allocation error: ' . $e->getMessage());
-    redirect_to('/api/admin_requests.php', ['error' => 'Failed to create allocation: ' . $e->getMessage()]);
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    $err = $e->getMessage();
+    error_log('request_approve error: ' . $err);
+    redirect_to('/api/admin_requests.php', ['error' => $err]);
 }
 
 // 5. Audit log

@@ -25,6 +25,7 @@ $status = post_string('status');
 $quantityTotal = post_int('quantity_total');
 $quantityAvailable = post_int('quantity_available');
 $location = post_string('location');
+$description = post_string('description');
 
 if (
     $name === '' || $category === '' || $location === '' ||
@@ -36,7 +37,7 @@ if (
 }
 
 // Fetch old values for audit log
-$oldRow = db()->prepare('SELECT name, category, status, quantity_total, quantity_available, location FROM equipment WHERE id = :id');
+$oldRow = db()->prepare('SELECT name, category, status, quantity_total, quantity_available, location, description FROM equipment WHERE id = :id');
 $oldRow->execute(['id' => $equipmentId]);
 $oldValues = $oldRow->fetch() ?: [];
 
@@ -48,6 +49,7 @@ $stmt = db()->prepare(
          quantity_total = :quantity_total,
          quantity_available = :quantity_available,
          location = :location,
+         description = :description,
          updated_at = NOW()
      WHERE id = :id'
 );
@@ -58,6 +60,7 @@ $stmt->execute([
     'quantity_total'     => $quantityTotal,
     'quantity_available' => $quantityAvailable,
     'location'           => $location,
+    'description'        => $description !== '' ? $description : null,
     'id'                 => $equipmentId,
 ]);
 
@@ -71,6 +74,7 @@ log_audit('update', 'equipment', $equipmentId, $adminId, $oldValues ?: null, [
     'quantity_total'     => $quantityTotal,
     'quantity_available' => $quantityAvailable,
     'location'           => $location,
+    'description'        => $description,
 ]);
 
 redirect_to('api/equipment.php', ['ok' => 'Equipment updated']);

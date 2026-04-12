@@ -18,48 +18,45 @@ if ($allocationId <= 0) {
 $currentUserId = (int) $user['id'];
 $pdo = db();
 
-// 1. Fetch the allocation
-try {
-    $stmt = $pdo->prepare(
-        'SELECT a.id, a.equipment_id, a.qty_allocated, a.status, a.staff_id,
-                e.name AS equipment_name, u.full_name AS staff_name, u.email AS staff_email
-         FROM allocations a
-         JOIN equipment e ON e.id = a.equipment_id
-         JOIN users u ON u.id = a.staff_id
-         WHERE a.id = :id'
-    );
-    $stmt->execute([':id' => $allocationId]);
-    $alloc = $stmt->fetch();
-} catch (Throwable $e) {
-    error_log('allocation_return FETCH error: ' . $e->getMessage());
-    redirect_to('/api/admin_requests.php', ['error' => 'DB error: ' . $e->getMessage()]);
-}
-
-if (!$alloc) {
-    redirect_to('/api/admin_requests.php', ['error' => 'Allocation not found']);
-}
-if ((string) $alloc['status'] !== 'active') {
-    redirect_to('/api/admin_requests.php', ['error' => 'Allocation already returned or inactive']);
-}
-
 // Admin only can actually process the return
 if ($role !== 'admin') {
     redirect_to('/api/admin_requests.php', ['error' => 'Only admin can process returns']);
 }
 
-// 2. Mark allocation as returned
 try {
-    $pdo->prepare(
-        "UPDATE allocations SET status = 'returned', actual_return_date = NOW() WHERE id = :id"
-    )->execute([':id' => $allocationId]);
-} catch (Throwable $e) {
-    error_log('allocation_return UPDATE alloc error: ' . $e->getMessage());
-    redirect_to('/api/admin_requests.php', ['error' => 'Failed to mark returned: ' . $e->getMessage()]);
-}
+    $pdo->beginTransaction();
 
-// 3. Restore quantity + equipment status
-try {
-    $pdo->prepare(
+    $stmt = $pdo->prepare(
+        'SELECT a.id, a.request_id, a.equipment_id, a.qty_allocated, a.status, a.staff_id,
+                e.name AS equipment_name, u.full_name AS staff_name, u.email AS staff_email
+         FROM allocations a
+         JOIN equipment e ON e.id = a.equipment_id
+         JOIN users u ON u.id = a.staff_id
+         WHERE a.id = :id
+         FOR UPDATE'
+    );
+    $stmt->execute([':id' => $allocationId]);
+    $alloc = $stmt->fetch();
+
+    if (!$alloc) {
+        throw new RuntimeException('Allocation not found');
+    }
+    if ((string) $alloc['status'] !== 'active') {
+        throw new RuntimeException('Allocation already returned or inactive');
+    }
+
+    $markReturned = $pdo->prepare(
+        "UPDATE allocations
+         SET status = 'returned', actual_return_date = NOW()
+         WHERE id = :id AND status = 'active'"
+    );
+    $markReturned->execute([':id' => $allocationId]);
+
+    if ($markReturned->rowCount() !== 1) {
+        throw new RuntimeException('Allocation already returned or inactive');
+    }
+
+    $restoreEquipment = $pdo->prepare(
         "UPDATE equipment
          SET quantity_available = quantity_available + :qty,
              status = CASE
@@ -69,28 +66,18 @@ try {
              END,
              updated_at = NOW()
          WHERE id = :equipment_id"
-    )->execute([
+    );
+    $restoreEquipment->execute([
         ':qty'          => (int) $alloc['qty_allocated'],
         ':equipment_id' => (int) $alloc['equipment_id'],
     ]);
-} catch (Throwable $e) {
-    error_log('allocation_return UPDATE equipment error: ' . $e->getMessage());
-    // Non-fatal — allocation already marked returned
-}
 
-// 4. Update the request status to 'returned'
-try {
     $pdo->prepare(
-        "UPDATE equipment_requests SET status = 'returned' WHERE id = (
-             SELECT request_id FROM allocations WHERE id = :id
-         )"
-    )->execute([':id' => $allocationId]);
-} catch (Throwable $e) {
-    error_log('allocation_return UPDATE request status error: ' . $e->getMessage());
-}
+        "UPDATE equipment_requests
+         SET status = 'returned'
+         WHERE id = :request_id AND status = 'allocated'"
+    )->execute([':request_id' => (int) $alloc['request_id']]);
 
-// 5. Mark persistent notifications as read for this staff member
-try {
     $pdo->prepare(
         "UPDATE notifications
          SET is_read = true
@@ -98,8 +85,14 @@ try {
            AND is_read = false
            AND type IN ('equipment_overdue_return', 'equipment_due_return')"
     )->execute([':uid' => (int) $alloc['staff_id']]);
+
+    $pdo->commit();
 } catch (Throwable $e) {
-    error_log('allocation_return mark-notif-read error: ' . $e->getMessage());
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    error_log('allocation_return error: ' . $e->getMessage());
+    redirect_to('/api/admin_requests.php', ['error' => $e->getMessage()]);
 }
 
 // 6. Audit

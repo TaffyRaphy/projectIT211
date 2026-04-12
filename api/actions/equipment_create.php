@@ -9,6 +9,7 @@ $adminId   = (int) $adminUser['id'];
 $name = post_string('name');
 $category = post_string('category');
 $location = post_string('location');
+$description = post_string('description');
 $quantityTotal = post_int('quantity_total');
 
 if ($name === '' || $category === '' || $location === '' || $quantityTotal === null || $quantityTotal < 0) {
@@ -55,8 +56,8 @@ function generate_equipment_code(PDO $pdo, string $category): string
 $code = generate_equipment_code(db(), $category);
 
 $stmt = db()->prepare(
-    "INSERT INTO equipment (code, name, category, status, quantity_total, quantity_available, location)
-     VALUES (:code, :name, :category, 'available', :qty, :qty, :location)"
+    "INSERT INTO equipment (code, name, category, status, quantity_total, quantity_available, location, description)
+     VALUES (:code, :name, :category, 'available', :qty, :qty, :location, :description)"
 );
 $stmt->execute([
     'code'     => $code,
@@ -64,6 +65,7 @@ $stmt->execute([
     'category' => $category,
     'qty'      => $quantityTotal,
     'location' => $location,
+    'description' => $description !== '' ? $description : null,
 ]);
 $newId = (int) db()->lastInsertId();
 
@@ -73,6 +75,7 @@ log_audit('create', 'equipment', $newId, $adminId, null, [
     'category'         => $category,
     'quantity_total'   => $quantityTotal,
     'location'         => $location,
+    'description'      => $description,
     'status'           => 'available',
 ]);
 

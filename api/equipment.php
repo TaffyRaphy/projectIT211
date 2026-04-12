@@ -143,6 +143,11 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
           <span>🔧 Next: <?= h($item['next_maintenance_date']) ?></span>
         <?php endif; ?>
       </div>
+      <?php if ((string) $item['description'] !== ''): ?>
+        <p style="margin:.6rem 0 0; color: var(--text-muted); font-size:.86rem;">
+          <?= h((string) $item['description']) ?>
+        </p>
+      <?php endif; ?>
 
       <div class="eq-actions">
         <button type="button" class="btn btn-secondary" style="font-size:.8rem;"
@@ -199,6 +204,10 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
             <div class="form-group">
               <label>Available Qty *</label>
               <input type="number" name="quantity_available" min="0" required value="<?= (int) $item['quantity_available'] ?>">
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label>Description</label>
+              <textarea name="description" rows="3" placeholder="Optional description..."><?= h((string) ($item['description'] ?? '')) ?></textarea>
             </div>
           </div>
           <div class="form-actions">

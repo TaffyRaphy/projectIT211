@@ -15,7 +15,10 @@ header('Expires: 0');
 
 // Equipment available to request
 $equipmentRows = db()->query(
-    "SELECT id, name, quantity_available, status, description FROM equipment WHERE status <> 'retired' ORDER BY name ASC"
+  "SELECT id, name, quantity_available, status, description
+   FROM equipment
+   WHERE status = 'available' AND quantity_available > 0
+   ORDER BY name ASC"
 )->fetchAll();
 
 // This staff's request history (with allocation link)

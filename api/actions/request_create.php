@@ -13,18 +13,40 @@ if ($equipmentId === null || $qtyRequested === null || $qtyRequested <= 0 || $pu
     redirect_to('api/requests.php', ['error' => 'Invalid request input']);
 }
 
-$stmt = db()->prepare(
-    "INSERT INTO equipment_requests (staff_id, equipment_id, qty_requested, purpose, status)
-     VALUES (:staff_id, :equipment_id, :qty_requested, :purpose, 'pending')
-     RETURNING id"
+$eqStmt = db()->prepare(
+    'SELECT id, name, status, quantity_available
+     FROM equipment
+     WHERE id = :id
+     LIMIT 1'
 );
-$stmt->execute([
-    'staff_id'      => $staffId,
-    'equipment_id'  => $equipmentId,
-    'qty_requested' => $qtyRequested,
-    'purpose'       => $purpose,
-]);
-$newRequestId = (int) $stmt->fetchColumn();
+$eqStmt->execute([':id' => $equipmentId]);
+$equipment = $eqStmt->fetch();
+
+if (!$equipment) {
+    redirect_to('/api/requests.php', ['error' => 'Selected equipment does not exist']);
+}
+
+if ((string) $equipment['status'] !== 'available' || (int) $equipment['quantity_available'] <= 0) {
+    redirect_to('/api/requests.php', ['error' => 'Selected equipment is not currently requestable']);
+}
+
+try {
+    $stmt = db()->prepare(
+        "INSERT INTO equipment_requests (staff_id, equipment_id, qty_requested, purpose, status)
+         VALUES (:staff_id, :equipment_id, :qty_requested, :purpose, 'pending')
+         RETURNING id"
+    );
+    $stmt->execute([
+        'staff_id'      => $staffId,
+        'equipment_id'  => $equipmentId,
+        'qty_requested' => $qtyRequested,
+        'purpose'       => $purpose,
+    ]);
+    $newRequestId = (int) $stmt->fetchColumn();
+} catch (Throwable $e) {
+    error_log('request_create INSERT error: ' . $e->getMessage());
+    redirect_to('/api/requests.php', ['error' => 'Failed to create request']);
+}
 
 // Get equipment name for audit context
 $eqName = 'Unknown';
@@ -67,4 +89,4 @@ if ($equipment) {
     }
 }
 
-redirect_to('api/requests.php', ['ok' => 'Request submitted']);
+redirect_to('/api/requests.php', ['ok' => 'Request submitted']);

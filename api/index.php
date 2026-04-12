@@ -31,7 +31,7 @@ $error = query_param('error');
       <?php if ($error !== ''): ?><p class="alert alert-error">Login Error: <?= h($error) ?></p><?php endif; ?>
 
       <form class="login-form" action="/api/actions/login.php" method="post">
-        <p><label for="email">Username</label></p>
+        <p><label for="email">Email address</label></p>
         <p><input id="email" name="email" type="email" required></p>
 
         <p><label for="password">Password</label></p>
@@ -59,7 +59,7 @@ $error = query_param('error');
     <aside class="login-column login-column-visual" aria-label="System title and branding panel">
       <div class="login-visual-center">
         <p class="login-visual-eyebrow">Web Systems and Technology</p>
-        <h2 class="login-visual-title">Equipement Management System</h2>
+        <h2 class="login-visual-title">Equipment Management System</h2>
         <p class="login-visual-subtitle">A role-based platform for stock control, request workflows, maintenance planning, and historical reporting.</p>
         <div class="login-accent-lines" aria-hidden="true">
           <span></span>

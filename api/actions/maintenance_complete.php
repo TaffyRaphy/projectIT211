@@ -3,70 +3,145 @@ declare(strict_types=1);
 require dirname(__DIR__, 2) . '/includes/bootstrap.php';
 
 require_role(['maintenance']);
-$maintenanceId = int_query_param('id', 0);
+$currentUser = require_login();
+
+// Read ID from query string or POST
+$maintenanceId = 0;
+if (isset($_GET['id']))     $maintenanceId = (int) $_GET['id'];
+if ($maintenanceId <= 0 && isset($_POST['id']))    $maintenanceId = (int) $_POST['id'];
+if ($maintenanceId <= 0 && isset($_REQUEST['id'])) $maintenanceId = (int) $_REQUEST['id'];
 
 if ($maintenanceId <= 0) {
-    redirect_to('api/maintenance.php', ['error' => 'Invalid maintenance id']);
+    redirect_to('/api/maintenance.php', ['error' => 'Invalid maintenance ID']);
 }
+
+// Completion data
+$workDone         = isset($_POST['work_done'])          ? trim((string) $_POST['work_done'])          : '';
+$partsReplaced    = isset($_POST['parts_replaced'])     ? trim((string) $_POST['parts_replaced'])     : '';
+$nextScheduleDate = isset($_POST['next_schedule_date']) ? trim((string) $_POST['next_schedule_date']) : '';
+$costRaw          = isset($_POST['cost'])               ? trim((string) $_POST['cost'])               : '';
+
+$completionNotes = '';
+if ($workDone !== '')      $completionNotes .= 'Work done: ' . $workDone;
+if ($partsReplaced !== '') $completionNotes .= ($completionNotes !== '' ? ' | ' : '') . 'Parts replaced: ' . $partsReplaced;
 
 $pdo = db();
-$pdo->beginTransaction();
+
+// 1. Mark log as completed — get equipment_id back
 try {
-    $updateLog = $pdo->prepare(
+    $stmt = $pdo->prepare(
         "UPDATE maintenance_logs
          SET status = 'completed', completed_date = CURRENT_DATE
-         WHERE id = :id AND status = 'scheduled'
-         RETURNING equipment_id"
+         WHERE id = :mid AND status = 'scheduled'
+         RETURNING equipment_id, cost"
     );
-    $updateLog->execute(['id' => $maintenanceId]);
-    $row = $updateLog->fetch();
-    if (!$row) {
-        $pdo->rollBack();
-        redirect_to('api/maintenance.php', ['error' => 'Log not found or already completed']);
-    }
+    $stmt->execute([':mid' => $maintenanceId]);
+    $row = $stmt->fetch();
+} catch (Throwable $e) {
+    error_log('maintenance_complete UPDATE status error: ' . $e->getMessage());
+    redirect_to('/api/maintenance.php', ['error' => 'Complete failed: ' . $e->getMessage()]);
+}
 
-    $updateEquipment = $pdo->prepare(
+if (!$row) {
+    redirect_to('/api/maintenance.php', ['error' => 'Log not found or already completed']);
+}
+
+$equipmentId = (int) $row['equipment_id'];
+$finalCost   = $row['cost'];
+
+// 2. Update notes if provided
+if ($completionNotes !== '') {
+    try {
+        $pdo->prepare("UPDATE maintenance_logs SET notes = :notes WHERE id = :mid")
+            ->execute([':notes' => $completionNotes, ':mid' => $maintenanceId]);
+    } catch (Throwable $e) {
+        error_log('maintenance_complete UPDATE notes error: ' . $e->getMessage());
+    }
+}
+
+// 3. Update cost if provided
+if ($costRaw !== '') {
+    try {
+        $pdo->prepare("UPDATE maintenance_logs SET cost = :cost WHERE id = :mid")
+            ->execute([':cost' => (float) $costRaw, ':mid' => $maintenanceId]);
+        $finalCost = (float) $costRaw;
+    } catch (Throwable $e) {
+        error_log('maintenance_complete UPDATE cost error: ' . $e->getMessage());
+    }
+}
+
+// 4. Restore equipment status
+$nextMaint = ($nextScheduleDate !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $nextScheduleDate))
+    ? $nextScheduleDate : null;
+try {
+    $pdo->prepare(
         "UPDATE equipment
          SET status = CASE WHEN quantity_available > 0 THEN 'available' ELSE 'allocated' END,
-             next_maintenance_date = (SELECT MIN(schedule_date) FROM maintenance_logs WHERE equipment_id = :equipment_id AND status = 'scheduled'),
+             next_maintenance_date = :next_maint,
              updated_at = NOW()
-         WHERE id = :equipment_id AND status <> 'retired'"
-    );
-    $updateEquipment->execute(['equipment_id' => (int) $row['equipment_id']]);
-    
-    // Get maintenance log details for notification
-    $logStmt = $pdo->prepare('SELECT cost, completed_date FROM maintenance_logs WHERE id = :id');
-    $logStmt->execute(['id' => $maintenanceId]);
-    $log = $logStmt->fetch();
-    
-    // Get equipment name
-    $equipStmt = $pdo->prepare('SELECT name FROM equipment WHERE id = :id');
-    $equipStmt->execute(['id' => (int) $row['equipment_id']]);
-    $equipment = $equipStmt->fetch();
-    
-    $pdo->commit();
-    
-    // Send notification to admins
-    if ($log && $equipment) {
-        $adminsEmails = NotificationService::getInstance()->getAdminsEmails();
-        foreach ($adminsEmails as $adminId => $adminEmail) {
-            NotificationService::getInstance()->send(
-                'maintenance_completed',
-                $adminEmail,
-                (int) $adminId,
-                [
-                    'equipment_name' => $equipment['name'],
-                    'completed_date' => $log['completed_date'],
-                    'cost' => $log['cost'] !== null ? '$' . number_format((float) $log['cost'], 2) : 'Not specified',
-                ]
-            );
-        }
-    }
-    
-    redirect_to('api/maintenance.php', ['ok' => 'Maintenance completed']);
+         WHERE id = :eid AND status <> 'retired'"
+    )->execute([':next_maint' => $nextMaint, ':eid' => $equipmentId]);
 } catch (Throwable $e) {
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
-    redirect_to('api/maintenance.php', ['error' => 'Failed to complete maintenance']);
+    error_log('maintenance_complete UPDATE equipment error: ' . $e->getMessage());
 }
+
+// 5. Equipment name
+$equipName = 'Unknown';
+try {
+    $eqStmt = $pdo->prepare('SELECT name FROM equipment WHERE id = :eid');
+    $eqStmt->execute([':eid' => $equipmentId]);
+    $equipName = (string) ($eqStmt->fetchColumn() ?: 'Unknown');
+} catch (Throwable $e) { /* non-fatal */ }
+
+// 6. Mark maintenance_overdue persistent notifications as read for this equipment's maintenance users
+try {
+    $userStmt = $pdo->prepare(
+        "SELECT DISTINCT maintenance_user_id FROM maintenance_logs WHERE equipment_id = :eid"
+    );
+    $userStmt->execute([':eid' => $equipmentId]);
+    $maintUserIds = $userStmt->fetchAll(PDO::FETCH_COLUMN);
+    if (!empty($maintUserIds)) {
+        $placeholders = implode(',', array_fill(0, count($maintUserIds), '?'));
+        $readStmt = $pdo->prepare(
+            "UPDATE notifications SET is_read = true
+             WHERE user_id IN ({$placeholders})
+               AND type = 'maintenance_overdue'
+               AND is_read = false"
+        );
+        $readStmt->execute($maintUserIds);
+    }
+} catch (Throwable $e) {
+    error_log('maintenance_complete mark-overdue-read error: ' . $e->getMessage());
+}
+
+// 6. Audit
+log_audit('complete', 'maintenance_logs', $maintenanceId, (int) $currentUser['id'],
+    ['status' => 'scheduled'],
+    [
+        'status'         => 'completed',
+        'completed_date' => date('Y-m-d'),
+        'equipment_id'   => $equipmentId,
+        'equipment_name' => $equipName,
+        'work_done'      => $workDone,
+        'parts_replaced' => $partsReplaced,
+        'next_schedule'  => $nextScheduleDate,
+    ]
+);
+
+// 7. Notify admins
+try {
+    $ns = NotificationService::getInstance();
+    foreach ($ns->getAdminsEmails() as $adminId => $adminEmail) {
+        $ns->send('maintenance_completed', $adminEmail, (int) $adminId, [
+            'equipment_name' => $equipName,
+            'completed_date' => date('Y-m-d'),
+            'work_done'      => $workDone ?: 'Not specified',
+            'parts_replaced' => $partsReplaced ?: 'None',
+            'cost'           => $finalCost !== null ? '₱' . number_format((float) $finalCost, 2) : 'Not specified',
+        ]);
+    }
+} catch (Throwable $e) {
+    error_log('maintenance_complete notification error: ' . $e->getMessage());
+}
+
+redirect_to('/api/maintenance.php', ['ok' => 'Maintenance marked complete']);

@@ -16,4 +16,8 @@ if ($user === null) {
 }
 
 login_user($user);
+log_audit('login', 'users', (int) $user['id'], (int) $user['id'], null, [
+    'email' => $user['email'],
+    'role'  => $user['role'],
+]);
 redirect_to('api/dashboard.php');

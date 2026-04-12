@@ -17,6 +17,7 @@ if ($allocationId <= 0) {
 
 $currentUserId = (int) $user['id'];
 $pdo = db();
+$alloc = null;
 
 // Admin only can actually process the return
 if ($role !== 'admin') {
@@ -109,6 +110,19 @@ try {
     )->execute([':uid' => (int) $alloc['staff_id']]);
 } catch (Throwable $e) {
     error_log('allocation_return notification update error: ' . $e->getMessage());
+}
+
+try {
+    $statusCheck = $pdo->prepare('SELECT status FROM allocations WHERE id = :id');
+    $statusCheck->execute([':id' => $allocationId]);
+    $savedStatus = (string) ($statusCheck->fetchColumn() ?: '');
+    if ($savedStatus !== 'returned') {
+        error_log('allocation_return post-commit mismatch: allocation ' . $allocationId . ' status=' . $savedStatus);
+        redirect_to('/api/admin_requests.php', ['error' => 'Return did not persist. Please refresh and try again.']);
+    }
+} catch (Throwable $e) {
+    error_log('allocation_return verify status error: ' . $e->getMessage());
+    redirect_to('/api/admin_requests.php', ['error' => 'Unable to verify return status. Please refresh and check allocation list.']);
 }
 
 redirect_to('/api/admin_requests.php', ['ok' => "'{$alloc['equipment_name']}' returned by {$alloc['staff_name']} — inventory restored"]);

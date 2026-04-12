@@ -169,7 +169,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($adminId);
           <td><?= h(utc_to_ph($alloc['checkout_date'], 'M d, Y')) ?></td>
           <td>
             <?php if (!empty($alloc['expected_return_date'])): ?>
-              <?= h($alloc['expected_return_date']) ?>
+              <?= h(utc_to_ph($alloc['expected_return_date'], 'M d, Y')) ?>
               <?php if ($isOverdue): ?>
                 <span class="overdue-tag">OVERDUE</span>
               <?php endif; ?>

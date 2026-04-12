@@ -18,6 +18,7 @@ if ($allocationId <= 0) {
 $currentUserId = (int) $user['id'];
 $pdo = db();
 $alloc = null;
+$dbTrace = 'db:' . db_fingerprint();
 
 // Admin only can actually process the return
 if ($role !== 'admin') {
@@ -82,13 +83,50 @@ try {
             WHERE id = :request_id AND status IN ('allocated', 'approved')"
     )->execute([':request_id' => (int) $alloc['request_id']]);
 
+    $verifyStmt = $pdo->prepare(
+        'SELECT status, actual_return_date
+         FROM allocations
+         WHERE id = :id
+         FOR UPDATE'
+    );
+    $verifyStmt->execute([':id' => $allocationId]);
+    $verifyRow = $verifyStmt->fetch();
+    $verifiedStatus = (string) ($verifyRow['status'] ?? '');
+    $verifiedReturnDate = (string) ($verifyRow['actual_return_date'] ?? '');
+    if ($verifiedStatus !== 'returned' || $verifiedReturnDate === '') {
+        throw new RuntimeException('Return verification failed before commit');
+    }
+
     $pdo->commit();
 } catch (Throwable $e) {
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    error_log('allocation_return error: ' . $e->getMessage());
-    redirect_to('/api/admin_requests.php', ['error' => $e->getMessage()]);
+    error_log('allocation_return error (' . $dbTrace . '): ' . $e->getMessage());
+    redirect_to('/api/admin_requests.php', ['error' => $e->getMessage() . ' [' . $dbTrace . ']']);
+}
+
+try {
+    $postCommit = $pdo->prepare(
+        'SELECT status, actual_return_date
+         FROM allocations
+         WHERE id = :id'
+    );
+    $postCommit->execute([':id' => $allocationId]);
+    $postRow = $postCommit->fetch();
+    $postStatus = (string) ($postRow['status'] ?? '');
+    $postReturnDate = (string) ($postRow['actual_return_date'] ?? '');
+    if ($postStatus !== 'returned' || $postReturnDate === '') {
+        $msg = 'Return not persisted: status=' . ($postStatus === '' ? 'null' : $postStatus)
+             . ', return_date=' . ($postReturnDate === '' ? 'null' : $postReturnDate)
+             . ' [' . $dbTrace . ', alloc:' . $allocationId . ']';
+        error_log('allocation_return mismatch: ' . $msg);
+        redirect_to('/api/admin_requests.php', ['error' => $msg]);
+    }
+} catch (Throwable $e) {
+    $msg = 'Post-commit verification failed [' . $dbTrace . ', alloc:' . $allocationId . ']';
+    error_log('allocation_return verify error: ' . $e->getMessage() . ' ' . $msg);
+    redirect_to('/api/admin_requests.php', ['error' => $msg]);
 }
 
 // 6. Audit
@@ -115,4 +153,4 @@ try {
     error_log('allocation_return notification update error: ' . $e->getMessage());
 }
 
-redirect_to('/api/admin_requests.php', ['ok' => "'{$alloc['equipment_name']}' returned by {$alloc['staff_name']} — inventory restored"]);
+redirect_to('/api/admin_requests.php', ['ok' => "'{$alloc['equipment_name']}' returned by {$alloc['staff_name']} — inventory restored [{$dbTrace}, alloc:{$allocationId}]"]);

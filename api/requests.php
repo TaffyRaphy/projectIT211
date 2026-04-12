@@ -40,7 +40,7 @@ $allocRows = db()->prepare(
             a.status
      FROM allocations a
      JOIN equipment e ON e.id = a.equipment_id
-     WHERE a.staff_id = :sid AND a.status = 'active'
+  WHERE a.staff_id = :sid AND a.actual_return_date IS NULL
      ORDER BY a.expected_return_date ASC NULLS LAST"
 );
 $allocRows->execute([':sid' => $staffId]);

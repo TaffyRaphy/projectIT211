@@ -43,7 +43,7 @@ $activeAllocations = db()->query(
      FROM allocations a
      JOIN users u ON u.id = a.staff_id
      JOIN equipment e ON e.id = a.equipment_id
-     WHERE a.status = 'active'
+  WHERE a.actual_return_date IS NULL
      ORDER BY a.expected_return_date ASC NULLS LAST, a.checkout_date DESC"
 )->fetchAll();
 

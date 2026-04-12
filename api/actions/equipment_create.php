@@ -15,15 +15,35 @@ if ($name === '' || $category === '' || $location === '' || $quantityTotal === n
     redirect_to('api/equipment.php', ['error' => 'Invalid equipment input']);
 }
 
-function generate_equipment_code(PDO $pdo): string
+function generate_equipment_code(PDO $pdo, string $category): string
 {
-    $datePart = date('Ymd');
-    $check = $pdo->prepare('SELECT 1 FROM equipment WHERE code = :code LIMIT 1');
+    // First 3 letters of category, uppercase, letters only
+    $prefix = strtoupper(preg_replace('/[^A-Za-z]/', '', $category));
+    $prefix = substr($prefix, 0, 3) ?: 'EQP';
 
-    for ($attempt = 0; $attempt < 10; $attempt++) {
-        $randomSuffix = strtoupper(bin2hex(random_bytes(2)));
-        $code = sprintf('EQ-%s-%s', $datePart, $randomSuffix);
-        $check->execute(['code' => $code]);
+    // Find highest existing sequence for this prefix
+    $stmt = $pdo->prepare(
+        "SELECT code FROM equipment WHERE code LIKE :prefix ORDER BY code DESC"
+    );
+    $stmt->execute([':prefix' => $prefix . '-%']);
+    $rows = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    $maxSeq = 0;
+    foreach ($rows as $existing) {
+        // Extract numeric part after prefix-
+        $parts = explode('-', $existing, 2);
+        if (isset($parts[1]) && ctype_digit($parts[1])) {
+            $maxSeq = max($maxSeq, (int) $parts[1]);
+        }
+    }
+
+    $newSeq = $maxSeq + 1;
+
+    // Find a unique code (handles collision edge cases)
+    $check = $pdo->prepare('SELECT 1 FROM equipment WHERE code = :code LIMIT 1');
+    for ($i = 0; $i < 20; $i++) {
+        $code = sprintf('%s-%03d', $prefix, $newSeq + $i);
+        $check->execute([':code' => $code]);
         if ($check->fetch() === false) {
             return $code;
         }
@@ -32,7 +52,7 @@ function generate_equipment_code(PDO $pdo): string
     throw new RuntimeException('Unable to generate a unique equipment code.');
 }
 
-$code = generate_equipment_code(db());
+$code = generate_equipment_code(db(), $category);
 
 $stmt = db()->prepare(
     "INSERT INTO equipment (code, name, category, status, quantity_total, quantity_available, location)

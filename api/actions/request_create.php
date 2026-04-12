@@ -15,7 +15,8 @@ if ($equipmentId === null || $qtyRequested === null || $qtyRequested <= 0 || $pu
 
 $stmt = db()->prepare(
     "INSERT INTO equipment_requests (staff_id, equipment_id, qty_requested, purpose, status)
-     VALUES (:staff_id, :equipment_id, :qty_requested, :purpose, 'pending')"
+     VALUES (:staff_id, :equipment_id, :qty_requested, :purpose, 'pending')
+     RETURNING id"
 );
 $stmt->execute([
     'staff_id'      => $staffId,
@@ -23,14 +24,23 @@ $stmt->execute([
     'qty_requested' => $qtyRequested,
     'purpose'       => $purpose,
 ]);
-$newRequestId = (int) db()->lastInsertId();
+$newRequestId = (int) $stmt->fetchColumn();
+
+// Get equipment name for audit context
+$eqName = 'Unknown';
+try {
+    $eqStmt = db()->prepare('SELECT name FROM equipment WHERE id = :id');
+    $eqStmt->execute([':id' => $equipmentId]);
+    $eqName = (string) ($eqStmt->fetchColumn() ?: 'Unknown');
+} catch (Throwable $e) {}
 
 // Audit log
 log_audit('create', 'equipment_requests', $newRequestId, $staffId, null, [
-    'equipment_id'  => $equipmentId,
-    'qty_requested' => $qtyRequested,
-    'purpose'       => $purpose,
-    'status'        => 'pending',
+    'equipment_id'   => $equipmentId,
+    'equipment_name' => $eqName,
+    'qty_requested'  => $qtyRequested,
+    'purpose'        => $purpose,
+    'status'         => 'pending',
 ]);
 
 // Notify all admins (in-app + email)

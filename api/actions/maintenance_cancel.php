@@ -17,28 +17,45 @@ if ($maintenanceId <= 0) {
 
 $pdo = db();
 
-// 1. Cancel the log — any status that is 'scheduled' (regardless of date)
+// 1. Fetch full log details BEFORE cancel (for rich audit context)
+$logDetails = null;
+try {
+    $fetchStmt = $pdo->prepare(
+        "SELECT m.id, m.equipment_id, m.maintenance_type, m.schedule_date::text AS schedule_date,
+                m.notes, m.cost, m.status,
+                e.name AS equipment_name
+         FROM maintenance_logs m
+         JOIN equipment e ON e.id = m.equipment_id
+         WHERE m.id = :mid"
+    );
+    $fetchStmt->execute([':mid' => $maintenanceId]);
+    $logDetails = $fetchStmt->fetch();
+} catch (Throwable $e) {
+    error_log('maintenance_cancel FETCH error: ' . $e->getMessage());
+}
+
+if (!$logDetails) {
+    redirect_to('/api/maintenance.php', ['error' => 'Maintenance task not found']);
+}
+if ((string) $logDetails['status'] !== 'scheduled') {
+    redirect_to('/api/maintenance.php', ['error' => 'Task is not in scheduled status — cannot cancel']);
+}
+
+$equipmentId = (int) $logDetails['equipment_id'];
+$equipName   = (string) $logDetails['equipment_name'];
+
+// 2. Cancel the log
 try {
     $stmt = $pdo->prepare(
-        "UPDATE maintenance_logs
-         SET status = 'cancelled'
-         WHERE id = :mid AND status = 'scheduled'
-         RETURNING equipment_id"
+        "UPDATE maintenance_logs SET status = 'cancelled' WHERE id = :mid AND status = 'scheduled'"
     );
     $stmt->execute([':mid' => $maintenanceId]);
-    $row = $stmt->fetch();
 } catch (Throwable $e) {
     error_log('maintenance_cancel UPDATE error: ' . $e->getMessage());
     redirect_to('/api/maintenance.php', ['error' => 'Cancel failed: ' . $e->getMessage()]);
 }
 
-if (!$row) {
-    redirect_to('/api/maintenance.php', ['error' => 'Task not found or not in scheduled status']);
-}
-
-$equipmentId = (int) $row['equipment_id'];
-
-// 2. Check remaining scheduled logs
+// 3. Check remaining scheduled logs
 $remaining = 0;
 try {
     $countStmt = $pdo->prepare(
@@ -50,7 +67,7 @@ try {
     error_log('maintenance_cancel COUNT error: ' . $e->getMessage());
 }
 
-// 3. Restore equipment if no other scheduled tasks
+// 4. Restore equipment if no other scheduled tasks remain
 if ($remaining === 0) {
     try {
         $pdo->prepare(
@@ -65,29 +82,38 @@ if ($remaining === 0) {
     }
 }
 
-// 4. Audit
+// 5. Rich audit log — full context for audit trail readability
 log_audit('cancel', 'maintenance_logs', $maintenanceId, (int) $currentUser['id'],
-    ['status' => 'scheduled'],
-    ['status' => 'cancelled']
+    [
+        'status'           => 'scheduled',
+        'equipment_name'   => $equipName,
+        'maintenance_type' => $logDetails['maintenance_type'],
+        'schedule_date'    => $logDetails['schedule_date'],
+    ],
+    [
+        'status'           => 'cancelled',
+        'equipment_id'     => $equipmentId,
+        'equipment_name'   => $equipName,
+        'maintenance_type' => $logDetails['maintenance_type'],
+        'schedule_date'    => $logDetails['schedule_date'],
+        'cancelled_by'     => $currentUser['full_name'],
+    ]
 );
 
-// 5. Notify maintenance team + admins
+// 6. Notify maintenance team + admins
 try {
-    // Get equipment name for notification
-    $eqStmt = db()->prepare('SELECT name FROM equipment WHERE id = :eid');
-    $eqStmt->execute([':eid' => $equipmentId]);
-    $equipName = (string) ($eqStmt->fetchColumn() ?: 'Unknown');
-
     $ns = NotificationService::getInstance();
     $recipients = $ns->getMaintenanceEmails() + $ns->getAdminsEmails();
     foreach ($recipients as $uid => $email) {
         $ns->send('maintenance_cancelled', $email, (int) $uid, [
-            'equipment_name' => $equipName,
-            'cancelled_by'   => $currentUser['full_name'],
+            'equipment_name'   => $equipName,
+            'maintenance_type' => $logDetails['maintenance_type'],
+            'schedule_date'    => $logDetails['schedule_date'],
+            'cancelled_by'     => $currentUser['full_name'],
         ]);
     }
 } catch (Throwable $e) {
     error_log('maintenance_cancel notification error: ' . $e->getMessage());
 }
 
-redirect_to('/api/maintenance.php', ['ok' => 'Maintenance task cancelled']);
+redirect_to('/api/maintenance.php', ['ok' => "Maintenance task for {$equipName} cancelled"]);

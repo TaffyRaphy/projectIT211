@@ -61,7 +61,10 @@ $stmt->execute([
     'id'                 => $equipmentId,
 ]);
 
-log_audit('update', 'equipment', $equipmentId, null, $oldValues ?: null, [
+$adminUser = require_login();
+$adminId   = (int) $adminUser['id'];
+
+log_audit('update', 'equipment', $equipmentId, $adminId, $oldValues ?: null, [
     'name'               => $name,
     'category'           => $category,
     'status'             => $status,

@@ -119,8 +119,8 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($adminId);
       <div class="req-actions">
         <form action="/api/actions/request_approve.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post" style="display:flex; gap:.5rem; align-items:flex-end; flex-wrap:wrap;">
           <div class="form-group" style="margin-bottom:0;">
-            <label style="font-size:.78rem;">Return Date (optional)</label>
-            <input type="date" name="due_date" style="padding:.25rem .5rem; font-size:.85rem;">
+            <label style="font-size:.78rem;">Expected Return Date <span style="color:#ef4444;">*</span></label>
+            <input type="date" name="due_date" required min="<?= date('Y-m-d') ?>" style="padding:.25rem .5rem; font-size:.85rem;">
           </div>
           <button type="submit" class="btn btn-primary" style="font-size:.85rem;">✅ Approve & Allocate</button>
         </form>

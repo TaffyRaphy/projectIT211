@@ -3,6 +3,8 @@ declare(strict_types=1);
 require dirname(__DIR__, 2) . '/includes/bootstrap.php';
 
 require_role(['admin']);
+$adminUser = require_login();
+$adminId   = (int) $adminUser['id'];
 
 $name = post_string('name');
 $category = post_string('category');
@@ -45,7 +47,7 @@ $stmt->execute([
 ]);
 $newId = (int) db()->lastInsertId();
 
-log_audit('create', 'equipment', $newId, null, null, [
+log_audit('create', 'equipment', $newId, $adminId, null, [
     'code'             => $code,
     'name'             => $name,
     'category'         => $category,

@@ -7,7 +7,8 @@ $currentId   = (int) $currentUser['id'];
 $currentRole = (string) $currentUser['role'];
 
 // Admins can edit any profile; others only their own
-$targetId = post_int('target_id') ?? $currentId;
+// Direct POST read — filter_input/post_int returns null on Vercel
+$targetId = isset($_POST['target_id']) && $_POST['target_id'] !== '' ? (int) $_POST['target_id'] : $currentId;
 if ($currentRole !== 'admin' && $targetId !== $currentId) {
     redirect_to('/api/profile.php', ['error' => 'Permission denied']);
 }

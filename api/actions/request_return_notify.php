@@ -49,7 +49,9 @@ try {
 
 log_audit('update', 'allocations', $allocationId, $staffId, null, [
     'action'         => 'return_requested',
+    'status'         => 'active',
     'equipment_name' => $alloc['equipment_name'],
+    'staff_name'     => $user['full_name'],
 ]);
 
 redirect_to('/api/requests.php', ['ok' => 'Return request sent to admin for ' . $alloc['equipment_name']]);

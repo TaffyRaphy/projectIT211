@@ -18,7 +18,7 @@ $setup = query_param('setup'); // '1' = mandatory profile fill mode
 
 // Fetch the profile user (now includes new fields)
 $profileStmt = db()->prepare(
-    'SELECT id, full_name, email, role, created_at, employee_id, department, job_title, profile_photo
+    'SELECT id, full_name, email, role, created_at, employee_id, department, job_title
      FROM users WHERE id = :id'
 );
 $profileStmt->execute([':id' => $viewId]);
@@ -83,6 +83,7 @@ $actionTypeIcon = [
     'reject'   => '❌',
     'complete' => '✔️',
     'snapshot' => '📸',
+    'cancel'   => '✖️',
 ];
 
 $unreadCount = NotificationService::getInstance()->getUnreadCount($currentUserId);
@@ -371,7 +372,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($currentUserId
               <?php
                 $newVals = is_string($entry['new_values']) ? json_decode($entry['new_values'], true) : null;
                 if (is_array($newVals)) {
-                    $show = array_filter($newVals, fn($k) => in_array($k, ['status', 'name', 'equipment_name', 'role', 'email']), ARRAY_FILTER_USE_KEY);
+                    $show = array_filter($newVals, fn($k) => in_array($k, ['status', 'name', 'equipment_name', 'role', 'email', 'full_name', 'staff_name', 'maintenance_type', 'schedule_date', 'completed_date', 'qty_requested', 'qty_allocated', 'qty_returned', 'expected_return_date', 'cancelled_by', 'action', 'category', 'location', 'code', 'work_done', 'purpose']), ARRAY_FILTER_USE_KEY);
                     if (!empty($show)) {
                         foreach ($show as $k => $v) {
                             echo '<span style="margin-right:.4rem;"><strong>' . h($k) . ':</strong> ' . h((string)$v) . '</span>';

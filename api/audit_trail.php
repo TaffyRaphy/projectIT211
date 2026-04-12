@@ -82,6 +82,7 @@ $actionTypeIcon = [
     'login'    => '🔑', 'create'   => '➕',
     'update'   => '✏️', 'approve'  => '✅',
     'reject'   => '❌', 'complete' => '✔️', 'snapshot' => '📸',
+    'cancel'   => '✖️',
 ];
 
 $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
@@ -238,7 +239,7 @@ $filters = [
             <?php
               $nv = is_string($entry['new_values']) ? json_decode($entry['new_values'], true) : null;
               if (is_array($nv)) {
-                  $show = array_filter($nv, fn($k) => in_array($k, ['status', 'name', 'equipment_name', 'role', 'email', 'full_name']), ARRAY_FILTER_USE_KEY);
+                  $show = array_filter($nv, fn($k) => in_array($k, ['status', 'name', 'equipment_name', 'role', 'email', 'full_name', 'staff_name', 'maintenance_type', 'schedule_date', 'completed_date', 'qty_requested', 'qty_allocated', 'qty_returned', 'expected_return_date', 'cancelled_by', 'action', 'category', 'location', 'code', 'work_done', 'purpose']), ARRAY_FILTER_USE_KEY);
                   foreach ($show as $k => $v) {
                       echo '<strong>' . h($k) . '</strong>: ' . h((string)$v) . ' ';
                   }

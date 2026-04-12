@@ -14,7 +14,7 @@ $perPage = 20;
 $offset  = ($page - 1) * $perPage;
 
 // Filter: all | unread
-$filter = query_param('filter', 'all');
+$filter = query_param('filter', 'unread');
 $whereRead = '';
 if ($filter === 'unread') {
     $whereRead = 'AND n.is_read = false';

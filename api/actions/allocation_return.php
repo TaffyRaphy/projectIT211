@@ -110,5 +110,5 @@ try {
 }
 
 redirect_to('/api/admin_requests.php', [
-    'ok' => "'{$alloc['equipment_name']}' returned by {$alloc['staff_name']} — inventory restored [{$dbTrace}, alloc:{$allocationId}]",
+    'ok' => "'{$alloc['equipment_name']}' returned by {$alloc['staff_name']} — inventory restored",
 ]);

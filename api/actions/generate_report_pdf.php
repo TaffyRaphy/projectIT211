@@ -4,9 +4,10 @@ require dirname(__DIR__, 2) . '/includes/bootstrap.php';
 
 require_role(['admin']);
 
-$reportType = post_string('report_type') ?: query_param('report_type', 'inventory');
+$reportType     = post_string('report_type')     ?: query_param('report_type', 'inventory');
 $categoryFilter = post_string('category_filter') ?: query_param('category_filter', '');
-$startDate = post_string('start_date') ?: query_param('start_date', '');
+$startDate      = post_string('start_date')      ?: query_param('start_date', '');
+$trendMetric    = post_string('trend_metric')    ?: query_param('trend_metric', 'cost');
 
 // Validate report type
 $validTypes = ['inventory', 'usage', 'maintenance', 'sla', 'summary'];
@@ -204,16 +205,52 @@ try {
         $actualCost        = (float) ($mRow['actual_cost'] ?? 0);
 
         // Previous month cost
+        $prevMonth      = $reportMonth === 1 ? 12 : $reportMonth - 1;
+        $prevYear       = $reportMonth === 1 ? $reportYear - 1 : $reportYear;
         $prevMonthCostRow = db()->query(
             "SELECT COALESCE(SUM(cost), 0) AS cost
              FROM maintenance_logs
              WHERE status = 'completed'
-               AND EXTRACT(MONTH FROM completed_date) = " . ($reportMonth === 1 ? 12 : $reportMonth - 1) . "
-               AND EXTRACT(YEAR FROM completed_date)  = " . ($reportMonth === 1 ? $reportYear - 1 : $reportYear)
+               AND EXTRACT(MONTH FROM completed_date) = {$prevMonth}
+               AND EXTRACT(YEAR FROM completed_date)  = {$prevYear}"
         )->fetch();
         $prevMonthCost = (float) ($prevMonthCostRow['cost'] ?? 0);
-        $costTrend = $actualCost > $prevMonthCost ? '↑ Increasing' : ($actualCost < $prevMonthCost ? '↓ Decreasing' : '→ Stable');
+        $costTrend      = $actualCost > $prevMonthCost ? '↑ Increasing' : ($actualCost < $prevMonthCost ? '↓ Decreasing' : '→ Stable');
         $costTrendColor = $actualCost > $prevMonthCost ? '#ef4444' : ($actualCost < $prevMonthCost ? '#22c55e' : '#888');
+
+        // Previous month utilization (allocated equipment count vs total)
+        $prevMonthAllocRow = db()->query(
+            "SELECT COUNT(DISTINCT equipment_id) AS alloc
+             FROM allocations
+             WHERE EXTRACT(MONTH FROM checkout_date) = {$prevMonth}
+               AND EXTRACT(YEAR FROM checkout_date)  = {$prevYear}"
+        )->fetch();
+        $prevMonthAlloc = (int) ($prevMonthAllocRow['alloc'] ?? 0);
+        $prevMonthUtil  = $eqTotal > 0 ? round(($prevMonthAlloc / $eqTotal) * 100, 1) : 0.0;
+        $utilTrend      = $utilizationRate > $prevMonthUtil ? '↑ Increasing' : ($utilizationRate < $prevMonthUtil ? '↓ Decreasing' : '→ Stable');
+        $utilTrendColor = $utilizationRate > $prevMonthUtil ? '#22c55e' : ($utilizationRate < $prevMonthUtil ? '#ef4444' : '#888');
+
+        // Previous month requests
+        $prevMonthReqRow = db()->query(
+            "SELECT COUNT(*) AS cnt
+             FROM equipment_requests
+             WHERE EXTRACT(MONTH FROM requested_at) = {$prevMonth}
+               AND EXTRACT(YEAR FROM requested_at)  = {$prevYear}"
+        )->fetch();
+        $prevMonthReqs = (int) ($prevMonthReqRow['cnt'] ?? 0);
+        $thisMonthReqs = (int) db()->query(
+            "SELECT COUNT(*) FROM equipment_requests
+             WHERE EXTRACT(MONTH FROM requested_at) = {$reportMonth}
+               AND EXTRACT(YEAR FROM requested_at)  = {$reportYear}"
+        )->fetchColumn();
+        $reqTrend      = $thisMonthReqs > $prevMonthReqs ? '↑ Increasing' : ($thisMonthReqs < $prevMonthReqs ? '↓ Decreasing' : '→ Stable');
+        $reqTrendColor = '#555';
+
+        // Validate trendMetric
+        $validTrendMetrics = ['cost', 'utilization', 'requests'];
+        if (!in_array($trendMetric, $validTrendMetrics)) {
+            $trendMetric = 'cost';
+        }
 
         // --- Total Allocations ---
         $totalAllocations = (int) db()->query("SELECT COUNT(*) FROM allocations")->fetchColumn();
@@ -261,19 +298,35 @@ try {
         echo '<div class="period-badge">📅 Reporting Period: <strong>' . $reportingPeriod . '</strong></div>';
         echo '<p style="font-size:13px; color:#555;">Compared to previous period: <strong>' . $prevMonthLabel . '</strong></p>';
 
+        // Trend comparison selector note (embedded in exported doc)
+        $trendLabels = ['cost' => 'Maintenance Cost', 'utilization' => 'Equipment Utilization Rate', 'requests' => 'Total Requests'];
+        echo '<p style="font-size:12px; background:#f3f4f6; border:1px solid #d1d5db; border-radius:6px; padding:6px 12px; display:inline-block; color:#374151;">
+              📈 Trend metric: <strong>' . h($trendLabels[$trendMetric] ?? $trendMetric) . '</strong></p>';
+
+
         echo '<h2>Enhanced KPIs</h2>';
         echo '<div class="kpi-grid">';
         echo '<div class="kpi-box"><span class="kpi-val">' . $utilizationRate . '%</span><span class="kpi-lbl">Equipment Utilization Rate</span><br><span class="kpi-sub">' . $eqAllocated . ' in use, ' . $eqAvailable . ' idle</span></div>';
         echo '<div class="kpi-box"><span class="kpi-val">' . $availabilityRate . '%</span><span class="kpi-lbl">Equipment Availability</span><br><span class="kpi-sub">Available: ' . $eqAvailable . ' | Deployed: ' . $eqAllocated . ' | Repair: ' . $eqUnderRepair . '</span></div>';
         echo '<div class="kpi-box"><span class="kpi-val">' . $maintRate . '%</span><span class="kpi-lbl">Maintenance Completion Rate</span><br><span class="kpi-sub">' . $maintCompleted . ' of ' . $maintTotal . ' tasks completed</span></div>';
-        echo '<div class="kpi-box"><span class="kpi-val">$' . number_format($actualCost, 2) . '</span><span class="kpi-lbl">Actual Maintenance Cost</span><br><span class="kpi-sub" style="color:' . $costTrendColor . ';">' . $costTrend . ' vs prev month</span></div>';
+        echo '<div class="kpi-box"><span class="kpi-val">₱' . number_format($actualCost, 2) . '</span><span class="kpi-lbl">Actual Maintenance Cost</span><br><span class="kpi-sub" style="color:' . $costTrendColor . ';">' . $costTrend . ' vs prev month</span></div>';
         echo '<div class="kpi-box"><span class="kpi-val">' . $eqTotal . '</span><span class="kpi-lbl">Total Equipment</span><br><span class="kpi-sub">' . $totalAllocations . ' total allocations</span></div>';
+        echo '<div class="kpi-box"><span class="kpi-val">' . $thisMonthReqs . '</span><span class="kpi-lbl">Requests This Month</span><br><span class="kpi-sub">' . $prevMonthReqs . ' prev month</span></div>';
         echo '</div>';
 
-        // Trend indicator
+        // Trend indicator — show selected metric comparison
         echo '<div class="section-card">';
-        echo '<h3>Quick Trend Indicators</h3>';
-        echo '<p>📈 <strong>Maintenance Cost:</strong> <span style="color:' . $costTrendColor . ';">' . $costTrend . '</span> vs ' . $prevMonthLabel . ' ($' . number_format($prevMonthCost, 2) . ')</p>';
+        echo '<h3>Trend Comparison: ' . h($trendLabels[$trendMetric] ?? $trendMetric) . '</h3>';
+        if ($trendMetric === 'cost') {
+            echo '<p>📈 <strong>Maintenance Cost:</strong> <span style="color:' . $costTrendColor . ';">' . $costTrend . '</span><br>';
+            echo 'This month: <strong>₱' . number_format($actualCost, 2) . '</strong> &nbsp;•&nbsp; Prev month (' . $prevMonthLabel . '): ₱' . number_format($prevMonthCost, 2) . '</p>';
+        } elseif ($trendMetric === 'utilization') {
+            echo '<p>📈 <strong>Equipment Utilization Rate:</strong> <span style="color:' . $utilTrendColor . ';">' . $utilTrend . '</span><br>';
+            echo 'This month: <strong>' . $utilizationRate . '%</strong> &nbsp;•&nbsp; Prev month (' . $prevMonthLabel . '): ' . $prevMonthUtil . '% (based on new allocations)</p>';
+        } elseif ($trendMetric === 'requests') {
+            echo '<p>📈 <strong>Equipment Requests:</strong> <span style="color:' . $reqTrendColor . ';">' . $reqTrend . '</span><br>';
+            echo 'This month: <strong>' . $thisMonthReqs . ' requests</strong> &nbsp;•&nbsp; Prev month (' . $prevMonthLabel . '): ' . $prevMonthReqs . ' requests</p>';
+        }
         echo '<p>📦 <strong>Equipment Availability:</strong> ' . $availabilityRate . '% available — ' . ($availabilityRate >= 50 ? '✅ Healthy' : '⚠️ Low availability') . '</p>';
         echo '<p>🔧 <strong>Pending Maintenance:</strong> ' . $maintScheduled . ' task(s) pending completion.</p>';
         echo '</div>';

@@ -392,9 +392,21 @@ try {
       <a href="/api/actions/check_overdue_allocations.php" class="btn btn-warning">⚠️ Check Overdue Items</a>
       <a href="/api/notification_logs.php"               class="btn btn-secondary">📧 Notification Logs</a>
       <a href="/api/users.php"                           class="btn btn-secondary">👥 User Management</a>
-      <a href="/api/actions/generate_report_pdf.php?report_type=summary" class="btn btn-primary">📄 Export Summary (HTML)</a>
-      <a href="/api/actions/test_email.php"                              class="btn btn-warning">✉️ Test Resend Email</a>
+      <a href="/api/actions/test_email.php"              class="btn btn-warning">✉️ Test Resend Email</a>
     </p>
+    <div style="margin-top:1rem; padding:1rem; background:var(--bg-alt,#111); border:1px solid var(--border-color,#2a2a2a); border-radius:8px; display:inline-flex; align-items:center; gap:.75rem; flex-wrap:wrap;">
+      <span style="font-size:.88rem; font-weight:600;">📄 Export Summary (HTML)</span>
+      <form action="/api/actions/generate_report_pdf.php" method="get" style="display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;">
+        <input type="hidden" name="report_type" value="summary">
+        <label for="trend_metric_export" style="font-size:.82rem; white-space:nowrap;">Trend metric:</label>
+        <select id="trend_metric_export" name="trend_metric" style="font-size:.82rem; padding:.25rem .5rem; border-radius:5px; border:1px solid var(--border-color,#2a2a2a); background:var(--card-bg,#1a1a1a); color:inherit;">
+          <option value="cost">Maintenance Cost</option>
+          <option value="utilization">Equipment Utilization Rate</option>
+          <option value="requests">Total Requests</option>
+        </select>
+        <button type="submit" class="btn btn-primary" style="font-size:.82rem; padding:.3rem .9rem;">Export</button>
+      </form>
+    </div>
   </section>
 
   <p class="back-link"><a href="/api/dashboard.php">← Back to dashboard</a></p>

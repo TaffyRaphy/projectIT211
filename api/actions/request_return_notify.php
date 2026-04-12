@@ -36,12 +36,15 @@ if (!$alloc) {
 try {
     $ns = NotificationService::getInstance();
     $adminEmails = $ns->getAdminsEmails();
+    $richMessage = '📤 Return request from ' . $user['full_name']
+                 . ' for ' . $alloc['equipment_name']
+                 . ' (Allocation #' . $allocationId . ')';
     foreach ($adminEmails as $adminId => $adminEmail) {
         $ns->send('request_return_notify', $adminEmail, (int) $adminId, [
             'staff_name'     => $user['full_name'],
             'equipment_name' => $alloc['equipment_name'],
             'allocation_id'  => $allocationId,
-        ]);
+        ], $richMessage);
     }
 } catch (Throwable $e) {
     error_log('request_return_notify error: ' . $e->getMessage());

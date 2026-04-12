@@ -44,17 +44,18 @@ class NotificationService
      * @return bool  true if email was accepted by Resend
      */
     public function send(
-        string $eventType,
-        string $recipientEmail,
-        ?int   $recipientId = null,
-        array  $templateData = []
+        string  $eventType,
+        string  $recipientEmail,
+        ?int    $recipientId  = null,
+        array   $templateData = [],
+        ?string $inAppMessage = null   // override for rich in-app context
     ): bool {
         // Build subject + body from HTML template file
         $template = $this->getTemplate($eventType);
         if ($template === null) {
             $this->saveInAppNotification(
                 $recipientId,
-                "Notification: {$eventType}",
+                $inAppMessage ?? "Notification: {$eventType}",
                 $eventType
             );
             return false;
@@ -63,8 +64,12 @@ class NotificationService
         $subject = $template['subject'];
         $body    = $this->renderTemplate($template['body_html'], $templateData);
 
-        // 1. Save in-app notification regardless of email success
-        $this->saveInAppNotification($recipientId, $subject, $eventType);
+        // 1. Save in-app notification with rich context when provided
+        $this->saveInAppNotification(
+            $recipientId,
+            $inAppMessage ?? $subject,
+            $eventType
+        );
 
         // 2. Send email via Resend
         $sent = $this->sendViaResend($recipientEmail, $subject, $body);

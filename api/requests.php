@@ -15,7 +15,7 @@ header('Expires: 0');
 
 // Equipment available to request
 $equipmentRows = db()->query(
-    "SELECT id, name, quantity_available, status FROM equipment WHERE status <> 'retired' ORDER BY name ASC"
+    "SELECT id, name, quantity_available, status, description FROM equipment WHERE status <> 'retired' ORDER BY name ASC"
 )->fetchAll();
 
 // This staff's request history (with allocation link)
@@ -90,15 +90,21 @@ $today = date('Y-m-d');
     <form action="/api/actions/request_create.php" method="post" class="form">
       <div class="form-group">
         <label for="equipment_id">Equipment *</label>
-        <select id="equipment_id" name="equipment_id" required>
-          <option value="">— Select equipment —</option>
+        <select id="equipment_id" name="equipment_id" required onchange="showEquipDesc(this)">
+          <option value="" data-desc="">— Select equipment —</option>
           <?php foreach ($equipmentRows as $item): ?>
-            <option value="<?= (int) $item['id'] ?>">
+            <option value="<?= (int) $item['id'] ?>"
+              data-desc="<?= h((string) ($item['description'] ?? '')) ?>">
               <?= h((string) $item['name']) ?>
               (<?= (int) $item['quantity_available'] ?> available — <?= h((string) $item['status']) ?>)
             </option>
           <?php endforeach; ?>
         </select>
+        <div id="equip-desc-box" style="display:none; margin-top:.5rem; padding:.6rem .9rem;
+             background:var(--bg-alt,#111); border:1px solid var(--border-color,#2a2a2a);
+             border-radius:7px; font-size:.85rem; color:var(--text-muted);"
+             aria-live="polite">
+        </div>
       </div>
       <div class="form-group">
         <label for="qty_requested">Quantity *</label>
@@ -203,6 +209,18 @@ $today = date('Y-m-d');
 
   <p class="back-link"><a href="/api/dashboard.php">← Back to Dashboard</a></p>
 </main>
+<script>
+function showEquipDesc(sel) {
+  var box  = document.getElementById('equip-desc-box');
+  var desc = sel.options[sel.selectedIndex].dataset.desc || '';
+  if (desc.trim() !== '') {
+    box.textContent = '📄 ' + desc;
+    box.style.display = 'block';
+  } else {
+    box.style.display = 'none';
+  }
+}
+</script>
 <script src="/assets/app.js"></script>
 </body>
 </html>

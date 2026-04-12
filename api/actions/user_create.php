@@ -36,10 +36,12 @@ try {
     $nextId   = (int) ($maxIdRow['max_id'] ?? 0) + 1;
     $employeeId = (string) ($nextId + 402000);
 
-    db()->prepare(
+    $stmt = db()->prepare(
         "INSERT INTO users (full_name, email, password_hash, role, department, job_title, employee_id)
-         VALUES (:full_name, :email, :password_hash, :role, :department, :job_title, :employee_id)"
-    )->execute([
+         VALUES (:full_name, :email, :password_hash, :role, :department, :job_title, :employee_id)
+         RETURNING id"
+    );
+    $stmt->execute([
         ':full_name'     => $fullName,
         ':email'         => strtolower(trim($email)),
         ':password_hash' => $passwordHash,
@@ -49,7 +51,7 @@ try {
         ':employee_id'   => $employeeId,
     ]);
 
-    $newUserId = (int) db()->lastInsertId();
+    $newUserId = (int) $stmt->fetchColumn();
 
     log_audit('create', 'users', $newUserId, $adminId, null, [
         'full_name' => $fullName,

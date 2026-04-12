@@ -156,12 +156,6 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
         </button>
         <form class="inline-form" action="/api/actions/equipment_update.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post"
               onsubmit="return confirm('Retire this equipment? This cannot be undone.')">
-          <input type="hidden" name="name" value="<?= h((string) $item['name']) ?>">
-          <input type="hidden" name="category" value="<?= h((string) $item['category']) ?>">
-          <input type="hidden" name="status" value="<?= h((string) $item['status']) ?>">
-          <input type="hidden" name="quantity_total" value="<?= (int) $item['quantity_total'] ?>">
-          <input type="hidden" name="quantity_available" value="<?= (int) $item['quantity_available'] ?>">
-          <input type="hidden" name="location" value="<?= h((string) $item['location']) ?>">
           <?php if ((string) $item['status'] !== 'retired'): ?>
           <button type="submit" name="action" value="retire" class="btn btn-danger" style="font-size:.8rem;">
             🗑️ Retire

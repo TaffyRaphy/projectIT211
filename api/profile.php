@@ -408,13 +408,19 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($currentUserId
 <script>
   // Warn user on navigation away if in mandatory fill mode and form not submitted
   <?php if ($setup === '1' && $profileIncomplete): ?>
-  window.addEventListener('beforeunload', function(e) {
+  function warnLeave(e) {
     e.preventDefault();
     e.returnValue = '';
-  });
-  document.querySelector('form').addEventListener('submit', function() {
-    window.removeEventListener('beforeunload', arguments.callee);
-  });
+  }
+
+  window.addEventListener('beforeunload', warnLeave);
+
+  const profileForm = document.querySelector('form[action="/api/actions/profile_update.php"]');
+  if (profileForm) {
+    profileForm.addEventListener('submit', function() {
+      window.removeEventListener('beforeunload', warnLeave);
+    });
+  }
   <?php endif; ?>
 </script>
 <script src="/assets/app.js"></script>

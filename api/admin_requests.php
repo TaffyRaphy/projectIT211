@@ -181,7 +181,6 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($adminId);
           <td>
             <form action="/api/actions/allocation_return.php?<?= http_build_query(['id' => (int) $alloc['id']]) ?>" method="post"
                   onsubmit="return confirm('Mark equipment as returned? This will restore inventory.')">
-              <input type="hidden" name="id" value="<?= (int) $alloc['id'] ?>">
               <button type="submit" class="btn btn-success" style="font-size:.8rem; padding:.25rem .6rem;">
                 📥 Mark Returned
               </button>

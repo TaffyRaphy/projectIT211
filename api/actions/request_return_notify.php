@@ -40,6 +40,21 @@ try {
                  . ' for ' . $alloc['equipment_name']
                  . ' (Allocation #' . $allocationId . ')';
     foreach ($adminEmails as $adminId => $adminEmail) {
+        $dupStmt = db()->prepare(
+            "SELECT 1 FROM notifications
+             WHERE user_id = :uid
+               AND type = 'request_return_notify'
+               AND message = :message
+             LIMIT 1"
+        );
+        $dupStmt->execute([
+            ':uid' => (int) $adminId,
+            ':message' => $richMessage,
+        ]);
+        if ($dupStmt->fetchColumn() !== false) {
+            continue;
+        }
+
         $ns->send('request_return_notify', $adminEmail, (int) $adminId, [
             'staff_name'     => $user['full_name'],
             'equipment_name' => $alloc['equipment_name'],

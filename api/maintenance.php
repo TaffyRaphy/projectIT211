@@ -635,8 +635,8 @@ $validTypes = ['scheduled' => 'Scheduled', 'repair' => 'Repair'];
                   </div>
                   <div class="form-group">
                     <label for="cost_done_<?= (int) $log['id'] ?>">Actual Cost (₱)</label>
-                    <input id="cost_done_<?= (int) $log['id'] ?>" name="cost"
-                           type="number" min="0" step="0.01" placeholder="0.00">
+                          <input id="cost_done_<?= (int) $log['id'] ?>" name="cost"
+                            type="number" min="0" step="0.01" placeholder="Leave blank to keep estimated cost">
                   </div>
                 </div>
                 <div class="log-actions" style="margin-top:.75rem;">
@@ -779,6 +779,7 @@ function toggleCompleteForm(id) {
   wrap.classList.toggle('open');
 }
 
+<?php if ($role === 'maintenance'): ?>
 // Auto-open schedule section if there was an error (user needs to re-schedule)
 <?php if ($error !== ''): ?>
 document.addEventListener('DOMContentLoaded', function() {
@@ -792,10 +793,14 @@ document.addEventListener('DOMContentLoaded', function() {
 <?php endif; ?>
 
 // Prevent double-submit
-document.getElementById('schedule-form')?.addEventListener('submit', function() {
-  const btn = document.getElementById('schedule-submit-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Scheduling…'; }
-});
+const scheduleForm = document.getElementById('schedule-form');
+if (scheduleForm) {
+  scheduleForm.addEventListener('submit', function() {
+    const btn = document.getElementById('schedule-submit-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Scheduling…'; }
+  });
+}
+<?php endif; ?>
 </script>
 <script src="/assets/app.js"></script>
 </body>

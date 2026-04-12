@@ -168,7 +168,7 @@ $today = date('Y-m-d');
               <td><span class="chip chip-status chip-active">Active</span></td>
               <td>
                 <form action="/api/actions/request_return_notify.php" method="post"
-                      onsubmit="return confirm('Request admin to process return of this equipment?')">
+                      onsubmit="const btn = this.querySelector('button'); if (!confirm('Request admin to process return of this equipment?')) return false; if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; } return true;">
                   <input type="hidden" name="allocation_id" value="<?= (int) $a['id'] ?>">
                   <button type="submit" class="btn btn-secondary" style="font-size:.8rem; padding:.3rem .8rem;">
                     📤 Request Return

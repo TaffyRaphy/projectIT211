@@ -21,17 +21,14 @@ $pdo = db();
 $dbTrace = 'db:' . db_fingerprint();
 
 try {
-    $pdo->beginTransaction();
-
-    // Fetch & lock allocation row
+    // Fetch allocation row.
     $stmt = $pdo->prepare(
         'SELECT a.id, a.request_id, a.equipment_id, a.qty_allocated, a.status, a.staff_id,
                 e.name AS equipment_name, u.full_name AS staff_name, u.email AS staff_email
          FROM allocations a
          JOIN equipment e ON e.id = a.equipment_id
          JOIN users u ON u.id = a.staff_id
-         WHERE a.id = :id
-         FOR UPDATE'
+         WHERE a.id = :id'
     );
     $stmt->execute([':id' => $allocationId]);
     $alloc = $stmt->fetch();
@@ -44,13 +41,17 @@ try {
     }
 
     // Mark allocation returned — use NOW() (timestamptz), not CURRENT_DATE (date)
-    $pdo->prepare(
+    $allocUpdate = $pdo->prepare(
         "UPDATE allocations
             SET status = 'returned',
                 actual_return_date = COALESCE(actual_return_date, NOW())
          WHERE id = :id
            AND status <> 'returned'"
-    )->execute([':id' => $allocationId]);
+    );
+    $allocUpdate->execute([':id' => $allocationId]);
+    if ($allocUpdate->rowCount() === 0) {
+        throw new RuntimeException('Allocation already returned');
+    }
 
     // Restore equipment quantity
     $pdo->prepare(
@@ -68,25 +69,22 @@ try {
         ':equipment_id' => (int) $alloc['equipment_id'],
     ]);
 
-    // Update request status
-    $pdo->prepare(
-        "UPDATE equipment_requests
-         SET status = 'returned'
-         WHERE id = :request_id
-           AND status IN ('allocated', 'approved')"
-    )->execute([':request_id' => (int) $alloc['request_id']]);
-
-    $pdo->commit();
+    // Update request status, if allocation still linked to request row.
+    if ($alloc['request_id'] !== null) {
+        $pdo->prepare(
+            "UPDATE equipment_requests
+             SET status = 'returned'
+             WHERE id = :request_id
+               AND status IN ('allocated', 'approved')"
+        )->execute([':request_id' => (int) $alloc['request_id']]);
+    }
 
 } catch (Throwable $e) {
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
     error_log('allocation_return error (' . $dbTrace . '): ' . $e->getMessage());
     redirect_to('/api/admin_requests.php', ['error' => $e->getMessage() . ' [' . $dbTrace . ']']);
 }
 
-// Audit log (outside transaction — uses same connection, which is clean after commit)
+// Audit log after status update.
 log_audit('update', 'allocations', $allocationId, $currentUserId,
     ['status' => 'active'],
     [

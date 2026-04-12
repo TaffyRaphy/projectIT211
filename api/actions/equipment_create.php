@@ -57,7 +57,8 @@ $code = generate_equipment_code(db(), $category);
 
 $stmt = db()->prepare(
     "INSERT INTO equipment (code, name, category, status, quantity_total, quantity_available, location, description)
-     VALUES (:code, :name, :category, 'available', :qty, :qty, :location, :description)"
+    VALUES (:code, :name, :category, 'available', :qty, :qty, :location, :description)
+    RETURNING id"
 );
 $stmt->execute([
     'code'     => $code,
@@ -67,7 +68,7 @@ $stmt->execute([
     'location' => $location,
     'description' => $description !== '' ? $description : null,
 ]);
-$newId = (int) db()->lastInsertId();
+$newId = (int) $stmt->fetchColumn();
 
 log_audit('create', 'equipment', $newId, $adminId, null, [
     'code'             => $code,
@@ -79,4 +80,4 @@ log_audit('create', 'equipment', $newId, $adminId, null, [
     'status'           => 'available',
 ]);
 
-redirect_to('api/equipment.php', ['ok' => 'Equipment added']);
+redirect_to('/api/equipment.php', ['ok' => 'Equipment added']);

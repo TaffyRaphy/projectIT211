@@ -20,31 +20,6 @@ if ($filter === 'unread') {
     $whereRead = 'AND n.is_read = false';
 }
 
-$totalCount = (int) db()->prepare(
-    "SELECT COUNT(*) FROM notifications n WHERE n.user_id = :uid {$whereRead}"
-)->execute([':uid' => $userId]) ? db()->prepare(
-    "SELECT COUNT(*) FROM notifications n WHERE n.user_id = :uid {$whereRead}"
-) : 0;
-
-// Rerun properly
-$cntStmt = db()->prepare("SELECT COUNT(*) FROM notifications n WHERE n.user_id = :uid {$whereRead}");
-$cntStmt->execute([':uid' => $userId]);
-$totalCount = (int) $cntStmt->fetchColumn();
-$totalPages = (int) ceil($totalCount / $perPage);
-
-$stmt = db()->prepare(
-    "SELECT n.id, n.message, n.type, n.is_read, n.created_at
-     FROM notifications n
-     WHERE n.user_id = :uid {$whereRead}
-     ORDER BY n.created_at DESC
-     LIMIT :limit OFFSET :offset"
-);
-$stmt->bindValue(':uid',    $userId,  PDO::PARAM_INT);
-$stmt->bindValue(':limit',  $perPage, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset,  PDO::PARAM_INT);
-$stmt->execute();
-$notifications = $stmt->fetchAll();
-
 // Persistent types: stay unread until the underlying issue is resolved
 $persistentTypes = ['equipment_overdue_return', 'maintenance_overdue', 'equipment_due_return'];
 
@@ -62,6 +37,24 @@ try {
 }
 
 $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
+
+$cntStmt = db()->prepare("SELECT COUNT(*) FROM notifications n WHERE n.user_id = :uid {$whereRead}");
+$cntStmt->execute([':uid' => $userId]);
+$totalCount = (int) $cntStmt->fetchColumn();
+$totalPages = (int) ceil($totalCount / $perPage);
+
+$stmt = db()->prepare(
+  "SELECT n.id, n.message, n.type, n.is_read, n.created_at
+   FROM notifications n
+   WHERE n.user_id = :uid {$whereRead}
+   ORDER BY n.created_at DESC
+   LIMIT :limit OFFSET :offset"
+);
+$stmt->bindValue(':uid',    $userId,  PDO::PARAM_INT);
+$stmt->bindValue(':limit',  $perPage, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset,  PDO::PARAM_INT);
+$stmt->execute();
+$notifications = $stmt->fetchAll();
 
 // Icon map per notification type
 $typeIcons = [
@@ -206,7 +199,7 @@ $typeIcons = [
   </div>
   <div class="dashboard-topbar-right">
     <div class="dashboard-topbar-meta">
-      <span>Role: <?= h($role) ?> | User ID: <?= $userId ?></span>
+      <span><?= h($user['full_name']) ?> | Role: <?= h($role) ?></span>
     </div>
     <div class="dashboard-topbar-actions">
       <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>

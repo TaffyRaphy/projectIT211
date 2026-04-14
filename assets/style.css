@@ -1,5 +1,6 @@
 @import url('https://fonts.cdnfonts.com/css/euclid-circular-a');
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Manrope:wght@600;700;800&family=Source+Code+Pro:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
 :root {
   color-scheme: dark;
@@ -88,6 +89,23 @@
   --spring: all 0.35s cubic-bezier(0.2, 0.9, 0.2, 1.05);
   --smooth: all 0.24s ease;
 }
+
+/* Icon styling */
+i, .icon {
+  display: inline-block;
+  margin: 0;
+  vertical-align: middle;
+  line-height: 1;
+}
+.icon-sm { font-size: 0.8rem; }
+.icon-md { font-size: 1rem; }
+.icon-lg { font-size: 1.2rem; }
+button i, input[type='submit'] i { margin-right: var(--space-xs); }
+.theme-toggle i { font-size: 1.1rem; }
+.dashboard-logout i { margin-right: 4px; }
+.profile-link i { margin-right: 4px; }
+.btn i { margin-right: var(--space-xs); }
+.back-link i { margin-right: 4px; }
 
 html[data-theme='light'] {
   color-scheme: light;

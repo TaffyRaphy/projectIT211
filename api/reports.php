@@ -338,10 +338,10 @@ try {
         error_log('Audit trail query error: ' . $e->getMessage());
     }
     $actionTypeIcon = [
-        'login'    => '🔑', 'create'   => '➕',
-        'update'   => '✏️', 'approve'  => '✅',
-        'reject'   => '❌', 'complete' => '✔️', 'snapshot' => '📸',
-        'cancel'   => '✖️',
+        'login'    => '<i class="fas fa-key"></i>', 'create'   => '<i class="fas fa-plus"></i>',
+        'update'   => '<i class="fas fa-pencil"></i>', 'approve'  => '<i class="fas fa-check"></i>',
+        'reject'   => '<i class="fas fa-times"></i>', 'complete' => '<i class="fas fa-check-circle"></i>', 'snapshot' => '<i class="fas fa-camera"></i>',
+        'cancel'   => '<i class="fas fa-times-circle"></i>',
     ];
   ?>
   <?php if (count($auditRows) === 0): ?>
@@ -402,14 +402,14 @@ try {
   <section class="card">
     <h2>Admin Tools</h2>
     <p>
-      <a href="/api/actions/snapshot_daily.php"          class="btn btn-secondary">📸 Capture Metrics Snapshot</a>
-      <a href="/api/snapshots.php"                       class="btn btn-primary">📊 View All Snapshots</a>
-      <a href="/api/audit_trail.php"                     class="btn btn-primary">📋 Full Audit Trail</a>
-      <a href="/api/reports_historical.php"              class="btn btn-secondary">📈 Historical Trends</a>
-      <a href="/api/actions/check_overdue_allocations.php" class="btn btn-warning">⚠️ Check Overdue Items</a>
-      <a href="/api/notification_logs.php"               class="btn btn-secondary">📧 Notification Logs</a>
-      <a href="/api/users.php"                           class="btn btn-secondary">👥 User Management</a>
-      <a href="/api/actions/test_email.php"              class="btn btn-warning">✉️ Test Resend Email</a>
+      <a href="/api/actions/snapshot_daily.php"          class="btn btn-secondary"><i class="fas fa-camera"></i> Capture Metrics Snapshot</a>
+      <a href="/api/snapshots.php"                       class="btn btn-primary"><i class="fas fa-chart-bar"></i> View All Snapshots</a>
+      <a href="/api/audit_trail.php"                     class="btn btn-primary"><i class="fas fa-list"></i> Full Audit Trail</a>
+      <a href="/api/reports_historical.php"              class="btn btn-secondary"><i class="fas fa-chart-line"></i> Historical Trends</a>
+      <a href="/api/actions/check_overdue_allocations.php" class="btn btn-warning"><i class="fas fa-exclamation-triangle"></i> Check Overdue Items</a>
+      <a href="/api/notification_logs.php"               class="btn btn-secondary"><i class="fas fa-envelope"></i> Notification Logs</a>
+      <a href="/api/users.php"                           class="btn btn-secondary"><i class="fas fa-users"></i> User Management</a>
+      <a href="/api/actions/test_email.php"              class="btn btn-warning"><i class="fas fa-envelope"></i> Test Resend Email</a>
     </p>
     <div style="margin-top:1rem; padding:1rem; background:var(--bg-alt,#111); border:1px solid var(--border-color,#2a2a2a); border-radius:8px; display:inline-flex; align-items:center; gap:.75rem; flex-wrap:wrap;">
       <span style="font-size:.88rem; font-weight:600;">📄 Export Summary (HTML)</span>
@@ -426,7 +426,7 @@ try {
     </div>
   </section>
 
-  <p class="back-link"><a href="/api/dashboard.php">← Back to dashboard</a></p>
+  <p class="back-link"><a href="/api/dashboard.php"><i class="fas fa-arrow-left"></i> Back to dashboard</a></p>
 </main>
 
 <script src="/assets/app.js"></script>

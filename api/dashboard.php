@@ -185,10 +185,10 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
           <span class="bell-badge"><?= $unreadCount > 99 ? '99+' : $unreadCount ?></span>
         <?php endif; ?>
       </a>
-      <!-- 🪪 Profile link -->
-      <a class="profile-link" href="/api/profile.php">🪪 Profile</a>
-      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
-      <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
+      <!-- Profile link -->
+      <a class="profile-link" href="/api/profile.php"><i class="fas fa-id-card"></i> Profile</a>
+      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme"><i class="fas fa-moon"></i></button>
+      <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
   </div>
 </header>

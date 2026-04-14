@@ -257,18 +257,98 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   </div>
 </section>
 
-<section class="page page-dashboard dashboard-workflow-panel">
+<section class="page page-dashboard dashboard-workflow-panel<?= $role === 'admin' ? ' admin-quick-actions-panel' : '' ?>">
   <h2>Quick Actions</h2>
-  <nav class="workflow-grid">
-    <?php foreach ($workflowLinks as $label => $url): ?>
-      <a class="workflow-link" href="<?= h($url) ?>"><?= $label ?></a>
-    <?php endforeach; ?>
-    <a class="workflow-link" href="/api/my_notifications.php">
-      <i class="fas fa-bell"></i> My Notifications
-      <?php if ($unreadCount > 0): ?>
-        <span style="background:#ef4444; color:#fff; font-size:.7rem; border-radius:999px; padding:.05rem .4rem; margin-left:.3rem;"><?= $unreadCount ?></span>
-      <?php endif; ?>
-    </a>
+  <nav class="workflow-grid<?= $role === 'admin' ? ' admin-quick-actions' : '' ?>">
+    <?php if ($role === 'admin'): ?>
+      <a class="workflow-link qa-card qa-hero qa-maint" href="/api/admin_maintenance.php">
+        <span class="qa-main">
+          <span class="qa-icon"><i class="fas fa-wrench"></i></span>
+          <span class="qa-title">Maintenance Overview</span>
+        </span>
+        <span class="qa-preview qa-preview-maint" aria-hidden="true">
+          <span class="qa-preview-title">Maintenance schedule</span>
+          <span class="qa-preview-lines"><span></span><span></span><span></span><span></span><span></span></span>
+        </span>
+        <span class="qa-progress" aria-hidden="true"><span style="width: <?= (int) $maintCompletionRate ?>%"></span></span>
+      </a>
+
+      <a class="workflow-link qa-card qa-hero qa-request" href="/api/admin_requests.php">
+        <span class="qa-main">
+          <span class="qa-icon"><i class="fas fa-check-circle"></i></span>
+          <span class="qa-title">Request Approval &amp; Allocation</span>
+        </span>
+        <span class="qa-preview qa-preview-request" aria-hidden="true">
+          <span class="qa-preview-lines qa-preview-lines-short"><span></span><span></span><span></span></span>
+          <span class="qa-mini-btn">Submit Request</span>
+        </span>
+      </a>
+
+      <a class="workflow-link qa-card qa-compact qa-equip" href="/api/equipment.php">
+        <span class="qa-main">
+          <span class="qa-icon"><i class="fas fa-briefcase"></i></span>
+          <span class="qa-title">Equipment Management</span>
+        </span>
+        <span class="qa-badge"><?= $totalEq ?></span>
+      </a>
+
+      <a class="workflow-link qa-card qa-compact qa-reports" href="/api/reports.php">
+        <span class="qa-main">
+          <span class="qa-icon"><i class="fas fa-folder-open"></i></span>
+          <span class="qa-title">Reports</span>
+        </span>
+        <span class="qa-bars" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></span>
+      </a>
+
+      <a class="workflow-link qa-card qa-wide qa-snap" href="/api/snapshots.php">
+        <span class="qa-main">
+          <span class="qa-icon"><i class="fas fa-camera"></i></span>
+          <span class="qa-title">Metric Snapshots</span>
+        </span>
+        <span class="qa-gauge" aria-hidden="true"></span>
+      </a>
+
+      <a class="workflow-link qa-card qa-wide qa-logs" href="/api/notification_logs.php">
+        <span class="qa-main">
+          <span class="qa-icon"><i class="fas fa-envelope"></i></span>
+          <span class="qa-title">Notification Logs</span>
+        </span>
+        <?php if ($unreadCount > 0): ?>
+          <span class="qa-badge"><?= $unreadCount ?> unread</span>
+        <?php endif; ?>
+      </a>
+
+      <a class="workflow-link qa-card qa-wide qa-users" href="/api/users.php">
+        <span class="qa-main">
+          <span class="qa-icon"><i class="fas fa-users"></i></span>
+          <span class="qa-title">User Management</span>
+        </span>
+      </a>
+
+      <a class="workflow-link qa-card qa-compact qa-audit" href="/api/audit_trail.php">
+        <span class="qa-main">
+          <span class="qa-icon"><i class="fas fa-list"></i></span>
+          <span class="qa-title">Full Audit Trail</span>
+        </span>
+      </a>
+
+      <a class="workflow-link qa-card qa-compact qa-notif" href="/api/my_notifications.php">
+        <span class="qa-main">
+          <span class="qa-icon"><i class="fas fa-bell"></i></span>
+          <span class="qa-title">My Notifications</span>
+        </span>
+      </a>
+    <?php else: ?>
+      <?php foreach ($workflowLinks as $label => $url): ?>
+        <a class="workflow-link" href="<?= h($url) ?>"><?= $label ?></a>
+      <?php endforeach; ?>
+      <a class="workflow-link" href="/api/my_notifications.php">
+        <i class="fas fa-bell"></i> My Notifications
+        <?php if ($unreadCount > 0): ?>
+          <span style="background:#ef4444; color:#fff; font-size:.7rem; border-radius:999px; padding:.05rem .4rem; margin-left:.3rem;"><?= $unreadCount ?></span>
+        <?php endif; ?>
+      </a>
+    <?php endif; ?>
   </nav>
 </section>
 

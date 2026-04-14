@@ -1258,6 +1258,242 @@ html[data-theme='light'] .workflow-link:hover {
   border-color: color-mix(in srgb, var(--accent-primary) 72%, transparent);
 }
 
+body.notification-popup-open {
+  overflow: hidden;
+}
+
+.notification-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.notification-popup.is-open {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.notification-popup__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(1, 16, 23, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.notification-popup__panel {
+  position: absolute;
+  top: clamp(0.75rem, 3.5vh, 2rem);
+  right: clamp(0.75rem, 3vw, 2rem);
+  width: min(460px, calc(100vw - 1.5rem));
+  max-height: min(78vh, 760px);
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--border-subtle) 88%, rgba(255, 255, 255, 0.25));
+  background: linear-gradient(145deg, rgba(10, 38, 52, 0.65), rgba(6, 26, 37, 0.72));
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(22px) saturate(1.15);
+  -webkit-backdrop-filter: blur(22px) saturate(1.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+html[data-theme='light'] .notification-popup__panel {
+  background: linear-gradient(145deg, rgba(240, 252, 248, 0.78), rgba(229, 246, 242, 0.72));
+  box-shadow: 0 18px 40px rgba(0, 26, 17, 0.18);
+}
+
+.notification-popup__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: 1rem 1rem 0.6rem;
+}
+
+.notification-popup__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--text-heading);
+}
+
+.notification-popup__count {
+  margin: 0.2rem 0 0;
+  font-family: var(--font-label);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.notification-popup__close {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--surface-soft) 72%, transparent);
+  color: var(--text-heading);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-popup__filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0 1rem 0.75rem;
+}
+
+.notification-popup__filter,
+.notification-popup__mark-all {
+  border: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--surface-soft) 75%, transparent);
+  color: var(--text-main);
+  border-radius: 999px;
+  padding: 0.36rem 0.7rem;
+  font-size: 0.75rem;
+  font-family: var(--font-heading);
+  cursor: pointer;
+}
+
+.notification-popup__filter.is-active {
+  border-color: var(--border-accent);
+  background: color-mix(in srgb, var(--accent-primary) 18%, transparent);
+  color: var(--text-heading);
+}
+
+.notification-popup__mark-all {
+  margin-left: auto;
+}
+
+.notification-popup__status {
+  margin: 0;
+  min-height: 1.1rem;
+  padding: 0 1rem;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.notification-popup__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.52rem;
+  overflow: auto;
+  padding: 0.75rem 1rem 1rem;
+}
+
+.notification-popup__item {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  gap: 0.65rem;
+  align-items: start;
+  border: 1px solid color-mix(in srgb, var(--border-subtle) 75%, transparent);
+  border-radius: 12px;
+  padding: 0.7rem;
+  background: color-mix(in srgb, var(--surface-soft) 62%, transparent);
+}
+
+.notification-popup__item.is-unread {
+  border-left: 3px solid var(--accent-primary);
+}
+
+.notification-popup__item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-soft) 70%, var(--accent-primary) 8%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-heading);
+}
+
+.notification-popup__item-message {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.42;
+  color: var(--text-main);
+}
+
+.notification-popup__item-meta {
+  margin-top: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.notification-popup__pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent-warning) 65%, transparent);
+  color: var(--accent-warning);
+  padding: 0.1rem 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: var(--font-label);
+  font-size: 0.62rem;
+}
+
+.notification-popup__item-action {
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 0.72rem;
+  padding: 0.26rem 0.5rem;
+  cursor: pointer;
+}
+
+.notification-popup__empty {
+  border: 1px dashed var(--border-subtle);
+  border-radius: 12px;
+  padding: 1.2rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.notification-popup__empty i {
+  font-size: 1.2rem;
+}
+
+@media (max-width: 639px) {
+  .notification-popup__panel {
+    right: 0.75rem;
+    left: 0.75rem;
+    width: auto;
+    max-height: 85vh;
+  }
+
+  .notification-popup__filters {
+    align-items: stretch;
+  }
+
+  .notification-popup__mark-all {
+    margin-left: 0;
+  }
+
+  .notification-popup__item {
+    grid-template-columns: 28px 1fr;
+  }
+
+  .notification-popup__item-action {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
 .meta-row {
   display: flex;
   gap: 0.8rem;

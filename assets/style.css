@@ -992,6 +992,101 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
   flex-shrink: 0;
 }
 
+.page-admin-requests .section-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.page-admin-requests .section-heading i {
+  color: var(--accent-primary);
+}
+
+.page-admin-requests .section-count {
+  font-family: var(--font-label);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.page-admin-requests .req-card {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--surface-2) 82%, transparent), color-mix(in srgb, var(--surface-1) 95%, #000 5%));
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 1.1rem 1.2rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.page-admin-requests .req-card.pending {
+  border-left: 4px solid var(--accent-warning);
+}
+
+.page-admin-requests .req-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.55rem;
+  color: var(--text-heading);
+}
+
+.page-admin-requests .req-card-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem 0.8rem;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+
+.page-admin-requests .req-meta-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.page-admin-requests .req-meta-row i {
+  color: var(--accent-primary);
+  margin-top: 0.16rem;
+}
+
+.page-admin-requests .req-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin-top: 0.95rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.page-admin-requests .table tbody tr.is-overdue {
+  background: rgba(239, 68, 68, 0.07);
+}
+
+.page-admin-requests .overdue-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: 0.4rem;
+  color: var(--accent-danger);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 760px) {
+  .page-admin-requests .req-card-meta {
+    grid-template-columns: 1fr;
+  }
+}
+
 .page-reports > h2 {
   font-family: var(--font-display);
   font-size: clamp(1.45rem, 3.2vw, 2.1rem);
@@ -1632,6 +1727,16 @@ html[data-theme='light'] .notification-popup__panel {
   white-space: nowrap;
 }
 
+.site-title-link {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s ease;
+}
+
+.site-title-link:hover {
+  color: var(--accent-primary);
+}
+
 .dashboard-topbar-meta {
   display: flex;
   align-items: center;
@@ -1665,6 +1770,63 @@ html[data-theme='light'] .notification-popup__panel {
   gap: 0.6rem;
   flex: 0 0 auto;
   justify-content: flex-end;
+}
+
+.bell-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--surface-1) 88%, transparent);
+  color: var(--text-main);
+  text-decoration: none;
+  transition: var(--smooth);
+}
+
+.bell-btn:hover {
+  border-color: var(--border-accent);
+  color: var(--text-heading);
+}
+
+.bell-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.profile-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-md);
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--surface-1) 88%, transparent);
+  color: var(--text-main);
+  font-size: 0.76rem;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+.profile-link:hover {
+  border-color: var(--border-accent);
+  color: var(--text-heading);
 }
 
 .dashboard-logout {

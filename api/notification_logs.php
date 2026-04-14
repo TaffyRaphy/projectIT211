@@ -4,6 +4,7 @@ require dirname(__DIR__) . '/includes/bootstrap.php';
 
 require_role(['admin']);
 $adminUser = require_login();
+$unreadCount = NotificationService::getInstance()->getUnreadCount((int) $adminUser['id']);
 
 $ok    = query_param('ok');
 $error = query_param('error');
@@ -94,15 +95,22 @@ $typeIcons = [
 <body>
 <header class="dashboard-topbar">
   <div class="dashboard-topbar-left">
-    <p class="dashboard-topbar-title">📧 Notification Logs</p>
+    <a href="/api/dashboard.php" class="dashboard-topbar-title site-title-link">Equipment Management System</a>
   </div>
   <div class="dashboard-topbar-right">
     <div class="dashboard-topbar-meta">
-      <span>Role: admin | User ID: <?= (int) $adminUser['id'] ?></span>
+      <span><?= h((string) $adminUser['full_name']) ?> | <?= h((string) $adminUser['role']) ?></span>
     </div>
     <div class="dashboard-topbar-actions">
-      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
-      <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout">Logout</a>
+      <a class="bell-btn" href="/api/my_notifications.php" aria-label="Notifications (<?= $unreadCount ?> unread)">
+        <i class="fas fa-bell"></i>
+        <?php if ($unreadCount > 0): ?>
+          <span class="bell-badge"><?= $unreadCount > 99 ? '99+' : $unreadCount ?></span>
+        <?php endif; ?>
+      </a>
+      <a class="profile-link" href="/api/profile.php"><i class="fas fa-id-card"></i> Profile</a>
+      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme"><i class="fas fa-moon"></i></button>
+      <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
   </div>
 </header>

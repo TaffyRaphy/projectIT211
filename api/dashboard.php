@@ -178,14 +178,12 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
       <span><?= h($user['full_name']) ?> | <?= h($role) ?></span>
     </div>
     <div class="dashboard-topbar-actions">
-      <!-- 🔔 Bell icon with unread badge -->
       <a class="bell-btn" href="/api/my_notifications.php" aria-label="Notifications (<?= $unreadCount ?> unread)">
-        🔔
+        <i class="fas fa-bell"></i>
         <?php if ($unreadCount > 0): ?>
           <span class="bell-badge"><?= $unreadCount > 99 ? '99+' : $unreadCount ?></span>
         <?php endif; ?>
       </a>
-      <!-- Profile link -->
       <a class="profile-link" href="/api/profile.php"><i class="fas fa-id-card"></i> Profile</a>
       <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme"><i class="fas fa-moon"></i></button>
       <a class="dashboard-logout" href="/api/actions/logout.php" aria-label="Logout"><i class="fas fa-sign-out-alt"></i> Logout</a>

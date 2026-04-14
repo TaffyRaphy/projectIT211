@@ -771,6 +771,7 @@ section:hover,
 .metric-card-featured {
   grid-column: 1;
   grid-row: 1 / span 2;
+  aspect-ratio: 1 / 1;
   min-height: 0;
 }
 
@@ -853,6 +854,7 @@ section:hover,
   .metric-card-featured {
     grid-column: 1 / -1;
     grid-row: auto;
+    aspect-ratio: auto;
   }
 
   .metric-card-featured .mc-value {

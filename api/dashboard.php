@@ -25,20 +25,20 @@ $dashboardTitle = match ($role) {
 
 $workflowLinks = match ($role) {
     'admin' => [
-        '📦 Equipment Management'         => '/api/equipment.php',
-        '✅ Request Approval & Allocation'  => '/api/admin_requests.php',
-        '🔧 Maintenance Overview'           => '/api/admin_maintenance.php',
-        '📊 Reports'                       => '/api/reports.php',
-        '📸 Metric Snapshots'              => '/api/snapshots.php',
-        '📋 Full Audit Trail'              => '/api/audit_trail.php',
-        '📧 Notification Logs'             => '/api/notification_logs.php',
-        '👥 User Management'               => '/api/users.php',
+        '<i class="fas fa-box"></i> Equipment Management'         => '/api/equipment.php',
+        '<i class="fas fa-check-circle"></i> Request Approval & Allocation'  => '/api/admin_requests.php',
+        '<i class="fas fa-wrench"></i> Maintenance Overview'           => '/api/admin_maintenance.php',
+        '<i class="fas fa-chart-bar"></i> Reports'                       => '/api/reports.php',
+        '<i class="fas fa-camera"></i> Metric Snapshots'              => '/api/snapshots.php',
+        '<i class="fas fa-list"></i> Full Audit Trail'              => '/api/audit_trail.php',
+        '<i class="fas fa-envelope"></i> Notification Logs'             => '/api/notification_logs.php',
+        '<i class="fas fa-users"></i> User Management'               => '/api/users.php',
     ],
     'staff' => [
-        '📋 Equipment Request'             => '/api/requests.php',
+        '<i class="fas fa-pen-clipboard"></i> Equipment Request'             => '/api/requests.php',
     ],
     'maintenance' => [
-        '🔧 Maintenance Scheduling'        => '/api/maintenance.php',
+        '<i class="fas fa-wrench"></i> Maintenance Scheduling'        => '/api/maintenance.php',
     ],
     default => [],
 };
@@ -196,7 +196,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
 <section class="page page-dashboard page-dashboard-summary">
   <h2>Quick Summary</h2>
   <div class="metrics-row">
-    <div class="metric-card-sm">
+    <div class="metric-card-sm metric-card-featured">
       <div class="mc-label">Total Equipment</div>
       <div class="mc-value"><?= $totalEq ?></div>
       <div class="mc-sub"><?= $availableEq ?> available · <?= $allocatedEq ?> deployed</div>
@@ -261,10 +261,10 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   <h2>Quick Actions</h2>
   <nav class="workflow-grid">
     <?php foreach ($workflowLinks as $label => $url): ?>
-      <a class="workflow-link" href="<?= h($url) ?>"><?= h($label) ?></a>
+      <a class="workflow-link" href="<?= h($url) ?>"><?= $label ?></a>
     <?php endforeach; ?>
     <a class="workflow-link" href="/api/my_notifications.php">
-      🔔 My Notifications
+      <i class="fas fa-bell"></i> My Notifications
       <?php if ($unreadCount > 0): ?>
         <span style="background:#ef4444; color:#fff; font-size:.7rem; border-radius:999px; padding:.05rem .4rem; margin-left:.3rem;"><?= $unreadCount ?></span>
       <?php endif; ?>

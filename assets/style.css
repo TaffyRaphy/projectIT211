@@ -739,10 +739,10 @@ section:hover,
   margin-top: 1rem;
 }
 
-/* Metrics row: 1 large card left + 4 cards right */
+/* Metrics row: 1 card left (1x1) + 4 cards right (2x2) */
 .metrics-row {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: var(--space-lg);
   align-items: start;
 }
@@ -768,12 +768,12 @@ section:hover,
 }
 
 .metric-card-featured {
-  grid-row: span 3;
-  min-height: 350px;
+  grid-row: span 2;
+  min-height: 150px;
 }
 
 .metric-card-featured .mc-value {
-  font-size: 4.5rem;
+  font-size: 3.2rem;
 }
 
 .mc-label {
@@ -839,14 +839,14 @@ section:hover,
 /* Responsive adjustments */
 @media (max-width: 1024px) {
   .metrics-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
   .metric-card-featured {
-    grid-row: auto;
+    grid-row: span 2;
     min-height: 150px;
   }
   .metric-card-featured .mc-value {
-    font-size: 2.7rem;
+    font-size: 2.4rem;
   }
 }
 
@@ -854,6 +854,10 @@ section:hover,
   .metrics-row {
     grid-template-columns: 1fr;
     gap: var(--space-md);
+  }
+  .metric-card-featured {
+    grid-row: auto;
+    min-height: 120px;
   }
   .metric-card-sm {
     min-height: 120px;

@@ -259,7 +259,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
 
 <section class="page page-dashboard dashboard-workflow-panel">
   <h2>Quick Actions</h2>
-  <nav class="workflow-grid">
+  <nav class="workflow-grid quick-access-layout">
     <?php foreach ($workflowLinks as $label => $url): ?>
       <a class="workflow-link" href="<?= h($url) ?>"><?= $label ?></a>
     <?php endforeach; ?>

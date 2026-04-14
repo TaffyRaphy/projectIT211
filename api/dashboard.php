@@ -23,17 +23,76 @@ $dashboardTitle = match ($role) {
     default       => 'Dashboard',
 };
 
+$workflowPanelClass = $role === 'admin' ? 'dashboard-workflow-panel--admin' : '';
+
+$adminWorkflowCards = $role === 'admin' ? [
+  [
+    'kind'  => 'hero-maintenance',
+    'title' => 'Maintenance Overview',
+    'url'   => '/api/admin_maintenance.php',
+    'icon'  => 'fa-wrench',
+    'meta'  => sprintf('%d scheduled · %d completed', $maintScheduled, $maintCompleted),
+    'progress' => $maintCompletionRate,
+  ],
+  [
+    'kind'  => 'hero-request',
+    'title' => 'Request Approval & Allocation',
+    'url'   => '/api/admin_requests.php',
+    'icon'  => 'fa-check-circle',
+    'meta'  => sprintf('%d pending requests', (int) $pendingRequests),
+  ],
+  [
+    'kind'  => 'compact-badge',
+    'title' => 'Equipment Management',
+    'url'   => '/api/equipment.php',
+    'icon'  => 'fa-box',
+    'badge' => (string) $totalEq,
+  ],
+  [
+    'kind'  => 'compact-aside',
+    'title' => 'Reports',
+    'url'   => '/api/reports.php',
+    'icon'  => 'fa-chart-bar',
+    'aside' => 'bars',
+  ],
+  [
+    'kind'  => 'wide-aside',
+    'title' => 'Metric Snapshots',
+    'url'   => '/api/snapshots.php',
+    'icon'  => 'fa-camera',
+    'aside' => 'gauge',
+  ],
+  [
+    'kind'  => 'compact-badge',
+    'title' => 'Notification Logs',
+    'url'   => '/api/notification_logs.php',
+    'icon'  => 'fa-envelope',
+    'badge' => $unreadCount > 0 ? $unreadCount . ' unread' : '',
+  ],
+  [
+    'kind'  => 'wide-basic',
+    'title' => 'User Management',
+    'url'   => '/api/users.php',
+    'icon'  => 'fa-users',
+    'meta'  => 'Manage staff and maintenance roles',
+  ],
+  [
+    'kind'  => 'compact-basic',
+    'title' => 'Full Audit Trail',
+    'url'   => '/api/audit_trail.php',
+    'icon'  => 'fa-list',
+    'meta'  => 'Trace approvals and updates',
+  ],
+  [
+    'kind'  => 'compact-basic',
+    'title' => 'My Notifications',
+    'url'   => '/api/my_notifications.php',
+    'icon'  => 'fa-bell',
+    'meta'  => 'Personal inbox and alerts',
+  ],
+] : [];
+
 $workflowLinks = match ($role) {
-    'admin' => [
-        '<i class="fas fa-box"></i> Equipment Management'         => '/api/equipment.php',
-        '<i class="fas fa-check-circle"></i> Request Approval & Allocation'  => '/api/admin_requests.php',
-        '<i class="fas fa-wrench"></i> Maintenance Overview'           => '/api/admin_maintenance.php',
-        '<i class="fas fa-chart-bar"></i> Reports'                       => '/api/reports.php',
-        '<i class="fas fa-camera"></i> Metric Snapshots'              => '/api/snapshots.php',
-        '<i class="fas fa-list"></i> Full Audit Trail'              => '/api/audit_trail.php',
-        '<i class="fas fa-envelope"></i> Notification Logs'             => '/api/notification_logs.php',
-        '<i class="fas fa-users"></i> User Management'               => '/api/users.php',
-    ],
     'staff' => [
         '<i class="fas fa-pen-clipboard"></i> Equipment Request'             => '/api/requests.php',
     ],
@@ -257,18 +316,61 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   </div>
 </section>
 
-<section class="page page-dashboard dashboard-workflow-panel">
+<section class="page page-dashboard dashboard-workflow-panel <?= h($workflowPanelClass) ?>">
   <h2>Quick Actions</h2>
-  <nav class="workflow-grid">
-    <?php foreach ($workflowLinks as $label => $url): ?>
-      <a class="workflow-link" href="<?= h($url) ?>"><?= $label ?></a>
-    <?php endforeach; ?>
-    <a class="workflow-link" href="/api/my_notifications.php">
-      <i class="fas fa-bell"></i> My Notifications
-      <?php if ($unreadCount > 0): ?>
-        <span style="background:#ef4444; color:#fff; font-size:.7rem; border-radius:999px; padding:.05rem .4rem; margin-left:.3rem;"><?= $unreadCount ?></span>
-      <?php endif; ?>
-    </a>
+  <nav class="workflow-grid <?= h($workflowPanelClass) ?>">
+    <?php if ($role === 'admin'): ?>
+      <?php foreach ($adminWorkflowCards as $card): ?>
+        <a class="workflow-link workflow-link--<?= h($card['kind']) ?>" href="<?= h($card['url']) ?>">
+          <span class="workflow-link__main">
+            <span class="workflow-link__icon"><i class="fas <?= h($card['icon']) ?>"></i></span>
+            <span class="workflow-link__body">
+              <span class="workflow-link__title"><?= h($card['title']) ?></span>
+              <?php if (!empty($card['meta'])): ?>
+                <span class="workflow-link__meta"><?= h($card['meta']) ?></span>
+              <?php endif; ?>
+            </span>
+          </span>
+
+          <?php if (!empty($card['badge'])): ?>
+            <span class="workflow-link__badge"><?= h($card['badge']) ?></span>
+          <?php endif; ?>
+
+          <?php if ($card['kind'] === 'hero-maintenance'): ?>
+            <span class="workflow-link__preview workflow-link__preview--maintenance" aria-hidden="true">
+              <span class="workflow-link__preview-title">Maintenance schedule</span>
+              <span class="workflow-link__preview-lines">
+                <span></span><span></span><span></span><span></span><span></span>
+              </span>
+            </span>
+            <span class="workflow-link__progress" aria-hidden="true"><span style="width: <?= (int) $card['progress'] ?>%"></span></span>
+          <?php elseif ($card['kind'] === 'hero-request'): ?>
+            <span class="workflow-link__preview workflow-link__preview--request" aria-hidden="true">
+              <span class="workflow-link__preview-lines workflow-link__preview-lines--request">
+                <span></span><span></span><span></span>
+              </span>
+              <span class="workflow-link__preview-button">Submit Request</span>
+            </span>
+          <?php elseif ($card['kind'] === 'compact-aside' && $card['aside'] === 'bars'): ?>
+            <span class="workflow-link__aside workflow-link__aside--bars" aria-hidden="true">
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+            </span>
+          <?php elseif ($card['kind'] === 'wide-aside' && $card['aside'] === 'gauge'): ?>
+            <span class="workflow-link__aside workflow-link__aside--gauge" aria-hidden="true"></span>
+          <?php endif; ?>
+        </a>
+      <?php endforeach; ?>
+    <?php else: ?>
+      <?php foreach ($workflowLinks as $label => $url): ?>
+        <a class="workflow-link" href="<?= h($url) ?>"><?= $label ?></a>
+      <?php endforeach; ?>
+      <a class="workflow-link" href="/api/my_notifications.php">
+        <i class="fas fa-bell"></i> My Notifications
+        <?php if ($unreadCount > 0): ?>
+          <span style="background:#ef4444; color:#fff; font-size:.7rem; border-radius:999px; padding:.05rem .4rem; margin-left:.3rem;"><?= $unreadCount ?></span>
+        <?php endif; ?>
+      </a>
+    <?php endif; ?>
   </nav>
 </section>
 

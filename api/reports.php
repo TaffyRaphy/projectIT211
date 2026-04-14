@@ -197,11 +197,11 @@ try {
       <tbody>
         <?php foreach ($inventoryRows as $row): ?>
           <tr>
-            <td><strong><?= h((string) $row['category']) ?></strong></td>
-            <td><?= h((string) $row['items']) ?></td>
-            <td><?= h((string) $row['total_qty']) ?></td>
-            <td><?= h((string) $row['available_qty']) ?></td>
-            <td><?= h((string) $row['allocated_qty']) ?></td>
+            <td data-label="Category"><strong><?= h((string) $row['category']) ?></strong></td>
+            <td data-label="Items"><?= h((string) $row['items']) ?></td>
+            <td data-label="Total Qty"><?= h((string) $row['total_qty']) ?></td>
+            <td data-label="Available"><?= h((string) $row['available_qty']) ?></td>
+            <td data-label="Allocated"><?= h((string) $row['allocated_qty']) ?></td>
           </tr>
         <?php endforeach; ?>
       </tbody>
@@ -226,11 +226,11 @@ try {
       <tbody>
         <?php foreach ($usageRows as $row): ?>
           <tr>
-            <td><strong><?= h((string) $row['equipment_name']) ?></strong></td>
-            <td><?= h((string) $row['quantity_available']) ?></td>
-            <td><?= h((string) $row['allocations']) ?></td>
-            <td><?= h((string) $row['allocated_qty']) ?></td>
-            <td>
+            <td data-label="Equipment Name"><strong><?= h((string) $row['equipment_name']) ?></strong></td>
+            <td data-label="Available"><?= h((string) $row['quantity_available']) ?></td>
+            <td data-label="Total Allocations"><?= h((string) $row['allocations']) ?></td>
+            <td data-label="Total Allocated Qty"><?= h((string) $row['allocated_qty']) ?></td>
+            <td data-label="Overdue">
               <?php if ((int) $row['overdue_count'] > 0): ?>
                 <span class="badge badge-error"><?= h((string) $row['overdue_count']) ?></span>
               <?php else: ?>
@@ -262,12 +262,12 @@ try {
       <tbody>
         <?php foreach ($maintenanceRows as $row): ?>
           <tr>
-            <td><strong><?= h((string) $row['equipment_name']) ?></strong></td>
-            <td><?= h((string) $row['total_logs']) ?></td>
-            <td><?= h((string) $row['completed_logs']) ?></td>
-            <td><?= h((string) $row['scheduled_logs']) ?></td>
-            <td>$<?= number_format((float) $row['total_cost'], 2) ?></td>
-            <td>$<?= number_format((float) $row['completed_cost'], 2) ?></td>
+            <td data-label="Equipment Name"><strong><?= h((string) $row['equipment_name']) ?></strong></td>
+            <td data-label="Total Tasks"><?= h((string) $row['total_logs']) ?></td>
+            <td data-label="Completed"><?= h((string) $row['completed_logs']) ?></td>
+            <td data-label="Scheduled"><?= h((string) $row['scheduled_logs']) ?></td>
+            <td data-label="Total Cost">$<?= number_format((float) $row['total_cost'], 2) ?></td>
+            <td data-label="Completed Cost">$<?= number_format((float) $row['completed_cost'], 2) ?></td>
           </tr>
         <?php endforeach; ?>
       </tbody>

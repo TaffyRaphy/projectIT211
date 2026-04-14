@@ -86,131 +86,139 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($adminId);
   <?php if ($error !== ''): ?><p class="alert alert-error"><i class="fas fa-circle-xmark"></i> Error: <?= h($error) ?></p><?php endif; ?>
 
   <!-- ── Pending Requests Queue ── -->
-  <h2 class="section-heading"><i class="fas fa-hourglass-half"></i> Pending Requests Queue <span class="section-count">(<?= count($pendingRows) ?>)</span></h2>
-  <?php if (count($pendingRows) === 0): ?>
-    <p class="empty-state" style="margin-bottom: 2rem;">No pending requests. All caught up.</p>
-  <?php else: ?>
-    <?php foreach ($pendingRows as $item): ?>
-    <div class="req-card pending">
-      <p class="req-card-title">
-        Request #<?= (int) $item['id'] ?> — <?= h((string) $item['equipment_name']) ?>
-        <span class="badge badge-warning" style="font-size:.75rem;">Pending</span>
-      </p>
-      <div class="req-card-meta">
-        <div class="req-meta-row"><i class="fas fa-user"></i><span><strong><?= h((string) $item['staff_name']) ?></strong> &lt;<?= h((string) $item['staff_email']) ?>&gt;</span></div>
-        <div class="req-meta-row"><i class="fas fa-box"></i><span>Qty Requested: <strong><?= (int) $item['qty_requested'] ?></strong></span></div>
-        <div class="req-meta-row"><i class="fas fa-bullseye"></i><span>Purpose: <?= h((string) $item['purpose']) ?></span></div>
-        <div class="req-meta-row"><i class="fas fa-calendar-days"></i><span>Submitted: <?= h(utc_to_ph((string) $item['requested_at'])) ?></span></div>
-      </div>
-      <div class="req-actions">
-        <form action="/api/actions/request_approve.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post" style="display:flex; gap:.5rem; align-items:flex-end; flex-wrap:wrap;">
-          <div class="form-group" style="margin-bottom:0;">
-            <label style="font-size:.78rem;">Expected Return Date <span style="color:#ef4444;">*</span></label>
-            <input type="date" name="due_date" required min="<?= date('Y-m-d') ?>" style="padding:.25rem .5rem; font-size:.85rem;">
+  <section class="section-container">
+    <h2 class="section-heading"><i class="fas fa-hourglass-half"></i> Pending Requests Queue <span class="section-count">(<?= count($pendingRows) ?>)</span></h2>
+    <?php if (count($pendingRows) === 0): ?>
+      <p class="empty-state">No pending requests. All caught up.</p>
+    <?php else: ?>
+      <div class="cards-grid">
+        <?php foreach ($pendingRows as $item): ?>
+        <div class="req-card pending">
+          <p class="req-card-title">
+            Request #<?= (int) $item['id'] ?> — <?= h((string) $item['equipment_name']) ?>
+            <span class="badge badge-warning" style="font-size:.75rem;">Pending</span>
+          </p>
+          <div class="req-card-meta">
+            <div class="req-meta-row"><i class="fas fa-user"></i><span><strong><?= h((string) $item['staff_name']) ?></strong><br><small><?= h((string) $item['staff_email']) ?></small></span></div>
+            <div class="req-meta-row"><i class="fas fa-box"></i><span>Qty: <strong><?= (int) $item['qty_requested'] ?></strong></span></div>
+            <div class="req-meta-row"><i class="fas fa-bullseye"></i><span><?= h((string) $item['purpose']) ?></span></div>
+            <div class="req-meta-row"><i class="fas fa-calendar-days"></i><span><?= h(utc_to_ph((string) $item['requested_at'])) ?></span></div>
           </div>
-          <button type="submit" class="btn btn-primary" style="font-size:.85rem;"><i class="fas fa-check"></i> Approve & Allocate</button>
-        </form>
-        <form action="/api/actions/request_reject.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post"
-              onsubmit="return confirm('Reject this request?')">
-          <button type="submit" class="btn btn-danger" style="font-size:.85rem;"><i class="fas fa-xmark"></i> Reject</button>
-        </form>
+          <div class="req-actions">
+            <form action="/api/actions/request_approve.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post" style="display:flex; gap:.5rem; align-items:flex-end; flex-wrap:wrap; flex:1;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:.78rem;">Expected Return Date <span style="color:#ef4444;">*</span></label>
+                <input type="date" name="due_date" required min="<?= date('Y-m-d') ?>" style="padding:.25rem .5rem; font-size:.85rem;">
+              </div>
+              <button type="submit" class="btn btn-primary" style="font-size:.85rem;"><i class="fas fa-check"></i> Approve & Allocate</button>
+            </form>
+            <form action="/api/actions/request_reject.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post"
+                  onsubmit="return confirm('Reject this request?')">
+              <button type="submit" class="btn btn-danger" style="font-size:.85rem;"><i class="fas fa-xmark"></i> Reject</button>
+            </form>
+          </div>
+        </div>
+        <?php endforeach; ?>
       </div>
-    </div>
-    <?php endforeach; ?>
-  <?php endif; ?>
+    <?php endif; ?>
+  </section>
 
   <!-- ── Active Allocations (Return Queue) ── -->
-  <h2 class="section-heading"><i class="fas fa-box-open"></i> Active Allocations — Process Returns <span class="section-count">(<?= count($activeAllocations) ?>)</span></h2>
-  <?php if (count($activeAllocations) === 0): ?>
-    <p class="empty-state" style="margin-bottom: 2rem;">No active allocations.</p>
-  <?php else: ?>
-  <div class="table-responsive" style="margin-bottom: 2rem;">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Staff</th>
-          <th>Equipment</th>
-          <th>Qty</th>
-          <th>Checked Out</th>
-          <th>Expected Return</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php foreach ($activeAllocations as $alloc): ?>
-        <?php
-          $isOverdue = !empty($alloc['expected_return_date']) &&
-                       $alloc['expected_return_date'] < date('Y-m-d');
-        ?>
-        <tr class="<?= $isOverdue ? 'is-overdue' : '' ?>">
-          <td><?= (int) $alloc['id'] ?></td>
-          <td>
-            <strong><?= h($alloc['staff_name']) ?></strong><br>
-            <small style="color:var(--text-muted)"><?= h($alloc['staff_email']) ?></small>
-          </td>
-          <td><?= h($alloc['equipment_name']) ?></td>
-          <td><?= (int) $alloc['qty_allocated'] ?></td>
-          <td><?= h(utc_to_ph($alloc['checkout_date'], 'M d, Y')) ?></td>
-          <td>
-            <?php if (!empty($alloc['expected_return_date'])): ?>
-              <?= h(utc_to_ph($alloc['expected_return_date'], 'M d, Y')) ?>
-              <?php if ($isOverdue): ?>
-                <span class="overdue-tag"><i class="fas fa-triangle-exclamation"></i> Overdue</span>
+  <section class="section-container">
+    <h2 class="section-heading"><i class="fas fa-box-open"></i> Active Allocations — Process Returns <span class="section-count">(<?= count($activeAllocations) ?>)</span></h2>
+    <?php if (count($activeAllocations) === 0): ?>
+      <p class="empty-state">No active allocations.</p>
+    <?php else: ?>
+    <div class="table-responsive allocation-table-wrapper">
+      <table class="table allocation-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Staff</th>
+            <th>Equipment</th>
+            <th>Qty</th>
+            <th>Checked Out</th>
+            <th>Expected Return</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($activeAllocations as $alloc): ?>
+          <?php
+            $isOverdue = !empty($alloc['expected_return_date']) &&
+                         $alloc['expected_return_date'] < date('Y-m-d');
+          ?>
+          <tr class="<?= $isOverdue ? 'is-overdue' : '' ?>">
+            <td class="cell-id"><?= (int) $alloc['id'] ?></td>
+            <td class="cell-staff">
+              <strong><?= h($alloc['staff_name']) ?></strong><br>
+              <small style="color:var(--text-muted)"><?= h($alloc['staff_email']) ?></small>
+            </td>
+            <td class="cell-equipment"><?= h($alloc['equipment_name']) ?></td>
+            <td class="cell-qty"><?= (int) $alloc['qty_allocated'] ?></td>
+            <td class="cell-date"><?= h(utc_to_ph($alloc['checkout_date'], 'M d, Y')) ?></td>
+            <td class="cell-date">
+              <?php if (!empty($alloc['expected_return_date'])): ?>
+                <?= h(utc_to_ph($alloc['expected_return_date'], 'M d, Y')) ?>
+                <?php if ($isOverdue): ?>
+                  <span class="overdue-tag"><i class="fas fa-triangle-exclamation"></i> Overdue</span>
+                <?php endif; ?>
+              <?php else: ?>
+                <span style="color:var(--text-muted)">—</span>
               <?php endif; ?>
-            <?php else: ?>
-              <span style="color:var(--text-muted)">—</span>
-            <?php endif; ?>
-          </td>
-          <td><span class="badge badge-info">Active</span></td>
-          <td>
-            <form action="/api/actions/allocation_return.php?<?= http_build_query(['id' => (int) $alloc['id']]) ?>" method="post"
-                  onsubmit="return confirm('Mark equipment as returned? This will restore inventory.')">
-              <button type="submit" class="btn btn-success" style="font-size:.8rem; padding:.25rem .6rem;">
-                <i class="fas fa-inbox"></i> Mark Returned
-              </button>
-            </form>
-          </td>
-        </tr>
-        <?php endforeach; ?>
-      </tbody>
-    </table>
-  </div>
-  <?php endif; ?>
+            </td>
+            <td class="cell-status"><span class="badge badge-info">Active</span></td>
+            <td class="cell-action">
+              <form action="/api/actions/allocation_return.php?<?= http_build_query(['id' => (int) $alloc['id']]) ?>" method="post"
+                    onsubmit="return confirm('Mark equipment as returned? This will restore inventory.')">
+                <button type="submit" class="btn btn-success btn-sm">
+                  <i class="fas fa-inbox"></i> Mark Returned
+                </button>
+              </form>
+            </td>
+          </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+    <?php endif; ?>
+  </section>
 
   <!-- ── Request History ── -->
-  <h2 class="section-heading"><i class="fas fa-clock-rotate-left"></i> Recent Request History <span class="section-count">(last 30)</span></h2>
-  <?php if (count($historyRows) === 0): ?>
-    <p class="empty-state">No processed requests yet.</p>
-  <?php else: ?>
-  <div class="table-responsive">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>ID</th><th>Staff</th><th>Equipment</th><th>Qty</th><th>Status</th><th>Reviewed By</th><th>Reviewed</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php foreach ($historyRows as $item): ?>
-        <tr>
-          <td><?= (int) $item['id'] ?></td>
-          <td><?= h($item['staff_name']) ?></td>
-          <td><?= h($item['equipment_name']) ?></td>
-          <td><?= (int) $item['qty_requested'] ?></td>
+  <section class="section-container">
+    <h2 class="section-heading"><i class="fas fa-clock-rotate-left"></i> Recent Request History <span class="section-count">(last 30)</span></h2>
+    <?php if (count($historyRows) === 0): ?>
+      <p class="empty-state">No processed requests yet.</p>
+    <?php else: ?>
+    <div class="table-responsive history-table-wrapper">
+      <table class="table history-table">
+        <thead>
+          <tr>
+            <th>ID</th><th>Staff</th><th>Equipment</th><th>Qty</th><th>Status</th><th>Reviewed By</th><th>Reviewed</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($historyRows as $item): ?>
+          <tr>
+            <td class="cell-id"><?= (int) $item['id'] ?></td>
+            <td class="cell-staff"><?= h($item['staff_name']) ?></td>
+            <td class="cell-equipment"><?= h($item['equipment_name']) ?></td>
+            <td class="cell-qty"><?= (int) $item['qty_requested'] ?></td>
           <td>
             <span class="badge <?= match($item['status']) { 'allocated' => 'badge-success', 'rejected' => 'badge-error', 'returned' => 'badge-info', default => 'badge-warning' } ?>">
               <?= h(ucfirst($item['status'])) ?>
             </span>
           </td>
-          <td><?= h($item['reviewed_by_name'] ?? '—') ?></td>
-          <td><?= h(utc_to_ph($item['reviewed_at'] ?? '', 'M d, Y')) ?></td>
+          <td class="cell-reviewer"><?= h($item['reviewed_by_name'] ?? '—') ?></td>
+          <td class="cell-date"><?= h(utc_to_ph($item['reviewed_at'] ?? '', 'M d, Y')) ?></td>
         </tr>
         <?php endforeach; ?>
       </tbody>
     </table>
-  </div>
-  <?php endif; ?>
+    </div>
+    <?php endif; ?>
+  </section>
 
   <p class="back-link"><a href="/api/dashboard.php"><i class="fas fa-arrow-left"></i> Back to Dashboard</a></p>
 </main>

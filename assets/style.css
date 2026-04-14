@@ -772,7 +772,7 @@ section:hover,
   grid-column: 1;
   grid-row: 1 / span 2;
   aspect-ratio: 1 / 1;
-  justify-self: center;
+  margin-left: 24px;
   min-height: 0;
 }
 

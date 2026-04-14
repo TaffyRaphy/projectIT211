@@ -170,7 +170,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
 <header class="dashboard-topbar">
   <div class="dashboard-topbar-left">
     <a href="/api/dashboard.php" class="dashboard-topbar-title site-title-link">
-      🏠 Equipment Management System
+      Equipment Management System
     </a>
   </div>
   <div class="dashboard-topbar-right">

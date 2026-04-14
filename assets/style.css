@@ -1217,6 +1217,152 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
   }
 }
 
+.page-audit-trail .audit-intro {
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.page-audit-trail .section-container {
+  display: block;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--surface-2) 85%, transparent), color-mix(in srgb, var(--surface-1) 98%, #000 2%));
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.page-audit-trail .section-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: 0;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--border-subtle);
+}
+
+.page-audit-trail .section-heading i {
+  color: var(--accent-primary);
+}
+
+.page-audit-trail .audit-pagination {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+
+.page-audit-trail .audit-pagination a,
+.page-audit-trail .audit-pagination span {
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  text-decoration: none;
+  border: 1px solid var(--border-subtle);
+}
+
+.page-audit-trail .audit-pagination a {
+  color: var(--text-body);
+  transition: background 0.2s;
+}
+
+.page-audit-trail .audit-pagination a:hover {
+  background: color-mix(in srgb, var(--surface-2) 60%, transparent);
+}
+
+.page-audit-trail .audit-pagination span {
+  background: var(--accent);
+  color: #111;
+  font-weight: 700;
+  border-color: var(--accent);
+}
+
+.page-audit-trail .audit-meta-row {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.page-audit-trail .audit-table-wrapper {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+
+.page-audit-trail .audit-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.page-audit-trail .audit-table thead {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent-primary) 15%, transparent), color-mix(in srgb, var(--accent-primary) 8%, transparent));
+  border-bottom: 2px solid var(--border-subtle);
+}
+
+.page-audit-trail .audit-table thead th {
+  padding: 0.85rem 0.75rem;
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-align: left;
+  color: var(--text-heading);
+  letter-spacing: 0.02em;
+}
+
+.page-audit-trail .audit-table tbody td {
+  padding: 0.8rem 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.85rem;
+  vertical-align: middle;
+}
+
+.page-audit-trail .audit-table tbody tr:hover {
+  background: color-mix(in srgb, var(--surface-2) 60%, transparent);
+}
+
+.page-audit-trail .cell-id,
+.page-audit-trail .cell-role,
+.page-audit-trail .cell-record,
+.page-audit-trail .cell-action-icon {
+  text-align: center;
+}
+
+.page-audit-trail .cell-action-type {
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+.page-audit-trail .cell-table code {
+  font-size: 0.78rem;
+}
+
+.page-audit-trail .cell-details {
+  max-width: 260px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.page-audit-trail .cell-when {
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .page-audit-trail .section-container {
+    padding: 1rem;
+  }
+
+  .page-audit-trail .audit-table thead th {
+    font-size: 0.74rem;
+    padding: 0.6rem 0.5rem;
+  }
+
+  .page-audit-trail .audit-table tbody td {
+    font-size: 0.78rem;
+    padding: 0.6rem 0.5rem;
+  }
+}
+
 .page-reports > h2 {
   font-family: var(--font-display);
   font-size: clamp(1.45rem, 3.2vw, 2.1rem);

@@ -108,17 +108,6 @@ $filters = [
   <title>Full Audit Trail – Equipment Management System</title>
   <meta name="description" content="Complete audit trail of all system actions — searchable and filterable.">
   <link rel="stylesheet" href="/assets/style.css">
-  <style>
-    .pagination { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; margin: 1rem 0; }
-    .pagination a, .pagination span {
-      padding: .3rem .75rem; border-radius: 6px; font-size: .85rem; text-decoration: none;
-      border: 1px solid var(--border-color, #2a2a2a);
-    }
-    .pagination a { color: var(--text-color); transition: background .2s; }
-    .pagination a:hover { background: rgba(255,255,255,.06); }
-    .pagination span { background: var(--accent, #cafd00); color: #111; font-weight: 700; border-color: var(--accent); }
-    .audit-meta-row { font-size: .78rem; color: var(--text-muted); }
-  </style>
 </head>
 <body>
 <header class="dashboard-topbar">
@@ -145,15 +134,15 @@ $filters = [
   </div>
 </header>
 
-<main class="page">
+<main class="page page-audit-trail">
   <h2>📋 Full Audit Trail</h2>
-  <p style="color: var(--text-muted); margin-bottom: 1rem;">
+  <p class="audit-intro">
     Complete history of all system actions. Total: <strong style="color: var(--accent)"><?= number_format($totalCount) ?></strong> entries.
   </p>
 
   <!-- Filters -->
-  <section class="card">
-    <h2>Filters</h2>
+  <section class="section-container audit-filters-container">
+    <h2 class="section-heading"><i class="fas fa-filter"></i> Filters</h2>
     <form method="post" class="filter-form" style="flex-wrap: wrap;">
       <div class="form-group">
         <label for="user_filter">User (name or email):</label>
@@ -192,7 +181,7 @@ $filters = [
 
   <!-- Pagination top -->
   <?php if ($totalPages > 1): ?>
-  <div class="pagination">
+  <div class="pagination audit-pagination">
     <?php if ($page > 1): ?><a href="<?= h(buildPageUrl($page - 1, $filters)) ?>">← Prev</a><?php endif; ?>
     <span>Page <?= $page ?> of <?= $totalPages ?></span>
     <?php if ($page < $totalPages): ?><a href="<?= h(buildPageUrl($page + 1, $filters)) ?>">Next →</a><?php endif; ?>
@@ -203,8 +192,10 @@ $filters = [
   <?php if (count($auditRows) === 0): ?>
     <p class="empty-state">No audit entries match your filters.</p>
   <?php else: ?>
-  <div class="table-responsive">
-    <table class="table">
+  <section class="section-container">
+    <h2 class="section-heading"><i class="fas fa-list-check"></i> Audit Entries</h2>
+    <div class="table-responsive audit-table-wrapper">
+    <table class="table audit-table">
       <thead>
         <tr>
           <th>#</th>
@@ -221,21 +212,21 @@ $filters = [
       <tbody>
         <?php foreach ($auditRows as $entry): ?>
         <tr>
-          <td class="audit-meta-row"><?= (int) $entry['id'] ?></td>
-          <td><?= $actionTypeIcon[$entry['action_type']] ?? '📌' ?></td>
-          <td>
+          <td class="cell-id audit-meta-row"><?= (int) $entry['id'] ?></td>
+          <td class="cell-action-icon"><?= $actionTypeIcon[$entry['action_type']] ?? '📌' ?></td>
+          <td class="cell-user">
             <strong><?= h($entry['user_name']) ?></strong><br>
             <span class="audit-meta-row"><?= h($entry['user_email']) ?></span>
           </td>
-          <td>
+          <td class="cell-role">
             <span class="badge <?= match($entry['user_role']) { 'admin' => 'badge-warning', 'maintenance' => 'badge-success', default => 'badge-info' } ?>">
               <?= h(ucfirst($entry['user_role'])) ?>
             </span>
           </td>
-          <td style="text-transform:capitalize; font-weight:600;"><?= h($entry['action_type']) ?></td>
-          <td><code><?= h($entry['table_name']) ?></code></td>
-          <td><?= (int) $entry['record_id'] ?></td>
-          <td style="max-width:220px; font-size:.78rem; color:var(--text-muted);">
+          <td class="cell-action-type"><?= h($entry['action_type']) ?></td>
+          <td class="cell-table"><code><?= h($entry['table_name']) ?></code></td>
+          <td class="cell-record"><?= (int) $entry['record_id'] ?></td>
+          <td class="cell-details">
             <?php
               $nv = is_string($entry['new_values']) ? json_decode($entry['new_values'], true) : null;
               if (is_array($nv)) {
@@ -246,15 +237,16 @@ $filters = [
               }
             ?>
           </td>
-          <td style="white-space:nowrap;"><?= h(utc_to_ph($entry['created_at'])) ?></td>
+          <td class="cell-when"><?= h(utc_to_ph($entry['created_at'])) ?></td>
         </tr>
         <?php endforeach; ?>
       </tbody>
     </table>
-  </div>
+    </div>
+  </section>
   <!-- Pagination bottom -->
   <?php if ($totalPages > 1): ?>
-  <div class="pagination">
+  <div class="pagination audit-pagination">
     <?php if ($page > 1): ?><a href="<?= h(buildPageUrl($page - 1, $filters)) ?>">← Prev</a><?php endif; ?>
     <span>Page <?= $page ?> of <?= $totalPages ?></span>
     <?php if ($page < $totalPages): ?><a href="<?= h(buildPageUrl($page + 1, $filters)) ?>">Next →</a><?php endif; ?>

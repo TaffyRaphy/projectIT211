@@ -769,9 +769,8 @@ section:hover,
 }
 
 .metric-card-featured {
-  grid-column: 1;
+  grid-column: 1 / 3;
   grid-row: 1 / span 2;
-  aspect-ratio: 1 / 1;
   margin-left: 24px;
   min-height: 0;
 }

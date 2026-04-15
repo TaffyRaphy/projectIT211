@@ -1116,6 +1116,22 @@ section:hover,
   align-items: flex-end;
 }
 
+html[data-theme='light'] .page-equipment .equipment-search-card #search_q {
+  background: #dfe5e2;
+  border-color: rgba(88, 113, 122, 0.42);
+  color: var(--text-heading);
+}
+
+html[data-theme='light'] .page-equipment .equipment-search-card #search_q::placeholder {
+  color: color-mix(in srgb, var(--text-muted) 88%, #ffffff 12%);
+}
+
+html[data-theme='light'] .page-equipment .equipment-search-card .filter-actions .btn.btn-primary,
+html[data-theme='light'] .page-equipment .equipment-search-card .filter-actions .btn.btn-primary:hover,
+html[data-theme='light'] .page-equipment .equipment-search-card .filter-actions .btn.btn-primary:focus-visible {
+  color: #ffffff;
+}
+
 .page-equipment .add-panel {
   background: linear-gradient(160deg, color-mix(in srgb, var(--surface-2) 82%, transparent), color-mix(in srgb, var(--surface-1) 95%, #000 5%));
   border: 1px solid var(--border-subtle);

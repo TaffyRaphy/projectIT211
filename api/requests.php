@@ -179,7 +179,7 @@ $today = date('Y-m-d');
           <?php endforeach; ?>
         </select>
       </div>
-      <div style="display: flex; gap: 0.75rem; align-items: flex-end;">
+      <div class="filter-actions">
         <button type="submit" class="btn btn-primary">Filter</button>
         <a href="/api/requests.php" class="filter-clear">Clear</a>
       </div>
@@ -202,9 +202,7 @@ $today = date('Y-m-d');
             </option>
           <?php endforeach; ?>
         </select>
-        <div id="equip-desc-box" style="display:none; margin-top:.5rem; padding:.6rem .9rem;
-             background:var(--bg-alt,#111); border:1px solid var(--border-color,#2a2a2a);
-             border-radius:7px; font-size:.85rem; color:var(--text-muted);"
+           <div id="equip-desc-box" class="equip-desc-box"
              aria-live="polite">
         </div>
       </div>
@@ -228,7 +226,7 @@ $today = date('Y-m-d');
     <?php if (empty($allocRows)): ?>
       <p class="empty-state">No active allocations. You have no equipment checked out.</p>
     <?php else: ?>
-      <p style="font-size:.85rem; color:var(--text-muted); margin-bottom:1rem;">
+      <p class="page-tagline holding-note">
         To return equipment, click "Request Return" — admin will process it and restore inventory.
       </p>
       <div class="table-responsive">
@@ -269,7 +267,7 @@ $today = date('Y-m-d');
                 <form action="/api/actions/request_return_notify.php" method="post"
                       onsubmit="const btn = this.querySelector('button'); if (!confirm('Request admin to process return of this equipment?')) return false; if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; } return true;">
                   <input type="hidden" name="allocation_id" value="<?= (int) $a['id'] ?>">
-                  <button type="submit" class="btn btn-secondary" style="font-size:.8rem; padding:.3rem .8rem;">
+                  <button type="submit" class="btn btn-secondary return-action-btn">
                     📤 Request Return
                   </button>
                 </form>
@@ -307,7 +305,7 @@ $today = date('Y-m-d');
         <label for="req_to">To Date:</label>
         <input type="date" id="req_to" name="req_to" value="<?= h($reqToDate) ?>">
       </div>
-      <div style="display: flex; gap: 0.75rem; align-items: flex-end;">
+      <div class="filter-actions">
         <button type="submit" class="btn btn-primary">Filter</button>
         <a href="/api/requests.php" class="filter-clear">Clear</a>
       </div>

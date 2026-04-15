@@ -92,79 +92,6 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   <title><?= h($dashboardTitle) ?> – Equipment Management System</title>
   <meta name="description" content="Equipment Management System dashboard for <?= h($role) ?> users.">
   <link rel="stylesheet" href="/assets/style.css">
-  <style>
-    .site-title-link {
-      text-decoration: none;
-      color: inherit;
-      font-weight: 700;
-      font-size: inherit;
-      transition: color .2s;
-    }
-    .site-title-link:hover { color: var(--accent, #cafd00); }
-    .bell-btn {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: none;
-      border: none;
-      font-size: 1.3rem;
-      cursor: pointer;
-      text-decoration: none;
-      padding: .2rem .35rem;
-      border-radius: 8px;
-      transition: background .2s;
-      color: inherit;
-    }
-    .bell-btn:hover { background: rgba(255,255,255,.08); }
-    .bell-badge {
-      position: absolute;
-      top: -4px; right: -4px;
-      background: #ef4444;
-      color: #fff;
-      font-size: .62rem;
-      font-weight: 700;
-      min-width: 16px; height: 16px;
-      border-radius: 999px;
-      display: flex; align-items: center; justify-content: center;
-      padding: 0 3px;
-      line-height: 1;
-    }
-    .profile-link {
-      font-size:.85rem;
-      text-decoration: none;
-      color: var(--text-muted, #888);
-      border: 1px solid var(--border-color, #333);
-      border-radius: 8px;
-      padding: .2rem .6rem;
-      transition: all .2s;
-    }
-    .profile-link:hover {
-      border-color: var(--accent, #cafd00);
-      color: var(--accent, #cafd00);
-    }
-    .metrics-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: .75rem;
-      margin-bottom: 1.5rem;
-    }
-    .metric-card-sm {
-      background: var(--card-bg, #1a1a1a);
-      border: 1px solid var(--border-color, #2a2a2a);
-      border-radius: 12px;
-      padding: 1rem 1.2rem;
-    }
-    .metric-card-sm .mc-label { font-size: .78rem; color: var(--text-muted, #888); text-transform: uppercase; letter-spacing: .05em; }
-    .metric-card-sm .mc-value { font-size: 2rem; font-weight: 800; color: var(--accent, #cafd00); }
-    .metric-card-sm .mc-sub   { font-size: .78rem; color: var(--text-muted, #888); margin-top: .15rem; }
-    .metric-card-sm.warn  .mc-value { color: #f59e0b; }
-    .metric-card-sm.danger .mc-value { color: #ef4444; }
-    .progress-bar-wrap { background: rgba(255,255,255,.08); border-radius: 999px; height: 6px; margin-top: .5rem; overflow: hidden; }
-    .progress-bar-fill { height: 100%; border-radius: 999px; background: var(--accent, #cafd00); transition: width .5s; }
-    .progress-bar-fill.warn   { background: #f59e0b; }
-    .progress-bar-fill.danger { background: #ef4444; }
-  </style>
 </head>
 <body>
 <header class="dashboard-topbar">
@@ -198,21 +125,21 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
       <div class="mc-label">Total Equipment</div>
       <div class="mc-value"><?= $totalEq ?></div>
       <div class="mc-sub"><?= $availableEq ?> available · <?= $allocatedEq ?> deployed</div>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:<?= $availabilityRate ?>%"></div></div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" data-progress="<?= $availabilityRate ?>"></div></div>
     </div>
 
     <div class="metric-card-sm <?= $availabilityRate < 30 ? 'warn' : '' ?>">
       <div class="mc-label">Availability Rate</div>
       <div class="mc-value"><?= $availabilityRate ?>%</div>
       <div class="mc-sub"><?= $availableEq ?> of <?= $totalEq ?> units available</div>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill <?= $availabilityRate < 30 ? 'warn' : '' ?>" style="width:<?= $availabilityRate ?>%"></div></div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill <?= $availabilityRate < 30 ? 'warn' : '' ?>" data-progress="<?= $availabilityRate ?>"></div></div>
     </div>
 
     <div class="metric-card-sm">
       <div class="mc-label">Utilization Rate</div>
       <div class="mc-value"><?= $utilizationRate ?>%</div>
       <div class="mc-sub"><?= $allocatedEq ?> items currently deployed</div>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:<?= $utilizationRate ?>%"></div></div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" data-progress="<?= $utilizationRate ?>"></div></div>
     </div>
 
     <?php if ($maintenanceEq > 0): ?>
@@ -220,7 +147,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
       <div class="mc-label">Downtime / Under Repair</div>
       <div class="mc-value <?= $downtimeRate > 20 ? 'warn' : '' ?>"><?= $downtimeRate ?>%</div>
       <div class="mc-sub"><?= $maintenanceEq ?> items under maintenance</div>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill warn" style="width:<?= $downtimeRate ?>%"></div></div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill warn" data-progress="<?= $downtimeRate ?>"></div></div>
     </div>
     <?php endif; ?>
 
@@ -234,7 +161,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
       <div class="mc-label">Maintenance Tasks</div>
       <div class="mc-value"><?= $maintCompleted ?> / <?= $maintTotal ?></div>
       <div class="mc-sub"><?= $maintCompletionRate ?>% completion rate — <?= $maintScheduled ?> pending</div>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:<?= $maintCompletionRate ?>%"></div></div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" data-progress="<?= $maintCompletionRate ?>"></div></div>
     </div>
 
     <?php if ($overdueCount > 0): ?>
@@ -248,8 +175,8 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
     <?php if ($unreadCount > 0): ?>
     <div class="metric-card-sm">
       <div class="mc-label">Unread Notifications</div>
-      <div class="mc-value" style="color:#ef4444;"><?= $unreadCount ?></div>
-      <div class="mc-sub"><a href="/api/my_notifications.php" style="color:var(--accent)">View all →</a></div>
+      <div class="mc-value mc-value-danger"><?= $unreadCount ?></div>
+      <div class="mc-sub"><a href="/api/my_notifications.php" class="mc-sub-link">View all →</a></div>
     </div>
     <?php endif; ?>
   </div>
@@ -264,7 +191,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
     <a class="workflow-link" href="/api/my_notifications.php">
       <i class="fas fa-bell"></i> My Notifications
       <?php if ($unreadCount > 0): ?>
-        <span style="background:#ef4444; color:#fff; font-size:.7rem; border-radius:999px; padding:.05rem .4rem; margin-left:.3rem;"><?= $unreadCount ?></span>
+        <span class="workflow-link-badge"><?= $unreadCount ?></span>
       <?php endif; ?>
     </a>
   </nav>

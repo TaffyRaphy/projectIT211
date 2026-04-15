@@ -84,73 +84,6 @@ function adm_days_diff(string $dateStr): int {
   <title>Maintenance Overview (Admin) – Equipment System</title>
   <meta name="description" content="Admin view of all maintenance records and alerts.">
   <link rel="stylesheet" href="/assets/style.css">
-  <style>
-    .maint-page { width: min(1100px, 94%); margin: 0 auto; padding: 1.5rem 0 4rem; }
-    .maint-section {
-      background: var(--surface-1);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-lg);
-      padding: 1.5rem 1.75rem;
-      margin-bottom: 1.5rem;
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      box-shadow: var(--shadow-standard);
-    }
-    .maint-section:hover { border-color: var(--border-strong); }
-    .section-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1.25rem; cursor:pointer; user-select:none; }
-    .section-header h2 { margin:0; font-size:1.15rem; display:flex; align-items:center; gap:.6rem; }
-    .section-chevron { font-size:.9rem; color:var(--text-muted); transition:transform .25s; }
-    .section-chevron.open { transform:rotate(180deg); }
-    .section-body { display:none; }
-    .section-body.open { display:block; }
-
-    .stats-row { display:flex; flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem; }
-    .stat-pill { display:flex; align-items:center; gap:.5rem; background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:.6rem 1.1rem; }
-    .sp-val { font-size:1.3rem; font-weight:800; line-height:1; }
-    .sp-label { color:var(--text-muted); font-size:.75rem; text-transform:uppercase; letter-spacing:.06em; }
-    .sp-overdue .sp-val  { color:var(--accent-danger); }
-    .sp-today   .sp-val  { color:var(--accent-warning); }
-    .sp-upcoming .sp-val { color:var(--accent-teal); }
-    .sp-done .sp-val     { color:var(--accent-primary); }
-
-    .overdue-banner { display:flex; align-items:center; gap:.75rem; background:color-mix(in srgb, var(--accent-danger) 10%, var(--surface-2)); border:1px solid color-mix(in srgb, var(--accent-danger) 35%, transparent); border-radius:var(--radius-md); padding:.85rem 1.25rem; margin-bottom:1.25rem; animation:slideIn .4s ease-out; }
-    .ob-text { font-size:.88rem; color:var(--accent-danger); font-weight:600; }
-
-    .alert-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(290px, 1fr)); gap:1rem; }
-    .maint-alert-card { border-radius:var(--radius-md); padding:1rem 1.25rem; border-left:4px solid; background:var(--surface-2); }
-    .maint-alert-card.overdue  { border-color:var(--accent-danger);  background:color-mix(in srgb, var(--accent-danger) 6%, var(--surface-2)); }
-    .maint-alert-card.due-today{ border-color:var(--accent-warning); background:color-mix(in srgb, var(--accent-warning) 6%, var(--surface-2)); }
-    .maint-alert-card.upcoming { border-color:var(--accent-primary); background:color-mix(in srgb, var(--accent-primary) 4%, var(--surface-2)); }
-    .alert-card-title { font-weight:700; font-size:.95rem; color:var(--text-heading); margin-bottom:.3rem; }
-    .alert-card-meta  { font-size:.8rem; color:var(--text-muted); line-height:1.6; }
-    .alert-urgency { font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:.15rem .5rem; border-radius:999px; display:inline-block; margin-bottom:.4rem; }
-    .urgency-overdue  { background:color-mix(in srgb, var(--accent-danger) 16%, transparent);  color:var(--accent-danger); }
-    .urgency-today    { background:color-mix(in srgb, var(--accent-warning) 18%, transparent); color:var(--accent-warning); }
-    .urgency-upcoming { background:color-mix(in srgb, var(--accent-primary) 14%, transparent); color:var(--accent-primary); }
-
-    .chip { display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; padding:.15rem .55rem; border-radius:999px; }
-    .chip-scheduled { background:color-mix(in srgb, var(--accent-warning) 16%, transparent); color:var(--accent-warning); }
-    .chip-completed { background:color-mix(in srgb, var(--accent-primary) 14%, transparent); color:var(--accent-primary); }
-    .chip-cancelled { background:color-mix(in srgb, var(--text-muted) 16%, transparent);    color:var(--text-muted); }
-    .chip-type      { background:color-mix(in srgb, var(--accent-teal) 12%, transparent);   color:var(--accent-teal); }
-    .chip-overdue   { background:color-mix(in srgb, var(--accent-danger) 16%, transparent); color:var(--accent-danger); }
-
-    .hist-table-wrap { overflow-x:auto; }
-    table { width:100%; border-collapse:collapse; font-size:.85rem; }
-    th, td { padding:.6rem .85rem; text-align:left; border-bottom:1px solid var(--border-subtle); }
-    th { font-family:var(--font-label); font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; color:var(--text-muted); font-weight:600; }
-    tr:hover td { background:color-mix(in srgb, var(--accent-primary) 4%, transparent); }
-
-    .history-select-row { display:flex; gap:.75rem; align-items:flex-end; flex-wrap:wrap; margin-bottom:1.25rem; }
-    .history-select-row select { flex:1; min-width:200px; }
-    .form-group { display:flex; flex-direction:column; gap:.35rem; }
-
-    .page-heading { margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--border-subtle); }
-    .page-heading h1 { font-size:clamp(1.5rem, 3vw, 2rem); font-family:var(--font-display); background:linear-gradient(135deg, var(--text-heading), color-mix(in srgb, var(--text-heading) 68%, var(--accent-primary))); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:.25rem; }
-    .empty-state { text-align:center; padding:2rem 1rem; color:var(--text-muted); font-style:italic; }
-
-    .admin-note { display:inline-flex; align-items:center; gap:.4rem; background:color-mix(in srgb, var(--accent-teal) 10%, var(--surface-2)); border:1px solid color-mix(in srgb, var(--accent-teal) 25%, transparent); border-radius:var(--radius-sm); padding:.35rem .75rem; font-size:.78rem; color:var(--accent-teal); margin-bottom:1rem; }
-  </style>
 </head>
 <body>
 <header class="dashboard-topbar">
@@ -187,7 +120,7 @@ function adm_days_diff(string $dateStr): int {
   <!-- Overdue banner -->
   <?php if ($statOverdue > 0): ?>
   <div class="overdue-banner">
-    <span style="font-size:1.4rem;">🚨</span>
+    <span class="ob-icon">🚨</span>
     <span class="ob-text"><?= $statOverdue ?> maintenance task<?= $statOverdue !== 1 ? 's are' : ' is' ?> overdue! Follow up with maintenance team.</span>
   </div>
   <?php endif; ?>
@@ -198,7 +131,7 @@ function adm_days_diff(string $dateStr): int {
     <div class="stat-pill sp-today"  ><div><div class="sp-val"><?= $statDueToday ?></div><div class="sp-label">Due Today</div></div></div>
     <div class="stat-pill sp-upcoming"><div><div class="sp-val"><?= $statUpcoming ?></div><div class="sp-label">Upcoming</div></div></div>
     <div class="stat-pill sp-done"   ><div><div class="sp-val"><?= $statDoneMonth ?></div><div class="sp-label">Done This Month</div></div></div>
-    <div class="stat-pill"           ><div><div class="sp-val" style="color:var(--text-heading);"><?= $statTotalDone ?> / <?= $statTotal ?></div><div class="sp-label">All-Time Completion</div></div></div>
+    <div class="stat-pill"           ><div><div class="sp-val admin-total-pill"><?= $statTotalDone ?> / <?= $statTotal ?></div><div class="sp-label">All-Time Completion</div></div></div>
   </div>
 
   <!-- ── Overdue/Upcoming Alerts ── -->
@@ -247,7 +180,7 @@ function adm_days_diff(string $dateStr): int {
     <div class="section-body" id="body-history">
       <form method="get" action="/api/admin_maintenance.php">
         <div class="history-select-row">
-          <div class="form-group" style="flex:1;">
+          <div class="form-group history-eq-group">
             <label for="history_eq">Select Equipment</label>
             <select id="history_eq" name="history_eq">
               <option value="">— Choose equipment —</option>
@@ -276,7 +209,7 @@ function adm_days_diff(string $dateStr): int {
                   <td><?= h((string) $h['schedule_date']) ?></td>
                   <td><?= h((string) ($h['completed_date'] ?? '—')) ?></td>
                   <td><span class="chip chip-<?= h((string) $h['status']) ?>"><?= h((string) $h['status']) ?></span></td>
-                  <td style="max-width:200px;word-break:break-word;"><?= h((string) ($h['notes'] ?? '—')) ?></td>
+                  <td class="note-cell"><?= h((string) ($h['notes'] ?? '—')) ?></td>
                   <td><?= $h['cost']!==null ? '₱'.number_format((float)$h['cost'],2) : '—' ?></td>
                   <td><?= h((string) $h['scheduled_by']) ?></td>
                 </tr>
@@ -330,7 +263,7 @@ function adm_days_diff(string $dateStr): int {
     </div>
   </div>
 
-  <p style="margin-top:1rem;"><a href="/api/dashboard.php">← Back to Dashboard</a></p>
+  <p class="back-link maint-back-link"><a href="/api/dashboard.php">← Back to Dashboard</a></p>
 </div>
 
 <script>

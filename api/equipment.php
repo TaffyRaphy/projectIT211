@@ -50,53 +50,6 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/assets/style.css">
   <title>Equipment Management – Equipment Management System</title>
-  <style>
-    .eq-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .eq-card {
-      background: var(--card-bg, #1a1a1a);
-      border: 1px solid var(--border-color, #2a2a2a);
-      border-radius: 12px;
-      padding: 1.2rem 1.4rem;
-      position: relative;
-    }
-    .eq-card-title { font-weight: 700; font-size: 1rem; margin: 0 0 .3rem; }
-    .eq-card-code  { font-size: .75rem; color: var(--text-muted); font-family: monospace; }
-    .eq-card-meta  { font-size: .82rem; color: var(--text-muted); margin: .5rem 0; display: flex; flex-wrap: wrap; gap: .5rem; }
-    .eq-card-meta span { background: var(--bg-alt, #111); border: 1px solid var(--border-color, #2a2a2a); border-radius: 5px; padding: .1rem .4rem; }
-    .eq-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .8rem; border-top: 1px solid var(--border-color, #2a2a2a); padding-top: .8rem; }
-    .eq-actions .inline-form { margin: 0; padding: 0; border: 0; display: flex; align-items: center; }
-    .eq-actions .badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: var(--touch-target-min);
-      padding: var(--btn-md-py) var(--btn-md-px);
-      font-size: .8rem;
-      font-weight: 700;
-      border-radius: 6px;
-      line-height: 1;
-    }
-    .edit-form-wrap { display: none; margin-top: 1rem; border-top: 1px solid var(--border-color, #2a2a2a); padding-top: 1rem; }
-    .edit-form-wrap.open { display: block; }
-    .edit-form-wrap .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
-    @media (max-width: 480px) { .edit-form-wrap .form-grid { grid-template-columns: 1fr; } }
-    .add-panel {
-      background: var(--card-bg, #1a1a1a);
-      border: 1px solid var(--border-color, #2a2a2a);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-    }
-    .add-panel h2 { margin-top: 0; }
-    .add-panel-toggle { cursor: pointer; }
-    .add-panel-body { display: none; }
-    .add-panel-body.open { display: block; }
-  </style>
 </head>
 <body>
 <header class="dashboard-topbar">
@@ -127,14 +80,14 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 
   <!-- Search Equipment -->
-  <section class="card" style="margin-bottom: 1.5rem;">
+  <section class="card equipment-search-card">
     <h2>🔍 Search Equipment</h2>
     <form method="post" class="filter-form">
       <div class="form-group">
         <label for="search_q">Search by name, code, location, or description:</label>
         <input type="text" id="search_q" name="search_q" placeholder="Search equipment..." value="<?= h($searchQ) ?>">
       </div>
-      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end;">
+      <div class="filter-actions">
         <button type="submit" class="btn btn-primary">🔍 Search</button>
         <a href="/api/equipment.php" class="filter-clear">✕ Clear</a>
       </div>
@@ -144,15 +97,14 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   <!-- Add Equipment Panel -->
   <div class="add-panel">
     <div class="add-panel-toggle" onclick="toggleAddPanel()" id="add-panel-header">
-      <h2 style="display:flex; gap:.75rem; align-items:center; margin:0;">
+      <h2 class="add-panel-title">
         ➕ Add New Equipment
-        <span id="add-panel-chevron" style="font-size:1rem; transition: transform .2s;">▼</span>
+        <span id="add-panel-chevron" class="add-panel-chevron">▼</span>
       </h2>
     </div>
     <div class="add-panel-body" id="add-panel-body">
-      <br>
       <form class="form" action="/api/actions/equipment_create.php" method="post">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-grid-two">
           <div class="form-group">
             <label for="name">Equipment Name *</label>
             <input id="name" name="name" required placeholder="e.g. Projector XZ2000">
@@ -169,7 +121,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
             <label for="location">Location *</label>
             <input id="location" name="location" required placeholder="e.g. Room 101, Storage A">
           </div>
-          <div class="form-group" style="grid-column: 1/-1;">
+          <div class="form-group span-full">
             <label for="description">Description</label>
             <textarea id="description" name="description" placeholder="Optional description..."></textarea>
           </div>
@@ -199,20 +151,20 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
         <?php endif; ?>
       </div>
       <?php if ((string) $item['description'] !== ''): ?>
-        <p style="margin:.6rem 0 0; color: var(--text-muted); font-size:.86rem;">
+        <p class="eq-description">
           <?= h((string) $item['description']) ?>
         </p>
       <?php endif; ?>
 
       <div class="eq-actions">
-        <button type="button" class="btn btn-secondary" style="font-size:.8rem;"
+        <button type="button" class="btn btn-secondary btn-compact"
           onclick="toggleEditForm(<?= (int) $item['id'] ?>)">
           ✏️ Edit
         </button>
         <form class="inline-form" action="/api/actions/equipment_update.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post"
               onsubmit="return confirm('Retire this equipment? This cannot be undone.')">
           <?php if ((string) $item['status'] !== 'retired'): ?>
-          <button type="submit" name="action" value="retire" class="btn btn-danger" style="font-size:.8rem;">
+          <button type="submit" name="action" value="retire" class="btn btn-danger btn-compact">
             🗑️ Retire
           </button>
           <?php else: ?>
@@ -254,14 +206,14 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
               <label>Available Qty *</label>
               <input type="number" name="quantity_available" min="0" required value="<?= (int) $item['quantity_available'] ?>">
             </div>
-            <div class="form-group" style="grid-column: 1 / -1;">
+            <div class="form-group span-full">
               <label>Description</label>
               <textarea name="description" rows="3" placeholder="Optional description..."><?= h((string) ($item['description'] ?? '')) ?></textarea>
             </div>
           </div>
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary" style="font-size:.85rem;">💾 Save Changes</button>
-            <button type="button" class="btn btn-secondary" style="font-size:.85rem;" onclick="toggleEditForm(<?= (int) $item['id'] ?>)">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-compact">💾 Save Changes</button>
+            <button type="button" class="btn btn-secondary btn-compact" onclick="toggleEditForm(<?= (int) $item['id'] ?>)">Cancel</button>
           </div>
         </form>
       </div>

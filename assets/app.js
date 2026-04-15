@@ -390,6 +390,16 @@ function initNotificationPopupTriggers() {
   });
 }
 
+function initProgressBars() {
+  document.querySelectorAll('.progress-bar-fill[data-progress]').forEach((bar) => {
+    if (!(bar instanceof HTMLElement)) return;
+
+    const rawValue = Number(bar.getAttribute('data-progress') ?? '0');
+    const safeValue = Number.isFinite(rawValue) ? Math.max(0, Math.min(100, rawValue)) : 0;
+    bar.style.setProperty('--progress-pct', `${safeValue}%`);
+  });
+}
+
 function getPreferredTheme() {
   const stored = window.localStorage.getItem(THEME_KEY);
   if (stored !== null && THEMES.includes(stored)) {
@@ -416,6 +426,7 @@ function applyTheme(theme) {
 document.addEventListener('DOMContentLoaded', () => {
   applyTheme(getPreferredTheme());
   initNotificationPopupTriggers();
+  initProgressBars();
   ensureNotificationPopup();
   initAuditTrailModal();
 });

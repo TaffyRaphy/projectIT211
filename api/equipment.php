@@ -9,9 +9,37 @@ $ok = query_param('ok');
 $error = query_param('error');
 $dashboardTitle = 'Equipment Management';
 
-$rows = db()->query(
-    'SELECT id, code, name, category, status, quantity_total, quantity_available, location, description, next_maintenance_date FROM equipment ORDER BY id DESC'
-)->fetchAll();
+// Filter state
+$searchQ = query_param('search_q');
+
+// If POST, redirect to GET URL to persist filters
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $postedSearch = post_string('search_q');
+    $params = [];
+    if ($postedSearch !== '') {
+        $params['search_q'] = $postedSearch;
+    }
+    redirect_to('/api/equipment.php', $params);
+}
+
+// Build filtered equipment query
+$where = ['1=1'];
+$queryParams = [];
+
+if ($searchQ !== '') {
+    $where[] = "(name ILIKE :search_q OR code ILIKE :search_q OR location ILIKE :search_q OR description ILIKE :search_q)";
+    $queryParams[':search_q'] = '%' . $searchQ . '%';
+}
+
+$whereClause = implode(' AND ', $where);
+$stmt = db()->prepare(
+    "SELECT id, code, name, category, status, quantity_total, quantity_available, location, description, next_maintenance_date 
+     FROM equipment 
+     WHERE {$whereClause}
+     ORDER BY id DESC"
+);
+$stmt->execute($queryParams);
+$rows = $stmt->fetchAll();
 
 $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
 ?>
@@ -98,6 +126,21 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   <?php if ($ok !== ''): ?><p class="alert alert-success">Success: <?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 
+  <!-- Search Equipment -->
+  <section class="card" style="margin-bottom: 1.5rem;">
+    <h2>🔍 Search Equipment</h2>
+    <form method="post" class="filter-form">
+      <div class="form-group">
+        <label for="search_q">Search by name, code, location, or description:</label>
+        <input type="text" id="search_q" name="search_q" placeholder="Search equipment..." value="<?= h($searchQ) ?>">
+      </div>
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end;">
+        <button type="submit" class="btn btn-primary">🔍 Search</button>
+        <a href="/api/equipment.php" class="btn btn-secondary">✕ Clear</a>
+      </div>
+    </form>
+  </section>
+
   <!-- Add Equipment Panel -->
   <div class="add-panel">
     <div class="add-panel-toggle" onclick="toggleAddPanel()" id="add-panel-header">
@@ -139,7 +182,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
     </div>
   </div>
 
-  <h2>Current Inventory (<?= count($rows) ?> items)</h2>
+  <h2>Current Inventory (<?= count($rows) ?> items<?= $searchQ ? ' matching search' : '' ?>)</h2>
   <div class="eq-grid">
   <?php foreach ($rows as $item): ?>
     <div class="eq-card" id="eq-card-<?= (int) $item['id'] ?>">

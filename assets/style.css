@@ -558,6 +558,47 @@ button[data-confirm*='Reject']:hover {
   font-size: 0.75rem;
 }
 
+/* Filter form styles */
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.filter-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.filter-form label {
+  margin-bottom: 0;
+  color: var(--text-heading);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.filter-form input,
+.filter-form select {
+  min-width: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color, #2a2a2a);
+  border-radius: 6px;
+  background: var(--input-bg, #0a0a0a);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .filter-form {
+    flex-direction: column;
+  }
+  .filter-form .form-group {
+    width: 100%;
+  }
+}
+
 .alert {
   padding: var(--space-lg) var(--space-lg);
   border-radius: 6px;

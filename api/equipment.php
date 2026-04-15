@@ -41,6 +41,18 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
     .eq-card-meta  { font-size: .82rem; color: var(--text-muted); margin: .5rem 0; display: flex; flex-wrap: wrap; gap: .5rem; }
     .eq-card-meta span { background: var(--bg-alt, #111); border: 1px solid var(--border-color, #2a2a2a); border-radius: 5px; padding: .1rem .4rem; }
     .eq-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .8rem; border-top: 1px solid var(--border-color, #2a2a2a); padding-top: .8rem; }
+    .eq-actions .inline-form { margin: 0; padding: 0; border: 0; display: flex; align-items: center; }
+    .eq-actions .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: var(--touch-target-min);
+      padding: var(--btn-md-py) var(--btn-md-px);
+      font-size: .8rem;
+      font-weight: 700;
+      border-radius: 6px;
+      line-height: 1;
+    }
     .edit-form-wrap { display: none; margin-top: 1rem; border-top: 1px solid var(--border-color, #2a2a2a); padding-top: 1rem; }
     .edit-form-wrap.open { display: block; }
     .edit-form-wrap .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }

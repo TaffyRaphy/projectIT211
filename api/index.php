@@ -8,10 +8,9 @@ if ($user !== null) {
 }
  
 $error = query_param('error');
-$ok = query_param('ok');
 ?>
 <!doctype html>
-<html lang="en">
+<html lang="en" class="login-page">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -418,76 +417,57 @@ $ok = query_param('ok');
     .footer-line span { color: var(--cyan); opacity: 0.7; }
   </style>
 </head>
-<body>
-<div class="glow-br"></div>
-
+<body class="login-page">
+<div class="theme-toolbar">
+  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch theme">🌙</button>
+</div>
 <main class="page page-login">
-  <div class="login-wrapper">
+  <div class="login-shell">
+    <section class="login-column login-column-form" aria-label="Login panel">
+      <p class="login-auth-kicker">Access Portal</p>
+      <h1 class="login-auth-title">Welcome back</h1>
+      <p class="login-auth-copy">Sign in to manage equipment inventory, approvals, maintenance schedules, and reports.</p>
 
-    <div class="brand">
-      <div class="brand-icon">
-        <!-- wrench + gear icon -->
-        <svg viewBox="0 0 24 24">
-          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.77 3.77z"/>
-        </svg>
-      </div>
-      <h1>Equipment Management<span>Staff Portal</span></h1>
-      <p>Sign in with your role account to continue.</p>
-    </div>
+      <?php if ($error !== ''): ?><p class="alert alert-error">Login Error: <?= h($error) ?></p><?php endif; ?>
 
-    <?php if ($ok !== ''): ?>
-      <div class="alert alert-success"><?= h($ok) ?></div>
-    <?php endif; ?>
-    <?php if ($error !== ''): ?>
-      <div class="alert alert-error">Login Error: <?= h($error) ?></div>
-    <?php endif; ?>
+      <form class="login-form" action="/api/actions/login.php" method="post">
+        <p><label for="email">Email address</label></p>
+        <p><input id="email" name="email" type="email" required></p>
 
-    <div class="panel">
-      <form action="/api/actions/login.php" method="post">
-
-        <div class="field">
-          <label for="email">Email Address</label>
-          <input id="email" name="email" type="email" placeholder="you@example.com" required>
+        <p><label for="password">Password</label></p>
+        <div class="password-row login-password-row password-field-wrap">
+          <input id="password" name="password" type="password" required>
+          <!-- Icon attribution: https://www.flaticon.com/free-icons/eyes and https://www.flaticon.com/free-icons/password -->
+          <button type="button" class="toggle-password toggle-password-inside" data-target="password" aria-pressed="false" aria-label="Show password"></button>
         </div>
 
-        <div class="field">
-          <label for="password">Password</label>
-          <div class="password-row">
-            <input id="password" name="password" type="password" placeholder="••••••••" required>
-            <button type="button" class="toggle-password" data-target="password" aria-pressed="false">Show</button>
-          </div>
-        </div>
+        <p class="login-forgot-wrap"><a href="#" class="login-forgot">Forgot Password?</a></p>
 
-        <button type="submit" class="btn-submit">Access System</button>
+        <button type="submit" class="login-submit">
+          <span>Sign in</span>
+          <span class="login-submit-arrow" aria-hidden="true">&#8250;</span>
+        </button>
       </form>
 
-      <div class="divider">Test Accounts</div>
+      <section class="list-panel login-test-users">
+        <button type="button" class="login-seed" data-login-seed data-email="admin@example.com" data-password="Pass123!">admin@example.com / Pass123!</button>
+        <button type="button" class="login-seed" data-login-seed data-email="staff@example.com" data-password="Pass123!">staff@example.com / Pass123!</button>
+        <button type="button" class="login-seed" data-login-seed data-email="maintenance@example.com" data-password="Pass123!">maintenance@example.com / Pass123!</button>
+      </section>
+    </section>
 
-      <div class="test-users">
-        <div class="test-users-header">Seeded Users</div>
-
-        <div class="test-user-row" data-email="admin@example.com" data-pass="Pass123!">
-          <span class="test-user-role">Admin</span>
-          <span class="test-user-email">admin@example.com</span>
-          <button class="fill-btn" type="button">Fill</button>
-        </div>
-
-        <div class="test-user-row" data-email="staff@example.com" data-pass="Pass123!">
-          <span class="test-user-role">Staff</span>
-          <span class="test-user-email">staff@example.com</span>
-          <button class="fill-btn" type="button">Fill</button>
-        </div>
-
-        <div class="test-user-row" data-email="maintenance@example.com" data-pass="Pass123!">
-          <span class="test-user-role">Maint.</span>
-          <span class="test-user-email">maintenance@example.com</span>
-          <button class="fill-btn" type="button">Fill</button>
+    <aside class="login-column login-column-visual" aria-label="System title and branding panel">
+      <div class="login-visual-center">
+        <p class="login-visual-eyebrow">Web Systems and Technology</p>
+        <h2 class="login-visual-title">Equipment Management System</h2>
+        <p class="login-visual-subtitle">A role-based platform for stock control, request workflows, maintenance planning, and historical reporting.</p>
+        <div class="login-accent-lines" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
       </div>
-    </div>
-
-    <p class="footer-line">Equipment Management System &mdash; <span>BSIT 2H</span></p>
-
+    </aside>
   </div>
 </main>
 

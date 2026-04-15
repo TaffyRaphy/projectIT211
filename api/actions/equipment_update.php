@@ -25,6 +25,7 @@ $status = post_string('status');
 $quantityTotal = post_int('quantity_total');
 $quantityAvailable = post_int('quantity_available');
 $location = post_string('location');
+$description = post_string('description');
 
 if (
     $name === '' || $category === '' || $location === '' ||
@@ -35,6 +36,11 @@ if (
     redirect_to('api/equipment.php', ['error' => 'Invalid equipment update']);
 }
 
+// Fetch old values for audit log
+$oldRow = db()->prepare('SELECT name, category, status, quantity_total, quantity_available, location, description FROM equipment WHERE id = :id');
+$oldRow->execute(['id' => $equipmentId]);
+$oldValues = $oldRow->fetch() ?: [];
+
 $stmt = db()->prepare(
     'UPDATE equipment
      SET name = :name,
@@ -43,17 +49,32 @@ $stmt = db()->prepare(
          quantity_total = :quantity_total,
          quantity_available = :quantity_available,
          location = :location,
+         description = :description,
          updated_at = NOW()
      WHERE id = :id'
 );
 $stmt->execute([
-    'name' => $name,
-    'category' => $category,
-    'status' => $status,
-    'quantity_total' => $quantityTotal,
+    'name'               => $name,
+    'category'           => $category,
+    'status'             => $status,
+    'quantity_total'     => $quantityTotal,
     'quantity_available' => $quantityAvailable,
-    'location' => $location,
-    'id' => $equipmentId,
+    'location'           => $location,
+    'description'        => $description !== '' ? $description : null,
+    'id'                 => $equipmentId,
+]);
+
+$adminUser = require_login();
+$adminId   = (int) $adminUser['id'];
+
+log_audit('update', 'equipment', $equipmentId, $adminId, $oldValues ?: null, [
+    'name'               => $name,
+    'category'           => $category,
+    'status'             => $status,
+    'quantity_total'     => $quantityTotal,
+    'quantity_available' => $quantityAvailable,
+    'location'           => $location,
+    'description'        => $description,
 ]);
 
 redirect_to('api/equipment.php', ['ok' => 'Equipment updated']);

@@ -9,7 +9,7 @@
     { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/actions/(.*)", "dest": "/api/actions/$1.php" },
     { "src": "/assets/(.*)", "dest": "/assets/$1" },
-    { "src": "/(index|dashboard|equipment|requests|admin_requests|maintenance|reports)", "dest": "/api/$1.php" },
+    { "src": "/(index|dashboard|equipment|requests|admin_requests|maintenance|reports|reports_historical|profile|users|audit_trail|snapshots|my_notifications|notification_logs)", "dest": "/api/$1.php" },
     { "src": "/", "dest": "/api/index.php" },
     { "src": "/(.*)", "dest": "/api/$1.php" }
   ]

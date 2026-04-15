@@ -14,7 +14,7 @@ $startDate    = post_string('start_date')    ?: query_param('start_date');
 $endDate      = post_string('end_date')      ?: query_param('end_date');
 $page         = max(1, int_query_param('page', 1));
 $perPage      = 50;
-$offset       = ($page - 1) * $perPage;
+$offset       = 0;
 
 $where  = [];
 $params = [];
@@ -51,7 +51,9 @@ try {
     );
     $countStmt->execute($params);
     $totalCount = (int) $countStmt->fetchColumn();
-    $totalPages = (int) ceil($totalCount / $perPage);
+    $totalPages = max(1, (int) ceil($totalCount / $perPage));
+    $page = min($page, $totalPages);
+    $offset = ($page - 1) * $perPage;
 
     // The actual rows
     $auditStmt = db()->prepare(
@@ -79,10 +81,14 @@ try {
 }
 
 $actionTypeIcon = [
-    'login'    => '🔑', 'create'   => '➕',
-    'update'   => '✏️', 'approve'  => '✅',
-    'reject'   => '❌', 'complete' => '✔️', 'snapshot' => '📸',
-    'cancel'   => '✖️',
+  'login'    => '<i class="fas fa-key" aria-hidden="true"></i>',
+  'create'   => '<i class="fas fa-circle-plus" aria-hidden="true"></i>',
+  'update'   => '<i class="fas fa-pen" aria-hidden="true"></i>',
+  'approve'  => '<i class="fas fa-circle-check" aria-hidden="true"></i>',
+  'reject'   => '<i class="fas fa-circle-xmark" aria-hidden="true"></i>',
+  'complete' => '<i class="fas fa-check" aria-hidden="true"></i>',
+  'snapshot' => '<i class="fas fa-camera" aria-hidden="true"></i>',
+  'cancel'   => '<i class="fas fa-ban" aria-hidden="true"></i>',
 ];
 
 $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
@@ -92,6 +98,64 @@ function buildPageUrl(int $p, array $filters): string {
     $params['page'] = $p;
     return '/api/audit_trail.php?' . http_build_query($params);
 }
+
+function buildPaginationItems(int $page, int $totalPages): array {
+  if ($totalPages <= 7) {
+    return range(1, $totalPages);
+  }
+
+  $items = [1];
+  $start = max(2, $page - 1);
+  $end = min($totalPages - 1, $page + 1);
+
+  if ($start > 2) {
+    $items[] = null;
+  }
+
+  for ($i = $start; $i <= $end; $i++) {
+    $items[] = $i;
+  }
+
+  if ($end < $totalPages - 1) {
+    $items[] = null;
+  }
+
+  $items[] = $totalPages;
+  return $items;
+}
+
+function extractAuditDetailSummary(?string $jsonText): string {
+  if (!is_string($jsonText) || trim($jsonText) === '') {
+    return 'No tracked details.';
+  }
+
+  $decoded = json_decode($jsonText, true);
+  if (!is_array($decoded)) {
+    return 'No tracked details.';
+  }
+
+  $allowedKeys = [
+    'status', 'name', 'equipment_name', 'role', 'email', 'full_name', 'staff_name',
+    'maintenance_type', 'schedule_date', 'completed_date', 'qty_requested', 'qty_allocated',
+    'qty_returned', 'expected_return_date', 'cancelled_by', 'action', 'category',
+    'location', 'code', 'work_done', 'purpose',
+  ];
+
+  $pairs = [];
+  foreach ($decoded as $key => $value) {
+    if (!in_array((string) $key, $allowedKeys, true)) {
+      continue;
+    }
+
+    $renderValue = is_scalar($value) || $value === null
+      ? (string) $value
+      : json_encode($value, JSON_UNESCAPED_SLASHES);
+    $pairs[] = (string) $key . ': ' . $renderValue;
+  }
+
+  return count($pairs) > 0 ? implode(' | ', $pairs) : 'No tracked details.';
+}
+
 $filters = [
     'user_filter'   => $userFilter,
     'action_filter' => $actionFilter,
@@ -99,6 +163,9 @@ $filters = [
     'start_date'    => $startDate,
     'end_date'      => $endDate,
 ];
+$paginationItems = buildPaginationItems($page, $totalPages);
+$startItem = $totalCount === 0 ? 0 : (($page - 1) * $perPage) + 1;
+$endItem = min($totalCount, $page * $perPage);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -135,7 +202,7 @@ $filters = [
 </header>
 
 <main class="page page-audit-trail">
-  <h2>📋 Full Audit Trail</h2>
+  <h2><i class="fas fa-clipboard-list" aria-hidden="true"></i> Full Audit Trail</h2>
   <p class="audit-intro">
     Complete history of all system actions. Total: <strong style="color: var(--accent)"><?= number_format($totalCount) ?></strong> entries.
   </p>
@@ -181,10 +248,31 @@ $filters = [
 
   <!-- Pagination top -->
   <?php if ($totalPages > 1): ?>
-  <div class="pagination audit-pagination">
-    <?php if ($page > 1): ?><a href="<?= h(buildPageUrl($page - 1, $filters)) ?>">← Prev</a><?php endif; ?>
-    <span>Page <?= $page ?> of <?= $totalPages ?></span>
-    <?php if ($page < $totalPages): ?><a href="<?= h(buildPageUrl($page + 1, $filters)) ?>">Next →</a><?php endif; ?>
+  <div class="audit-pagination-wrap" aria-label="Audit trail pagination">
+    <div class="audit-pagination">
+      <?php if ($page > 1): ?>
+        <a class="audit-page-link" href="<?= h(buildPageUrl($page - 1, $filters)) ?>" aria-label="Previous page">
+          <i class="fas fa-chevron-left" aria-hidden="true"></i> Previous
+        </a>
+      <?php endif; ?>
+      <div class="audit-page-numbers" aria-label="Page numbers">
+        <?php foreach ($paginationItems as $item): ?>
+          <?php if ($item === null): ?>
+            <span class="audit-page-ellipsis" aria-hidden="true">...</span>
+          <?php elseif ($item === $page): ?>
+            <span class="audit-page-number is-active" aria-current="page"><?= $item ?></span>
+          <?php else: ?>
+            <a class="audit-page-number" href="<?= h(buildPageUrl($item, $filters)) ?>" aria-label="Go to page <?= $item ?>"><?= $item ?></a>
+          <?php endif; ?>
+        <?php endforeach; ?>
+      </div>
+      <?php if ($page < $totalPages): ?>
+        <a class="audit-page-link" href="<?= h(buildPageUrl($page + 1, $filters)) ?>" aria-label="Next page">
+          Next <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        </a>
+      <?php endif; ?>
+    </div>
+    <p class="audit-pagination-summary">Showing <?= number_format($startItem) ?> to <?= number_format($endItem) ?> of <?= number_format($totalCount) ?> entries</p>
   </div>
   <?php endif; ?>
 
@@ -211,9 +299,28 @@ $filters = [
       </thead>
       <tbody>
         <?php foreach ($auditRows as $entry): ?>
-        <tr>
+        <?php
+          $newDetails = extractAuditDetailSummary(is_string($entry['new_values']) ? $entry['new_values'] : null);
+          $oldDetails = extractAuditDetailSummary(is_string($entry['old_values']) ? $entry['old_values'] : null);
+        ?>
+        <tr
+          class="audit-row"
+          tabindex="0"
+          role="button"
+          aria-label="Open details for audit entry #<?= (int) $entry['id'] ?>"
+          data-audit-id="<?= (int) $entry['id'] ?>"
+          data-audit-action="<?= h((string) $entry['action_type']) ?>"
+          data-audit-user="<?= h((string) $entry['user_name']) ?>"
+          data-audit-email="<?= h((string) $entry['user_email']) ?>"
+          data-audit-role="<?= h((string) $entry['user_role']) ?>"
+          data-audit-table="<?= h((string) $entry['table_name']) ?>"
+          data-audit-record="<?= (int) $entry['record_id'] ?>"
+          data-audit-when="<?= h(utc_to_ph((string) $entry['created_at'])) ?>"
+          data-audit-new-details="<?= h($newDetails) ?>"
+          data-audit-old-details="<?= h($oldDetails) ?>"
+        >
           <td class="cell-id audit-meta-row"><?= (int) $entry['id'] ?></td>
-          <td class="cell-action-icon"><?= $actionTypeIcon[$entry['action_type']] ?? '📌' ?></td>
+          <td class="cell-action-icon"><?= $actionTypeIcon[$entry['action_type']] ?? '<i class="fas fa-circle" aria-hidden="true"></i>' ?></td>
           <td class="cell-user">
             <strong><?= h($entry['user_name']) ?></strong><br>
             <span class="audit-meta-row"><?= h($entry['user_email']) ?></span>
@@ -226,17 +333,7 @@ $filters = [
           <td class="cell-action-type"><?= h($entry['action_type']) ?></td>
           <td class="cell-table"><code><?= h($entry['table_name']) ?></code></td>
           <td class="cell-record"><?= (int) $entry['record_id'] ?></td>
-          <td class="cell-details">
-            <?php
-              $nv = is_string($entry['new_values']) ? json_decode($entry['new_values'], true) : null;
-              if (is_array($nv)) {
-                  $show = array_filter($nv, fn($k) => in_array($k, ['status', 'name', 'equipment_name', 'role', 'email', 'full_name', 'staff_name', 'maintenance_type', 'schedule_date', 'completed_date', 'qty_requested', 'qty_allocated', 'qty_returned', 'expected_return_date', 'cancelled_by', 'action', 'category', 'location', 'code', 'work_done', 'purpose']), ARRAY_FILTER_USE_KEY);
-                  foreach ($show as $k => $v) {
-                      echo '<strong>' . h($k) . '</strong>: ' . h((string)$v) . ' ';
-                  }
-              }
-            ?>
-          </td>
+          <td class="cell-details"><?= h($newDetails) ?></td>
           <td class="cell-when"><?= h(utc_to_ph($entry['created_at'])) ?></td>
         </tr>
         <?php endforeach; ?>
@@ -246,13 +343,66 @@ $filters = [
   </section>
   <!-- Pagination bottom -->
   <?php if ($totalPages > 1): ?>
-  <div class="pagination audit-pagination">
-    <?php if ($page > 1): ?><a href="<?= h(buildPageUrl($page - 1, $filters)) ?>">← Prev</a><?php endif; ?>
-    <span>Page <?= $page ?> of <?= $totalPages ?></span>
-    <?php if ($page < $totalPages): ?><a href="<?= h(buildPageUrl($page + 1, $filters)) ?>">Next →</a><?php endif; ?>
+  <div class="audit-pagination-wrap" aria-label="Audit trail pagination">
+    <div class="audit-pagination">
+      <?php if ($page > 1): ?>
+        <a class="audit-page-link" href="<?= h(buildPageUrl($page - 1, $filters)) ?>" aria-label="Previous page">
+          <i class="fas fa-chevron-left" aria-hidden="true"></i> Previous
+        </a>
+      <?php endif; ?>
+      <div class="audit-page-numbers" aria-label="Page numbers">
+        <?php foreach ($paginationItems as $item): ?>
+          <?php if ($item === null): ?>
+            <span class="audit-page-ellipsis" aria-hidden="true">...</span>
+          <?php elseif ($item === $page): ?>
+            <span class="audit-page-number is-active" aria-current="page"><?= $item ?></span>
+          <?php else: ?>
+            <a class="audit-page-number" href="<?= h(buildPageUrl($item, $filters)) ?>" aria-label="Go to page <?= $item ?>"><?= $item ?></a>
+          <?php endif; ?>
+        <?php endforeach; ?>
+      </div>
+      <?php if ($page < $totalPages): ?>
+        <a class="audit-page-link" href="<?= h(buildPageUrl($page + 1, $filters)) ?>" aria-label="Next page">
+          Next <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        </a>
+      <?php endif; ?>
+    </div>
+    <p class="audit-pagination-summary">Showing <?= number_format($startItem) ?> to <?= number_format($endItem) ?> of <?= number_format($totalCount) ?> entries</p>
   </div>
   <?php endif; ?>
   <?php endif; ?>
+
+  <div class="audit-modal-overlay" data-audit-modal hidden aria-hidden="true">
+    <section class="audit-modal" role="dialog" aria-modal="true" aria-labelledby="audit-modal-title">
+      <header class="audit-modal-header">
+        <div>
+          <h3 id="audit-modal-title">Audit Entry Details</h3>
+          <p>Double-click a row to inspect its tracked values.</p>
+        </div>
+        <button type="button" class="audit-modal-close" data-audit-modal-close aria-label="Close details">
+          <i class="fas fa-xmark" aria-hidden="true"></i>
+        </button>
+      </header>
+      <div class="audit-modal-grid">
+        <div><p class="audit-modal-label">ID</p><p class="audit-modal-value" data-audit-modal-field="id"></p></div>
+        <div><p class="audit-modal-label">Action</p><p class="audit-modal-value" data-audit-modal-field="action"></p></div>
+        <div><p class="audit-modal-label">User</p><p class="audit-modal-value" data-audit-modal-field="user"></p></div>
+        <div><p class="audit-modal-label">Email</p><p class="audit-modal-value" data-audit-modal-field="email"></p></div>
+        <div><p class="audit-modal-label">Role</p><p class="audit-modal-value" data-audit-modal-field="role"></p></div>
+        <div><p class="audit-modal-label">Table</p><p class="audit-modal-value" data-audit-modal-field="table"></p></div>
+        <div><p class="audit-modal-label">Record</p><p class="audit-modal-value" data-audit-modal-field="record"></p></div>
+        <div><p class="audit-modal-label">When</p><p class="audit-modal-value" data-audit-modal-field="when"></p></div>
+      </div>
+      <div class="audit-modal-details">
+        <p class="audit-modal-label">Previous Values</p>
+        <pre class="audit-modal-block" data-audit-modal-field="old-details"></pre>
+      </div>
+      <div class="audit-modal-details">
+        <p class="audit-modal-label">New Values</p>
+        <pre class="audit-modal-block" data-audit-modal-field="new-details"></pre>
+      </div>
+    </section>
+  </div>
 
   <p class="back-link"><a href="/api/reports.php">← Back to Reports</a></p>
 </main>

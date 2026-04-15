@@ -10,6 +10,9 @@ let notifPopupStatus = null;
 let notifPopupCount = null;
 let notifPopupTrigger = null;
 let notifActiveFilter = 'all';
+let auditModalRoot = null;
+let auditModalCloseButton = null;
+let auditLastFocusedRow = null;
 
 const notifTypeIcons = {
   request_submitted: 'fa-clipboard-list',
@@ -255,6 +258,105 @@ function closeNotificationPopup() {
   }
 }
 
+function closeAuditModal() {
+  if (!(auditModalRoot instanceof HTMLElement)) return;
+  if (auditModalRoot.hasAttribute('hidden')) return;
+
+  auditModalRoot.setAttribute('hidden', '');
+  auditModalRoot.setAttribute('aria-hidden', 'true');
+
+  if (auditLastFocusedRow instanceof HTMLElement) {
+    auditLastFocusedRow.focus();
+  }
+}
+
+function openAuditModal(row) {
+  if (!(auditModalRoot instanceof HTMLElement)) return;
+  if (!(row instanceof HTMLElement)) return;
+
+  const fieldEntries = {
+    id: row.getAttribute('data-audit-id') ?? '',
+    action: row.getAttribute('data-audit-action') ?? '',
+    user: row.getAttribute('data-audit-user') ?? '',
+    email: row.getAttribute('data-audit-email') ?? '',
+    role: row.getAttribute('data-audit-role') ?? '',
+    table: row.getAttribute('data-audit-table') ?? '',
+    record: row.getAttribute('data-audit-record') ?? '',
+    when: row.getAttribute('data-audit-when') ?? '',
+    'old-details': row.getAttribute('data-audit-old-details') ?? 'No tracked details.',
+    'new-details': row.getAttribute('data-audit-new-details') ?? 'No tracked details.',
+  };
+
+  Object.entries(fieldEntries).forEach(([key, value]) => {
+    const target = auditModalRoot.querySelector(`[data-audit-modal-field="${key}"]`);
+    if (!(target instanceof HTMLElement)) return;
+    target.textContent = value;
+  });
+
+  auditLastFocusedRow = row;
+  auditModalRoot.removeAttribute('hidden');
+  auditModalRoot.setAttribute('aria-hidden', 'false');
+
+  if (auditModalCloseButton instanceof HTMLElement) {
+    auditModalCloseButton.focus();
+  }
+}
+
+function markAuditRowSelected(row) {
+  document.querySelectorAll('.audit-row.is-selected').forEach((current) => {
+    if (!(current instanceof HTMLElement)) return;
+    current.classList.remove('is-selected');
+  });
+
+  if (row instanceof HTMLElement) {
+    row.classList.add('is-selected');
+  }
+}
+
+function initAuditTrailModal() {
+  const root = document.querySelector('[data-audit-modal]');
+  if (!(root instanceof HTMLElement)) return;
+
+  auditModalRoot = root;
+  auditModalCloseButton = root.querySelector('[data-audit-modal-close]');
+
+  const rows = document.querySelectorAll('.audit-row');
+  rows.forEach((row) => {
+    if (!(row instanceof HTMLElement)) return;
+
+    row.addEventListener('click', () => {
+      markAuditRowSelected(row);
+    });
+
+    row.addEventListener('dblclick', () => {
+      markAuditRowSelected(row);
+      openAuditModal(row);
+    });
+
+    row.addEventListener('keydown', (event) => {
+      if (!(event instanceof KeyboardEvent)) return;
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      markAuditRowSelected(row);
+      openAuditModal(row);
+    });
+  });
+
+  root.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    if (target.closest('[data-audit-modal-close]')) {
+      closeAuditModal();
+      return;
+    }
+
+    if (target === root) {
+      closeAuditModal();
+    }
+  });
+}
+
 async function openNotificationPopup(trigger) {
   ensureNotificationPopup();
   if (!(notifPopupRoot instanceof HTMLElement)) return;
@@ -315,6 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
   applyTheme(getPreferredTheme());
   initNotificationPopupTriggers();
   ensureNotificationPopup();
+  initAuditTrailModal();
 });
 
 document.addEventListener('click', (event) => {
@@ -427,7 +530,14 @@ document.addEventListener('click', (event) => {
 });
 
 document.addEventListener('keydown', (event) => {
+  if (!(event instanceof KeyboardEvent)) return;
   if (event.key !== 'Escape') return;
+
+  if (auditModalRoot instanceof HTMLElement && !auditModalRoot.hasAttribute('hidden')) {
+    closeAuditModal();
+    return;
+  }
+
   if (!(notifPopupRoot instanceof HTMLElement)) return;
   if (!notifPopupRoot.classList.contains('is-open')) return;
   closeNotificationPopup();

@@ -335,28 +335,24 @@ try {
 
   <hr>
 
-  <!-- Export Summary -->
-  <div class="card export-card">
-    <h2><i class="fas fa-file-export" aria-hidden="true"></i> Export Summary</h2>
-    <p class="section-description">Generate detailed reports in PDF format</p>
-    <form action="/api/actions/generate_report_pdf.php" method="get" class="export-form">
-      <input type="hidden" name="report_type" value="summary">
-      <div class="form-group">
-        <label for="trend_metric_export">Trend Metric to Export</label>
-        <select id="trend_metric_export" name="trend_metric">
-          <option value="cost">Maintenance Cost</option>
-          <option value="utilization">Equipment Utilization Rate</option>
-          <option value="requests">Total Requests</option>
-        </select>
-        <button type="submit" class="btn btn-primary">Export as PDF</button>
-      </div>
-    </form>
-  </div>
-
   <!-- Admin Tools -->
   <section class="card admin-tools-card">
     <h2>Admin Tools</h2>
     <p class="section-description">System management and reporting actions</p>
+
+    <div class="export-wrap">
+      <span class="export-label"><i class="fas fa-file-export" aria-hidden="true"></i> Export Summary (HTML)</span>
+      <form action="/api/actions/generate_report_pdf.php" method="get" class="export-form">
+        <input type="hidden" name="report_type" value="summary">
+        <label for="trend_metric_export" class="export-field-label">Trend metric:</label>
+        <select id="trend_metric_export" name="trend_metric" class="export-field-select">
+          <option value="cost">Maintenance Cost</option>
+          <option value="utilization">Equipment Utilization Rate</option>
+          <option value="requests">Total Requests</option>
+        </select>
+        <button type="submit" class="btn btn-primary export-btn">Export</button>
+      </form>
+    </div>
 
     <div class="action-groups-wrapper">
       <!-- Snapshots Group -->

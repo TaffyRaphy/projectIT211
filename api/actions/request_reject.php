@@ -3,7 +3,11 @@ declare(strict_types=1);
 require dirname(__DIR__, 2) . '/includes/bootstrap.php';
 
 require_role(['admin']);
-$requestId = int_query_param('id', 0);
+// Direct GET read — filter_input can return null in some serverless environments
+$requestId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+if ($requestId <= 0 && isset($_POST['id'])) {
+    $requestId = (int) $_POST['id'];
+}
 $adminId   = (int) require_login()['id'];
 $remarks   = post_string('remarks');
 
@@ -12,7 +16,7 @@ if (strlen($remarks) > 255) {
 }
 
 if ($requestId <= 0) {
-    redirect_to('api/admin_requests.php', ['error' => 'Invalid rejection input']);
+    redirect_to('/api/admin_requests.php', ['error' => 'Invalid rejection input']);
 }
 
 // Get request + staff details before updating (for notification + audit)
@@ -68,4 +72,4 @@ if ($request) {
     );
 }
 
-redirect_to('api/admin_requests.php', ['ok' => 'Request rejected']);
+redirect_to('/api/admin_requests.php', ['ok' => 'Request rejected']);

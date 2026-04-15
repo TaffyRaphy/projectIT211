@@ -105,15 +105,23 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($adminId);
             <div class="req-meta-row"><i class="fas fa-calendar-days"></i><span><?= h(utc_to_ph((string) $item['requested_at'])) ?></span></div>
           </div>
           <div class="req-actions">
-            <form action="/api/actions/request_approve.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post" class="req-approve-form">
+            <form action="/api/actions/request_approve.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post" class="req-approve-form" style="display:flex; gap:.5rem; align-items:flex-end; flex-wrap:wrap;">
               <div class="form-group req-due-group">
                 <label class="req-due-label">Expected Return Date <span class="required-mark">*</span></label>
                 <input type="date" name="due_date" required min="<?= date('Y-m-d') ?>" class="req-due-input">
+              </div>
+              <div class="form-group" style="margin-bottom:0; min-width:220px; flex:1;">
+                <label style="font-size:.78rem;">Approval Remarks <small>(optional)</small></label>
+                <input type="text" name="remarks" maxlength="255" placeholder="Add note for staff..." style="padding:.25rem .5rem; font-size:.85rem; width:100%;">
               </div>
               <button type="submit" class="btn btn-primary btn-compact"><i class="fas fa-check"></i> Approve & Allocate</button>
             </form>
             <form action="/api/actions/request_reject.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post" style="display:flex; gap:.5rem; align-items:flex-end; flex-wrap:wrap;"
                   onsubmit="return confirm('Reject this request?')">
+              <div class="form-group" style="margin-bottom:0; min-width:220px;">
+                <label style="font-size:.78rem;">Rejection Remarks <small>(optional)</small></label>
+                <input type="text" name="remarks" maxlength="255" placeholder="Reason shown to staff" style="padding:.25rem .5rem; font-size:.85rem; width:100%;">
+              </div>
               <button type="submit" class="btn btn-danger btn-compact"><i class="fas fa-xmark"></i> Reject</button>
             </form>
           </div>

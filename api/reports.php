@@ -10,25 +10,13 @@ $dashboardTitle = 'Equipment Reports';
 $ok = query_param('ok');
 $error = query_param('error');
 
-// Filters
-$categoryFilter = post_string('category_filter') ?: query_param('category_filter');
-$statusFilter = post_string('status_filter') ?: query_param('status_filter');
-
-// Get distinct categories for filter dropdown
-$categoryStmt = db()->query("SELECT DISTINCT category FROM equipment WHERE category IS NOT NULL ORDER BY category");
-$categories = $categoryStmt->fetchAll(PDO::FETCH_COLUMN);
-
-// Build category filter where clause
-$categoryWhere = $categoryFilter !== '' ? 'AND e.category = ' . db()->quote($categoryFilter) : '';
-$statusWhere = $statusFilter !== '' ? 'AND e.status = ' . db()->quote($statusFilter) : '';
-
 // Inventory by category
 $inventoryRows = db()->query(
     "SELECT category, COUNT(*)::text AS items, COALESCE(SUM(quantity_total), 0)::text AS total_qty,
             COALESCE(SUM(quantity_available), 0)::text AS available_qty,
             COALESCE(SUM(quantity_total - quantity_available), 0)::text AS allocated_qty
      FROM equipment
-     WHERE category IS NOT NULL $categoryWhere
+  WHERE category IS NOT NULL
      GROUP BY category
      ORDER BY category ASC"
 )->fetchAll();
@@ -46,7 +34,6 @@ $usageRows = db()->query(
             ), 0)::text AS overdue_count
      FROM equipment e
      LEFT JOIN allocations a ON a.equipment_id = e.id
-     WHERE 1=1 $categoryWhere $statusWhere
      GROUP BY e.id, e.name, e.quantity_available
      ORDER BY e.name ASC"
 )->fetchAll();
@@ -62,7 +49,6 @@ $maintenanceRows = db()->query(
             COALESCE(SUM(CASE WHEN m.status = 'completed'  THEN m.cost ELSE 0 END), 0)::text AS completed_cost
      FROM equipment e
      LEFT JOIN maintenance_logs m ON m.equipment_id = e.id
-     WHERE 1=1 $categoryWhere $statusWhere
      GROUP BY e.name
      ORDER BY e.name ASC"
 )->fetchAll();
@@ -139,40 +125,6 @@ try {
   <?php if ($error !== ''): ?>
     <p class="alert alert-error">Error: <?= h($error) ?></p>
   <?php endif; ?>
-
-  <!-- Filters Section -->
-  <section class="card">
-    <h2>Filters</h2>
-    <form method="post" class="filter-form">
-      <div class="form-group">
-        <label for="category_filter">Category:</label>
-        <select id="category_filter" name="category_filter">
-          <option value="">All Categories</option>
-          <?php foreach ($categories as $cat): ?>
-            <option value="<?= h($cat) ?>" <?= $categoryFilter === $cat ? 'selected' : '' ?>>
-              <?= h(ucfirst($cat)) ?>
-            </option>
-          <?php endforeach; ?>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="status_filter">Status:</label>
-        <select id="status_filter" name="status_filter">
-          <option value="">All Statuses</option>
-          <option value="available" <?= $statusFilter === 'available' ? 'selected' : '' ?>>Available</option>
-          <option value="allocated" <?= $statusFilter === 'allocated' ? 'selected' : '' ?>>Allocated</option>
-          <option value="maintenance" <?= $statusFilter === 'maintenance' ? 'selected' : '' ?>>Under Maintenance</option>
-          <option value="retired" <?= $statusFilter === 'retired' ? 'selected' : '' ?>>Retired</option>
-        </select>
-      </div>
-
-      <div class="filter-actions">
-        <button type="submit" class="btn btn-primary">Apply Filters</button>
-        <a href="/api/reports.php" class="btn btn-secondary">Clear</a>
-      </div>
-    </form>
-  </section>
 
   <!-- SLA & Performance Metrics -->
   <section class="card">

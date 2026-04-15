@@ -446,6 +446,38 @@ button[data-confirm*='Reject'] {
   box-shadow: var(--shadow-soft);
 }
 
+.filter-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  min-height: var(--touch-target-min);
+  padding: var(--btn-md-py) var(--btn-md-px);
+  border: 1px solid color-mix(in srgb, var(--accent-danger) 48%, transparent);
+  border-radius: 6px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-danger) 86%, #fff 14%), #a83b16);
+  color: #fff;
+  font-family: var(--font-label);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: var(--shadow-soft);
+  transition: var(--spring);
+}
+
+.filter-clear:hover {
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px color-mix(in srgb, var(--accent-danger) 26%, transparent);
+}
+
+.filter-clear:focus {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
 button[name='action'][value='retire']:hover,
 button[data-confirm*='Reject']:hover {
   box-shadow: 0 6px 12px color-mix(in srgb, var(--accent-danger) 26%, transparent);

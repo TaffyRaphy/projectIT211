@@ -181,7 +181,7 @@ $today = date('Y-m-d');
       </div>
       <div style="display: flex; gap: 0.75rem; align-items: flex-end;">
         <button type="submit" class="btn btn-primary">Filter</button>
-        <a href="/api/requests.php" class="btn btn-secondary">Clear</a>
+        <a href="/api/requests.php" class="filter-clear">Clear</a>
       </div>
     </form>
   </section>
@@ -309,7 +309,7 @@ $today = date('Y-m-d');
       </div>
       <div style="display: flex; gap: 0.75rem; align-items: flex-end;">
         <button type="submit" class="btn btn-primary">Filter</button>
-        <a href="/api/requests.php" class="btn btn-secondary">Clear</a>
+        <a href="/api/requests.php" class="filter-clear">Clear</a>
       </div>
     </form>
   </section>

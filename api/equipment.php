@@ -136,7 +136,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
       </div>
       <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end;">
         <button type="submit" class="btn btn-primary">🔍 Search</button>
-        <a href="/api/equipment.php" class="btn btn-secondary">✕ Clear</a>
+        <a href="/api/equipment.php" class="filter-clear">✕ Clear</a>
       </div>
     </form>
   </section>

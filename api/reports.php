@@ -167,8 +167,10 @@ try {
         </select>
       </div>
 
-      <button type="submit" class="btn btn-primary">Apply Filters</button>
-      <a href="/api/reports.php" class="btn btn-secondary">Clear</a>
+      <div class="filter-actions">
+        <button type="submit" class="btn btn-primary">Apply Filters</button>
+        <a href="/api/reports.php" class="btn btn-secondary">Clear</a>
+      </div>
     </form>
   </section>
 
@@ -246,20 +248,12 @@ try {
       <tbody>
         <?php foreach ($usageRows as $row): ?>
           <tr>
-<<<<<<< HEAD
-            <td><strong><?= h((string) $row['equipment_name']) ?></strong></td>
-            <td><?= h((string) $row['quantity_available']) ?></td>
-            <td><?= h((string) $row['active_allocations']) ?></td>
-            <td><?= h((string) $row['currently_allocated_qty']) ?></td>
-            <td style="color:var(--text-muted);"><?= h((string) $row['total_allocations']) ?></td>
-            <td>
-=======
             <td data-label="Equipment Name"><strong><?= h((string) $row['equipment_name']) ?></strong></td>
             <td data-label="Available"><?= h((string) $row['quantity_available']) ?></td>
-            <td data-label="Total Allocations"><?= h((string) $row['allocations']) ?></td>
-            <td data-label="Total Allocated Qty"><?= h((string) $row['allocated_qty']) ?></td>
-            <td data-label="Overdue">
->>>>>>> 9456ee8496c221d19c393e73ffcb8efee9c2dc71
+            <td data-label="Active Allocations"><?= h((string) $row['active_allocations']) ?></td>
+            <td data-label="Currently Allocated Qty"><?= h((string) $row['currently_allocated_qty']) ?></td>
+            <td data-label="Historical Total" class="table-cell-muted"><?= h((string) $row['total_allocations']) ?></td>
+            <td data-label="Overdue (Active)">
               <?php if ((int) $row['overdue_count'] > 0): ?>
                 <span class="badge badge-error"><?= h((string) $row['overdue_count']) ?></span>
               <?php else: ?>
@@ -294,22 +288,13 @@ try {
         <?php foreach ($maintenanceRows as $row): ?>
           <?php if ((int)$row['total_logs'] === 0) continue; ?>
           <tr>
-<<<<<<< HEAD
-            <td><strong><?= h((string) $row['equipment_name']) ?></strong></td>
-            <td><?= h((string) $row['total_logs']) ?></td>
-            <td><?= h((string) $row['completed_logs']) ?></td>
-            <td><?= h((string) $row['scheduled_logs']) ?></td>
-            <td style="color:var(--text-muted);"><?= h((string) $row['cancelled_logs']) ?></td>
-            <td>₱<?= number_format((float) $row['total_cost'], 2) ?></td>
-            <td>₱<?= number_format((float) $row['completed_cost'], 2) ?></td>
-=======
             <td data-label="Equipment Name"><strong><?= h((string) $row['equipment_name']) ?></strong></td>
             <td data-label="Total Tasks"><?= h((string) $row['total_logs']) ?></td>
             <td data-label="Completed"><?= h((string) $row['completed_logs']) ?></td>
             <td data-label="Scheduled"><?= h((string) $row['scheduled_logs']) ?></td>
-            <td data-label="Total Cost">$<?= number_format((float) $row['total_cost'], 2) ?></td>
-            <td data-label="Completed Cost">$<?= number_format((float) $row['completed_cost'], 2) ?></td>
->>>>>>> 9456ee8496c221d19c393e73ffcb8efee9c2dc71
+            <td data-label="Cancelled" class="table-cell-muted"><?= h((string) $row['cancelled_logs']) ?></td>
+            <td data-label="Total Cost">₱<?= number_format((float) $row['total_cost'], 2) ?></td>
+            <td data-label="Completed Cost">₱<?= number_format((float) $row['completed_cost'], 2) ?></td>
           </tr>
         <?php endforeach; ?>
       </tbody>
@@ -401,7 +386,7 @@ try {
   <!-- Admin Tools -->
   <section class="card">
     <h2>Admin Tools</h2>
-    <p>
+    <div class="reports-actions">
       <a href="/api/actions/snapshot_daily.php"          class="btn btn-secondary"><i class="fas fa-camera"></i> Capture Metrics Snapshot</a>
       <a href="/api/snapshots.php"                       class="btn btn-primary"><i class="fas fa-chart-bar"></i> View All Snapshots</a>
       <a href="/api/audit_trail.php"                     class="btn btn-primary"><i class="fas fa-list"></i> Full Audit Trail</a>
@@ -410,7 +395,7 @@ try {
       <a href="/api/notification_logs.php"               class="btn btn-secondary"><i class="fas fa-envelope"></i> Notification Logs</a>
       <a href="/api/users.php"                           class="btn btn-secondary"><i class="fas fa-users"></i> User Management</a>
       <a href="/api/actions/test_email.php"              class="btn btn-warning"><i class="fas fa-envelope"></i> Test Resend Email</a>
-    </p>
+    </div>
     <div style="margin-top:1rem; padding:1rem; background:var(--bg-alt,#111); border:1px solid var(--border-color,#2a2a2a); border-radius:8px; display:inline-flex; align-items:center; gap:.75rem; flex-wrap:wrap;">
       <span style="font-size:.88rem; font-weight:600;">📄 Export Summary (HTML)</span>
       <form action="/api/actions/generate_report_pdf.php" method="get" style="display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;">

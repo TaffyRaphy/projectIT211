@@ -1424,10 +1424,28 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
   min-width: 0;
 }
 
+.page-reports .filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
 .page-reports .filter-form .btn,
 .page-reports .filter-form a.btn {
   justify-self: start;
   margin-top: 0.25rem;
+}
+
+.page-reports .reports-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.page-reports .reports-actions .btn {
+  margin: 0;
 }
 
 .page-reports .btn {
@@ -1539,6 +1557,10 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
 
 .page-reports .table strong {
   color: var(--text-heading);
+}
+
+.page-reports .table-cell-muted {
+  color: var(--text-muted);
 }
 
 .page-reports .badge {

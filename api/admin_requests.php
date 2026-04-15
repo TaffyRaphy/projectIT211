@@ -96,7 +96,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($adminId);
         <div class="req-card pending">
           <p class="req-card-title">
             Request #<?= (int) $item['id'] ?> — <?= h((string) $item['equipment_name']) ?>
-            <span class="badge badge-warning" style="font-size:.75rem;">Pending</span>
+            <span class="badge badge-warning badge-sm">Pending</span>
           </p>
           <div class="req-card-meta">
             <div class="req-meta-row"><i class="fas fa-user"></i><span><strong><?= h((string) $item['staff_name']) ?></strong><br><small><?= h((string) $item['staff_email']) ?></small></span></div>
@@ -105,24 +105,16 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($adminId);
             <div class="req-meta-row"><i class="fas fa-calendar-days"></i><span><?= h(utc_to_ph((string) $item['requested_at'])) ?></span></div>
           </div>
           <div class="req-actions">
-            <form action="/api/actions/request_approve.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post" style="display:flex; gap:.5rem; align-items:flex-end; flex-wrap:wrap; flex:1;">
-              <div class="form-group" style="margin-bottom:0;">
-                <label style="font-size:.78rem;">Expected Return Date <span style="color:#ef4444;">*</span></label>
-                <input type="date" name="due_date" required min="<?= date('Y-m-d') ?>" style="padding:.25rem .5rem; font-size:.85rem;">
+            <form action="/api/actions/request_approve.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post" class="req-approve-form">
+              <div class="form-group req-due-group">
+                <label class="req-due-label">Expected Return Date <span class="required-mark">*</span></label>
+                <input type="date" name="due_date" required min="<?= date('Y-m-d') ?>" class="req-due-input">
               </div>
-              <div class="form-group" style="margin-bottom:0; min-width:220px; flex:1;">
-                <label style="font-size:.78rem;">Approval Remarks <small>(optional)</small></label>
-                <input type="text" name="remarks" maxlength="255" placeholder="Add note for staff..." style="padding:.25rem .5rem; font-size:.85rem; width:100%;">
-              </div>
-              <button type="submit" class="btn btn-primary" style="font-size:.85rem;"><i class="fas fa-check"></i> Approve & Allocate</button>
+              <button type="submit" class="btn btn-primary btn-compact"><i class="fas fa-check"></i> Approve & Allocate</button>
             </form>
             <form action="/api/actions/request_reject.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post" style="display:flex; gap:.5rem; align-items:flex-end; flex-wrap:wrap;"
                   onsubmit="return confirm('Reject this request?')">
-              <div class="form-group" style="margin-bottom:0; min-width:220px;">
-                <label style="font-size:.78rem;">Rejection Remarks <small>(optional)</small></label>
-                <input type="text" name="remarks" maxlength="255" placeholder="Reason shown to staff" style="padding:.25rem .5rem; font-size:.85rem; width:100%;">
-              </div>
-              <button type="submit" class="btn btn-danger" style="font-size:.85rem;"><i class="fas fa-xmark"></i> Reject</button>
+              <button type="submit" class="btn btn-danger btn-compact"><i class="fas fa-xmark"></i> Reject</button>
             </form>
           </div>
         </div>
@@ -161,7 +153,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($adminId);
             <td class="cell-id"><?= (int) $alloc['id'] ?></td>
             <td class="cell-staff">
               <strong><?= h($alloc['staff_name']) ?></strong><br>
-              <small style="color:var(--text-muted)"><?= h($alloc['staff_email']) ?></small>
+              <small class="staff-email-muted"><?= h($alloc['staff_email']) ?></small>
             </td>
             <td class="cell-equipment"><?= h($alloc['equipment_name']) ?></td>
             <td class="cell-qty"><?= (int) $alloc['qty_allocated'] ?></td>
@@ -173,7 +165,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($adminId);
                   <span class="overdue-tag"><i class="fas fa-triangle-exclamation"></i> Overdue</span>
                 <?php endif; ?>
               <?php else: ?>
-                <span style="color:var(--text-muted)">—</span>
+                <span class="muted-dash">—</span>
               <?php endif; ?>
             </td>
             <td class="cell-status"><span class="badge badge-info">Active</span></td>

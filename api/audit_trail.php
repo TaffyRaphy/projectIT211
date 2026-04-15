@@ -204,13 +204,13 @@ $endItem = min($totalCount, $page * $perPage);
 <main class="page page-audit-trail">
   <h2><i class="fas fa-clipboard-list" aria-hidden="true"></i> Full Audit Trail</h2>
   <p class="audit-intro">
-    Complete history of all system actions. Total: <strong style="color: var(--accent)"><?= number_format($totalCount) ?></strong> entries.
+    Complete history of all system actions. Total: <strong class="total-count-highlight"><?= number_format($totalCount) ?></strong> entries.
   </p>
 
   <!-- Filters -->
   <section class="section-container audit-filters-container">
     <h2 class="section-heading"><i class="fas fa-filter"></i> Filters</h2>
-    <form method="post" class="filter-form" style="flex-wrap: wrap;">
+    <form method="post" class="filter-form audit-filter-form">
       <div class="form-group">
         <label for="user_filter">User (name or email):</label>
         <input type="text" id="user_filter" name="user_filter" value="<?= h($userFilter) ?>" placeholder="Search user...">

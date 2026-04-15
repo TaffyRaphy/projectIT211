@@ -13,24 +13,99 @@ header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');
 header('Expires: 0');
 
-// Equipment available to request
-$equipmentRows = db()->query(
-  "SELECT id, name, quantity_available, status, description
-   FROM equipment
-   WHERE status = 'available' AND quantity_available > 0
-   ORDER BY name ASC"
-)->fetchAll();
+// Filter state for available equipment
+$equipQ = query_param('equip_q');
+$equipCategory = query_param('equip_category');
 
-// This staff's request history (with allocation link)
-$requestRows = db()->prepare(
+// Filter state for request history
+$reqQ = query_param('req_q');
+$reqStatus = query_param('req_status');
+$reqFromDate = query_param('req_from');
+$reqToDate = query_param('req_to');
+
+// If POST, redirect to GET URL to persist filters
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $postedEquipQ = post_string('equip_q');
+    $postedEquipCat = post_string('equip_category');
+    $postedReqQ = post_string('req_q');
+    $postedReqStatus = post_string('req_status');
+    $postedReqFrom = post_string('req_from');
+    $postedReqTo = post_string('req_to');
+    
+    $params = [];
+    if ($postedEquipQ !== '') { $params['equip_q'] = $postedEquipQ; }
+    if ($postedEquipCat !== '') { $params['equip_category'] = $postedEquipCat; }
+    if ($postedReqQ !== '') { $params['req_q'] = $postedReqQ; }
+    if ($postedReqStatus !== '') { $params['req_status'] = $postedReqStatus; }
+    if ($postedReqFrom !== '') { $params['req_from'] = $postedReqFrom; }
+    if ($postedReqTo !== '') { $params['req_to'] = $postedReqTo; }
+    
+    redirect_to('/api/requests.php', $params);
+}
+
+// Get categories from available equipment (for filter dropdown)
+$categoryStmt = db()->query(
+    "SELECT DISTINCT category FROM equipment WHERE status = 'available' AND category IS NOT NULL ORDER BY category ASC"
+);
+$categoryOptions = $categoryStmt->fetchAll(PDO::FETCH_COLUMN);
+
+// Get allowed request statuses (for filter dropdown)
+$statusOptions = ['pending', 'allocated', 'rejected'];
+
+// Build available equipment query
+$equipWhere = ["status = 'available' AND quantity_available > 0"];
+$equipParams = [];
+
+if ($equipQ !== '') {
+    $equipWhere[] = "name ILIKE :equip_q";
+    $equipParams[':equip_q'] = '%' . $equipQ . '%';
+}
+if ($equipCategory !== '' && $equipCategory !== 'all') {
+    $equipWhere[] = "category = :equip_category";
+    $equipParams[':equip_category'] = $equipCategory;
+}
+
+$equipWhereClause = implode(' AND ', $equipWhere);
+$equipStmt = db()->prepare(
+    "SELECT id, name, quantity_available, status, description, category
+     FROM equipment
+     WHERE {$equipWhereClause}
+     ORDER BY name ASC"
+);
+$equipStmt->execute($equipParams);
+$equipmentRows = $equipStmt->fetchAll();
+
+// Build request history query
+$reqWhere = ['r.staff_id = :sid'];
+$reqParams = [':sid' => $staffId];
+
+if ($reqQ !== '') {
+    $reqWhere[] = "e.name ILIKE :req_q";
+    $reqParams[':req_q'] = '%' . $reqQ . '%';
+}
+if ($reqStatus !== '' && in_array($reqStatus, $statusOptions, true)) {
+    $reqWhere[] = "r.status = :req_status";
+    $reqParams[':req_status'] = $reqStatus;
+}
+if ($reqFromDate !== '') {
+    $reqWhere[] = "DATE(r.requested_at) >= :req_from";
+    $reqParams[':req_from'] = $reqFromDate;
+}
+if ($reqToDate !== '') {
+    $reqWhere[] = "DATE(r.requested_at) <= :req_to";
+    $reqParams[':req_to'] = $reqToDate;
+}
+
+$reqWhereClause = implode(' AND ', $reqWhere);
+$requestStmt = db()->prepare(
     "SELECT r.id, e.name AS equipment_name, r.qty_requested, r.status, r.requested_at::text AS requested_at
      FROM equipment_requests r
      JOIN equipment e ON e.id = r.equipment_id
-     WHERE r.staff_id = :sid
+     WHERE {$reqWhereClause}
      ORDER BY r.id DESC"
 );
-$requestRows->execute([':sid' => $staffId]);
-$requestRows = $requestRows->fetchAll();
+$requestStmt->execute($reqParams);
+$requestRows = $requestStmt->fetchAll();
 
 // Active allocations for this staff
 $allocRows = db()->prepare(
@@ -40,7 +115,7 @@ $allocRows = db()->prepare(
             a.status
      FROM allocations a
      JOIN equipment e ON e.id = a.equipment_id
-  WHERE a.staff_id = :sid AND a.actual_return_date IS NULL
+     WHERE a.staff_id = :sid AND a.actual_return_date IS NULL
      ORDER BY a.expected_return_date ASC NULLS LAST"
 );
 $allocRows->execute([':sid' => $staffId]);
@@ -87,6 +162,30 @@ $today = date('Y-m-d');
   <?php if ($ok !== ''): ?><p class="alert alert-success">✅ <?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">❌ <?= h($error) ?></p><?php endif; ?>
 
+  <!-- ── Filter Available Equipment ───────────────────────────────────────── -->
+  <section class="card">
+    <h2>🔍 Filter Available Equipment</h2>
+    <form method="post" class="filter-form">
+      <div class="form-group">
+        <label for="equip_q">Search by equipment name:</label>
+        <input type="text" id="equip_q" name="equip_q" placeholder="Search..." value="<?= h($equipQ) ?>">
+      </div>
+      <div class="form-group">
+        <label for="equip_category">Category:</label>
+        <select id="equip_category" name="equip_category">
+          <option value="">All Categories</option>
+          <?php foreach ($categoryOptions as $cat): ?>
+            <option value="<?= h($cat) ?>" <?= $equipCategory === $cat ? 'selected' : '' ?>><?= h($cat) ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <div class="filter-actions">
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a href="/api/requests.php" class="filter-clear">Clear</a>
+      </div>
+    </form>
+  </section>
+
   <!-- ── New Request ──────────────────────────────────────────────────────── -->
   <section class="card">
     <h2>📋 Create Equipment Request</h2>
@@ -103,9 +202,7 @@ $today = date('Y-m-d');
             </option>
           <?php endforeach; ?>
         </select>
-        <div id="equip-desc-box" style="display:none; margin-top:.5rem; padding:.6rem .9rem;
-             background:var(--bg-alt,#111); border:1px solid var(--border-color,#2a2a2a);
-             border-radius:7px; font-size:.85rem; color:var(--text-muted);"
+           <div id="equip-desc-box" class="equip-desc-box"
              aria-live="polite">
         </div>
       </div>
@@ -129,7 +226,7 @@ $today = date('Y-m-d');
     <?php if (empty($allocRows)): ?>
       <p class="empty-state">No active allocations. You have no equipment checked out.</p>
     <?php else: ?>
-      <p style="font-size:.85rem; color:var(--text-muted); margin-bottom:1rem;">
+      <p class="page-tagline holding-note">
         To return equipment, click "Request Return" — admin will process it and restore inventory.
       </p>
       <div class="table-responsive">
@@ -170,7 +267,7 @@ $today = date('Y-m-d');
                 <form action="/api/actions/request_return_notify.php" method="post"
                       onsubmit="const btn = this.querySelector('button'); if (!confirm('Request admin to process return of this equipment?')) return false; if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; } return true;">
                   <input type="hidden" name="allocation_id" value="<?= (int) $a['id'] ?>">
-                  <button type="submit" class="btn btn-secondary" style="font-size:.8rem; padding:.3rem .8rem;">
+                  <button type="submit" class="btn btn-secondary return-action-btn">
                     📤 Request Return
                   </button>
                 </form>
@@ -183,9 +280,41 @@ $today = date('Y-m-d');
     <?php endif; ?>
   </section>
 
+  <!-- ── Filter Request History ──────────────────────────────────────────── -->
+  <section class="card">
+    <h2>🔍 Filter Request History</h2>
+    <form method="post" class="filter-form">
+      <div class="form-group">
+        <label for="req_q">Equipment name:</label>
+        <input type="text" id="req_q" name="req_q" placeholder="Search..." value="<?= h($reqQ) ?>">
+      </div>
+      <div class="form-group">
+        <label for="req_status">Status:</label>
+        <select id="req_status" name="req_status">
+          <option value="">All Statuses</option>
+          <?php foreach ($statusOptions as $status): ?>
+            <option value="<?= h($status) ?>" <?= $reqStatus === $status ? 'selected' : '' ?>><?= ucfirst(h($status)) ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="req_from">From Date:</label>
+        <input type="date" id="req_from" name="req_from" value="<?= h($reqFromDate) ?>">
+      </div>
+      <div class="form-group">
+        <label for="req_to">To Date:</label>
+        <input type="date" id="req_to" name="req_to" value="<?= h($reqToDate) ?>">
+      </div>
+      <div class="filter-actions">
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a href="/api/requests.php" class="filter-clear">Clear</a>
+      </div>
+    </form>
+  </section>
+
   <!-- ── Request History ───────────────────────────────────────────────────── -->
   <section class="card">
-    <h2>📜 Your Request History</h2>
+    <h2>📜 Your Request History (<?= count($requestRows) ?> request<?= count($requestRows) === 1 ? '' : 's' ?><?= ($reqQ || $reqStatus || $reqFromDate || $reqToDate) ? ' matching filters' : '' ?>)</h2>
     <?php if (empty($requestRows)): ?>
       <p class="empty-state">No requests submitted yet.</p>
     <?php else: ?>

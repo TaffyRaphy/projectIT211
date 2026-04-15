@@ -3146,43 +3146,82 @@ html[data-theme='light'] .page-snapshots .snapshot-filter-card input[type='date'
 }
 
 .page-reports .export-wrap {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: var(--surface-2);
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  width: 100%;
+  margin: 0 0 var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  background: var(--surface-subtle);
+  border-left: 3px solid var(--accent-primary);
+  border-radius: 0 6px 6px 0;
 }
 
 .page-reports .export-label {
-  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
   font-weight: 600;
+  color: var(--text-heading);
+  font-size: 0.98rem;
+  font-family: var(--font-display);
+  line-height: 1.25;
+}
+
+.page-reports .export-label i {
+  font-size: 1.2rem;
+  color: var(--accent-primary);
 }
 
 .page-reports .export-form {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  align-items: flex-end;
+  gap: var(--space-md);
   flex-wrap: wrap;
 }
 
 .page-reports .export-field-label {
-  font-size: 0.82rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
   white-space: nowrap;
 }
 
 .page-reports .export-field-select {
-  font-size: 0.82rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 5px;
+  min-width: 220px;
+  height: 40px;
+  padding: 0 var(--space-md);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--surface-1);
+  color: var(--text-main);
+  font-family: var(--font-ui);
+  font-size: 0.92rem;
+  transition: var(--spring);
+}
+
+.page-reports .export-field-select:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 20%, transparent);
 }
 
 .page-reports .export-btn {
-  font-size: 0.82rem;
-  padding: 0.3rem 0.9rem;
+  min-height: 40px;
+  padding: 0.45rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+html[data-theme='light'] .page-reports .export-field-select {
+  background: #dfe5e2;
+  border-color: rgba(88, 113, 122, 0.42);
+  color: var(--text-main);
+}
+
+html[data-theme='light'] .page-reports .export-btn.btn.btn-primary {
+  color: #ffffff;
 }
 
 .notif-page-header {
@@ -3621,77 +3660,6 @@ html[data-theme='light'] .page-snapshots .snapshot-filter-card input[type='date'
   font-size: 0.92rem;
 }
 
-/* Export Card Styling */
-.page-reports .export-card {
-  margin-bottom: var(--space-lg);
-}
-
-.page-reports .export-card h2 {
-  font-family: var(--font-display);
-  font-size: clamp(1.45rem, 3.2vw, 2.1rem);
-  font-weight: 400;
-  line-height: 1.05;
-  letter-spacing: 0;
-  margin-bottom: var(--space-md);
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-.page-reports .export-card h2 i {
-  font-size: 1.3rem;
-}
-
-.page-reports .export-card .section-description {
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  margin-bottom: var(--space-lg);
-}
-
-.page-reports .export-form .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-}
-
-.page-reports .export-form .form-group label {
-  font-weight: 600;
-  color: var(--text-heading);
-  font-size: 0.95rem;
-}
-
-.page-reports .export-form .form-group select {
-  width: 100%;
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
-  background: var(--surface-1);
-  color: var(--text-main);
-  font-family: var(--font-ui);
-  font-size: 0.95rem;
-  transition: var(--spring);
-}
-
-.page-reports .export-form .form-group select:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 20%, transparent);
-}
-
-.page-reports .export-form .form-group button {
-  align-self: flex-start;
-}
-
-html[data-theme='light'] .page-reports .export-form .form-group select {
-  background: #dfe5e2;
-  border-color: rgba(88, 113, 122, 0.42);
-  color: var(--text-muted);
-}
-
-html[data-theme='light'] .page-reports .export-card .btn.btn-primary {
-  color: #ffffff;
-}
-
 /* Admin Tools Section Styling */
 .page-reports .admin-tools-card h2 {
   font-family: var(--font-display);
@@ -3757,9 +3725,19 @@ html[data-theme='light'] .page-reports .export-card .btn.btn-primary {
     grid-template-columns: 1fr;
   }
 
-  .page-reports .export-form .form-group button {
+  .page-reports .export-form {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-sm);
+  }
+
+  .page-reports .export-field-label {
+    white-space: normal;
+  }
+
+  .page-reports .export-field-select,
+  .page-reports .export-btn {
     width: 100%;
-    align-self: stretch;
   }
 }
 

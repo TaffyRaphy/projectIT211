@@ -1605,7 +1605,7 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
 }
 
 .maint-page {
-  width: min(1100px, 94%);
+  width: min(1000px, 92%);
   margin: 0 auto;
   padding-bottom: var(--space-xl);
 }
@@ -1615,9 +1615,12 @@ html[data-theme='light'] .maint-page > .maint-back-link a {
   color: #f5fcff;
 }
 
-html[data-theme='light'] .maint-page > .page-heading p,
-html[data-theme='light'] .maint-page > .admin-note {
+html[data-theme='light'] .maint-page > .page-heading p {
   color: rgba(245, 252, 255, 0.85);
+}
+
+html[data-theme='light'] .maint-page > .admin-note {
+  color: var(--text-heading);
 }
 
 .maint-page .maint-section {

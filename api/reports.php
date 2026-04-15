@@ -335,31 +335,69 @@ try {
 
   <hr>
 
-  <!-- Admin Tools -->
-  <section class="card">
-    <h2>Admin Tools</h2>
-    <div class="reports-actions">
-      <a href="/api/actions/snapshot_daily.php"          class="btn btn-secondary"><i class="fas fa-camera"></i> Capture Metrics Snapshot</a>
-      <a href="/api/snapshots.php"                       class="btn btn-primary"><i class="fas fa-chart-bar"></i> View All Snapshots</a>
-      <a href="/api/audit_trail.php"                     class="btn btn-primary"><i class="fas fa-list"></i> Full Audit Trail</a>
-      <a href="/api/reports_historical.php"              class="btn btn-secondary"><i class="fas fa-chart-line"></i> Historical Trends</a>
-      <a href="/api/actions/check_overdue_allocations.php" class="btn btn-warning"><i class="fas fa-exclamation-triangle"></i> Check Overdue Items</a>
-      <a href="/api/notification_logs.php"               class="btn btn-secondary"><i class="fas fa-envelope"></i> Notification Logs</a>
-      <a href="/api/users.php"                           class="btn btn-secondary"><i class="fas fa-users"></i> User Management</a>
-      <a href="/api/actions/test_email.php"              class="btn btn-warning"><i class="fas fa-envelope"></i> Test Resend Email</a>
-    </div>
-    <div class="export-wrap">
-      <span class="export-label">📄 Export Summary (HTML)</span>
-      <form action="/api/actions/generate_report_pdf.php" method="get" class="export-form">
-        <input type="hidden" name="report_type" value="summary">
-        <label for="trend_metric_export" class="export-field-label">Trend metric:</label>
-        <select id="trend_metric_export" name="trend_metric" class="export-field-select">
+  <!-- Export Summary -->
+  <div class="card export-card">
+    <h2><i class="fas fa-file-export" aria-hidden="true"></i> Export Summary</h2>
+    <p class="section-description">Generate detailed reports in PDF format</p>
+    <form action="/api/actions/generate_report_pdf.php" method="get" class="export-form">
+      <input type="hidden" name="report_type" value="summary">
+      <div class="form-group">
+        <label for="trend_metric_export">Trend Metric to Export</label>
+        <select id="trend_metric_export" name="trend_metric">
           <option value="cost">Maintenance Cost</option>
           <option value="utilization">Equipment Utilization Rate</option>
           <option value="requests">Total Requests</option>
         </select>
-        <button type="submit" class="btn btn-primary export-btn">Export</button>
-      </form>
+        <button type="submit" class="btn btn-primary">Export as PDF</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Admin Tools -->
+  <section class="card admin-tools-card">
+    <h2>Admin Tools</h2>
+    <p class="section-description">System management and reporting actions</p>
+
+    <div class="action-groups-wrapper">
+      <!-- Snapshots Group -->
+      <div class="action-group">
+        <div class="action-group-label">
+          <i class="fas fa-camera" aria-hidden="true"></i>
+          <span>Snapshots</span>
+        </div>
+        <a href="/api/actions/snapshot_daily.php" class="btn btn-secondary">Take Snapshot Now</a>
+        <a href="/api/snapshots.php" class="btn btn-secondary">View All Snapshots</a>
+      </div>
+
+      <!-- Audit & Logs Group -->
+      <div class="action-group">
+        <div class="action-group-label">
+          <i class="fas fa-list" aria-hidden="true"></i>
+          <span>Audit & Logs</span>
+        </div>
+        <a href="/api/audit_trail.php" class="btn btn-secondary">View Full Audit Trail</a>
+        <a href="/api/notification_logs.php" class="btn btn-secondary">Notification Logs</a>
+      </div>
+
+      <!-- Reports Group -->
+      <div class="action-group">
+        <div class="action-group-label">
+          <i class="fas fa-chart-bar" aria-hidden="true"></i>
+          <span>Reports</span>
+        </div>
+        <a href="/api/reports_historical.php" class="btn btn-secondary">Historical Trends</a>
+        <a href="/api/actions/check_overdue_allocations.php" class="btn btn-warning">Check Overdue Items</a>
+      </div>
+
+      <!-- Communications Group -->
+      <div class="action-group">
+        <div class="action-group-label">
+          <i class="fas fa-envelope" aria-hidden="true"></i>
+          <span>Communications</span>
+        </div>
+        <a href="/api/actions/test_email.php" class="btn btn-warning">Test Email Config</a>
+        <a href="/api/users.php" class="btn btn-secondary">User Management</a>
+      </div>
     </div>
   </section>
 

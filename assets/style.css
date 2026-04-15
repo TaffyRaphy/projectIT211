@@ -1651,6 +1651,12 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
   gap: 1.25rem;
 }
 
+.page-requests {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
 .page-reports .card > h2 {
   margin-top: 0;
   margin-bottom: 0.65rem;

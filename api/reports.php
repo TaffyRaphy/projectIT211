@@ -309,7 +309,7 @@ try {
   <!-- Admin Tools -->
   <!-- Audit Trail Report -->
   <hr>
-  <h2>Audit Trail <small style="font-size:.8rem; font-weight:400;">(5 per page — <a href="/api/audit_trail.php" style="color:var(--accent)">View Full Trail →</a>)</small></h2>
+  <h2 id="audit-trail">Audit Trail <small style="font-size:.8rem; font-weight:400;">(5 per page — <a href="/api/audit_trail.php" style="color:var(--accent)">View Full Trail →</a>)</small></h2>
   <p style="color: var(--text-muted, #888); margin-bottom: 1rem;">Recent system actions across all users. Use full audit trail for filters and complete history.</p>
   <?php
     $auditRows = [];
@@ -396,10 +396,10 @@ try {
       </p>
       <div style="display:flex; gap:.5rem;">
         <?php if ($auditPreviewPage > 1): ?>
-          <a class="btn btn-secondary btn-sm" href="/api/reports.php?<?= h(http_build_query(['audit_page' => $auditPreviewPage - 1])) ?>">Previous</a>
+          <a class="btn btn-secondary btn-sm" href="/api/reports.php?<?= h(http_build_query(['audit_page' => $auditPreviewPage - 1])) ?>#audit-trail">Previous</a>
         <?php endif; ?>
         <?php if ($auditPreviewPage < $auditPreviewPages): ?>
-          <a class="btn btn-secondary btn-sm" href="/api/reports.php?<?= h(http_build_query(['audit_page' => $auditPreviewPage + 1])) ?>">Next</a>
+          <a class="btn btn-secondary btn-sm" href="/api/reports.php?<?= h(http_build_query(['audit_page' => $auditPreviewPage + 1])) ?>#audit-trail">Next</a>
         <?php endif; ?>
       </div>
     </div>

@@ -108,7 +108,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   </div>
 
   <!-- ── Add New User ── -->
-  <section class="card">
+  <section class="card users-section users-add-section">
     <div class="add-user-toggle" id="add-user-toggle" onclick="toggleAddUser()" aria-expanded="false">
       <h2>➕ Add New User</h2>
       <span id="add-user-chevron" class="add-user-chevron">▼</span>
@@ -158,7 +158,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   </section>
 
   <!-- Search + Filter -->
-  <section class="card">
+  <section class="card users-section users-filter-section">
     <h2>Search Users</h2>
     <form method="post" class="filter-form">
       <div class="form-group">
@@ -180,12 +180,12 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   </section>
 
   <!-- Users Table -->
-  <h2>All Users (<?= count($users) ?>)</h2>
+  <h2 class="users-table-heading">All Users (<?= count($users) ?>)</h2>
   <?php if (count($users) === 0): ?>
     <p class="empty-state">No users found.</p>
   <?php else: ?>
-  <div class="table-responsive">
-    <table class="table">
+  <div class="table-responsive users-table-wrap">
+    <table class="table users-table">
       <thead>
         <tr>
           <th>Emp ID</th>
@@ -194,8 +194,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
           <th>Role</th>
           <th>Dept / Title</th>
           <th>Activity</th>
-          <th>Joined</th>
-          <th>Actions</th>
+          <th class="users-col-actions">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -234,8 +233,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
               <?php endif; ?>
             </div>
           </td>
-          <td><?= h(utc_to_ph($u['created_at'], 'Y-m-d')) ?></td>
-          <td>
+          <td class="users-col-actions">
             <a href="/api/profile.php?id=<?= (int) $u['id'] ?>" class="btn btn-secondary user-action-link">
               View Profile
             </a>

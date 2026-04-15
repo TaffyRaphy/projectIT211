@@ -2589,7 +2589,76 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
+}
+
+.page-users {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.page-users .users-section {
+  margin: 0;
+}
+
+.page-users .users-table-heading {
+  margin: 0;
+}
+
+.page-users .users-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-2);
+  box-shadow: var(--shadow-soft);
+}
+
+.page-users .users-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+}
+
+.page-users .users-table thead th {
+  background: color-mix(in srgb, var(--surface-2) 92%, transparent);
+  color: var(--text-heading);
+  text-align: left;
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+}
+
+.page-users .users-table tbody tr {
+  border-bottom: 1px solid color-mix(in srgb, var(--border-subtle) 84%, transparent);
+}
+
+.page-users .users-table tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--surface-soft) 34%, transparent);
+}
+
+.page-users .users-table tbody tr:hover {
+  background: color-mix(in srgb, var(--accent-primary) 6%, transparent);
+}
+
+.page-users .users-table tbody td {
+  padding: 0.9rem 1rem;
+  vertical-align: top;
+  line-height: 1.45;
+}
+
+.page-users .users-col-actions {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.page-users .users-table td.users-col-actions {
+  text-align: right;
 }
 
 .page-users .summary-chip {
@@ -2650,6 +2719,7 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--accent-primary);
+  white-space: nowrap;
 }
 
 .page-users .badge-you {
@@ -2664,6 +2734,11 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
 .page-users .user-action-link {
   font-size: 0.8rem;
   padding: 0.2rem 0.6rem;
+}
+
+.page-users .empty-state {
+  margin: 0;
+  padding: 0.75rem 0;
 }
 
 .page-snapshots .snapshot-intro {

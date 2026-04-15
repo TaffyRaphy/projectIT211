@@ -931,6 +931,9 @@ section:hover,
 
 .metric-card-featured .mc-label {
   color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
 }
 
 .metric-card-featured .mc-sub {
@@ -1068,6 +1071,10 @@ section:hover,
 
   .mc-label {
     font-size: 0.63rem;
+  }
+
+  .metric-card-featured .mc-label {
+    font-size: 0.74rem;
   }
 
   .mc-value {

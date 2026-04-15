@@ -112,7 +112,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($adminId);
               </div>
               <button type="submit" class="btn btn-primary btn-compact"><i class="fas fa-check"></i> Approve & Allocate</button>
             </form>
-            <form action="/api/actions/request_reject.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post"
+            <form action="/api/actions/request_reject.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post" style="display:flex; gap:.5rem; align-items:flex-end; flex-wrap:wrap;"
                   onsubmit="return confirm('Reject this request?')">
               <button type="submit" class="btn btn-danger btn-compact"><i class="fas fa-xmark"></i> Reject</button>
             </form>

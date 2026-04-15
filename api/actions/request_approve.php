@@ -12,6 +12,10 @@ if ($requestId <= 0 && isset($_POST['id'])) $requestId = (int) $_POST['id'];
 
 // Required: return date
 $dueDate = isset($_POST['due_date']) ? trim((string) $_POST['due_date']) : '';
+$remarks = post_string('remarks');
+if (strlen($remarks) > 255) {
+    $remarks = substr($remarks, 0, 255);
+}
 
 if ($requestId <= 0) {
     redirect_to('/api/admin_requests.php', ['error' => 'Invalid request ID']);
@@ -124,6 +128,7 @@ log_audit('approve', 'equipment_requests', $requestId, $adminId,
         'staff_name'           => $reqRow['staff_name'],
         'qty_allocated'        => (int) $reqRow['qty_requested'],
         'expected_return_date' => $dueDate,
+        'remarks'              => $remarks,
     ]
 );
 
@@ -134,10 +139,13 @@ try {
         $reqRow['staff_email'],
         (int) $reqRow['staff_id'],
         [
+            'request_id'           => $requestId,
             'staff_name'           => $reqRow['staff_name'],
             'equipment_name'       => $reqRow['equipment_name'],
+            'status'               => 'Allocated',
             'qty_allocated'        => (int) $reqRow['qty_requested'],
             'expected_return_date' => $dueDate,
+            'remarks'              => $remarks !== '' ? $remarks : 'None',
         ]
     );
 } catch (Throwable $e) {

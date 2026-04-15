@@ -73,4 +73,3 @@ $error = query_param('error');
 <script src="/assets/app.js"></script>
 </body>
 </html>
-

@@ -258,9 +258,12 @@ try {
   <!-- Admin Tools -->
   <!-- Audit Trail Report -->
   <hr>
-  <h2>Audit Trail <small class="audit-title-inline">(Last 50 — <a href="/api/audit_trail.php" class="audit-link">View Full Trail →</a>)</small></h2>
-  <p class="audit-intro">Recent system actions across all users.</p>
+  <h2 id="audit-trail">Audit Trail <small class="audit-title-inline">(5 per page — <a href="/api/audit_trail.php" class="audit-link">View Full Trail →</a>)</small></h2>
+  <p class="audit-intro">Recent system actions across all users. Use the full audit trail for filters and complete history.</p>
   <?php
+    $auditPreviewPage = max(1, int_query_param('audit_page', 1));
+    $auditPreviewPerPage = 5;
+    $auditPreviewOffset = 0;
     $auditRows = [];
     $auditPreviewTotal = 0;
     $auditPreviewPages = 1;

@@ -925,8 +925,8 @@ section:hover,
 }
 
 .metric-card-featured .mc-value {
-  font-size: 4.8rem;
-  line-height: 0.95;
+  font-size: 6.4rem;
+  line-height: 0.9;
   color: var(--text-heading);
 }
 
@@ -1049,7 +1049,7 @@ section:hover,
   }
 
   .metric-card-featured .mc-value {
-    font-size: 3rem;
+    font-size: 3.8rem;
   }
 }
 
@@ -1066,7 +1066,7 @@ section:hover,
   }
 
   .metric-card-featured .mc-value {
-    font-size: 2.2rem;
+    font-size: 2.8rem;
   }
 
   .metric-card-sm {

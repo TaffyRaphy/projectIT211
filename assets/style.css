@@ -1690,6 +1690,11 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
   box-shadow: 0 14px 24px color-mix(in srgb, var(--accent-warning) 22%, transparent);
 }
 
+html[data-theme='light'] .page-reports .btn-warning,
+html[data-theme='light'] .page-reports .btn-warning:hover {
+  color: #fff;
+}
+
 .page-reports .table-responsive {
   overflow-x: auto;
   border: 1px solid var(--border-subtle);

@@ -13,6 +13,9 @@ $error = query_param('error');
 // Filters
 $categoryFilter = post_string('category_filter') ?: query_param('category_filter');
 $statusFilter = post_string('status_filter') ?: query_param('status_filter');
+$auditPreviewPage = max(1, int_query_param('audit_page', 1));
+$auditPreviewPerPage = 5;
+$auditPreviewOffset = ($auditPreviewPage - 1) * $auditPreviewPerPage;
 
 // Get distinct categories for filter dropdown
 $categoryStmt = db()->query("SELECT DISTINCT category FROM equipment WHERE category IS NOT NULL ORDER BY category");
@@ -306,18 +309,25 @@ try {
   <!-- Admin Tools -->
   <!-- Audit Trail Report -->
   <hr>
-  <h2>Audit Trail <small style="font-size:.8rem; font-weight:400;">(Last 50 — <a href="/api/audit_trail.php" style="color:var(--accent)">View Full Trail →</a>)</small></h2>
-  <p style="color: var(--text-muted, #888); margin-bottom: 1rem;">Recent system actions across all users.</p>
+  <h2>Audit Trail <small style="font-size:.8rem; font-weight:400;">(5 per page — <a href="/api/audit_trail.php" style="color:var(--accent)">View Full Trail →</a>)</small></h2>
+  <p style="color: var(--text-muted, #888); margin-bottom: 1rem;">Recent system actions across all users. Use full audit trail for filters and complete history.</p>
   <?php
     $auditRows = [];
+    $auditPreviewTotal = 0;
+    $auditPreviewPages = 1;
     try {
+        $auditPreviewTotal = (int) db()->query("SELECT COUNT(*) FROM audit_logs")->fetchColumn();
+        $auditPreviewPages = max(1, (int) ceil($auditPreviewTotal / $auditPreviewPerPage));
+        $auditPreviewPage = min($auditPreviewPage, $auditPreviewPages);
+        $auditPreviewOffset = ($auditPreviewPage - 1) * $auditPreviewPerPage;
+
         $auditRows = db()->query(
             "SELECT al.id, al.action_type, al.table_name, al.record_id, al.new_values, al.created_at,
                     u.full_name AS user_name, u.email AS user_email, u.role AS user_role
-             FROM audit_logs al
-             JOIN users u ON u.id = al.user_id
-             ORDER BY al.created_at DESC
-             LIMIT 50"
+              FROM audit_logs al
+              JOIN users u ON u.id = al.user_id
+              ORDER BY al.created_at DESC
+              LIMIT {$auditPreviewPerPage} OFFSET {$auditPreviewOffset}"
         )->fetchAll();
     } catch (Throwable $e) {
         error_log('Audit trail query error: ' . $e->getMessage());
@@ -379,6 +389,21 @@ try {
       </tbody>
     </table>
   </div>
+  <?php if ($auditPreviewPages > 1): ?>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:.75rem; margin-top:.8rem; flex-wrap:wrap;">
+      <p style="margin:0; color:var(--text-muted); font-size:.85rem;">
+        Page <?= (int) $auditPreviewPage ?> of <?= (int) $auditPreviewPages ?>
+      </p>
+      <div style="display:flex; gap:.5rem;">
+        <?php if ($auditPreviewPage > 1): ?>
+          <a class="btn btn-secondary btn-sm" href="/api/reports.php?<?= h(http_build_query(['audit_page' => $auditPreviewPage - 1])) ?>">Previous</a>
+        <?php endif; ?>
+        <?php if ($auditPreviewPage < $auditPreviewPages): ?>
+          <a class="btn btn-secondary btn-sm" href="/api/reports.php?<?= h(http_build_query(['audit_page' => $auditPreviewPage + 1])) ?>">Next</a>
+        <?php endif; ?>
+      </div>
+    </div>
+  <?php endif; ?>
   <?php endif; ?>
 
   <hr>

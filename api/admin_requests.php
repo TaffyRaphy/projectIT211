@@ -110,10 +110,18 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($adminId);
                 <label style="font-size:.78rem;">Expected Return Date <span style="color:#ef4444;">*</span></label>
                 <input type="date" name="due_date" required min="<?= date('Y-m-d') ?>" style="padding:.25rem .5rem; font-size:.85rem;">
               </div>
+              <div class="form-group" style="margin-bottom:0; min-width:220px; flex:1;">
+                <label style="font-size:.78rem;">Approval Remarks <small>(optional)</small></label>
+                <input type="text" name="remarks" maxlength="255" placeholder="Add note for staff..." style="padding:.25rem .5rem; font-size:.85rem; width:100%;">
+              </div>
               <button type="submit" class="btn btn-primary" style="font-size:.85rem;"><i class="fas fa-check"></i> Approve & Allocate</button>
             </form>
-            <form action="/api/actions/request_reject.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post"
+            <form action="/api/actions/request_reject.php?<?= http_build_query(['id' => (int) $item['id']]) ?>" method="post" style="display:flex; gap:.5rem; align-items:flex-end; flex-wrap:wrap;"
                   onsubmit="return confirm('Reject this request?')">
+              <div class="form-group" style="margin-bottom:0; min-width:220px;">
+                <label style="font-size:.78rem;">Rejection Remarks <small>(optional)</small></label>
+                <input type="text" name="remarks" maxlength="255" placeholder="Reason shown to staff" style="padding:.25rem .5rem; font-size:.85rem; width:100%;">
+              </div>
               <button type="submit" class="btn btn-danger" style="font-size:.85rem;"><i class="fas fa-xmark"></i> Reject</button>
             </form>
           </div>

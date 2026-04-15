@@ -885,6 +885,24 @@ section:hover,
   margin-top: 1rem;
 }
 
+.dashboard-workflow-panel .workflow-grid {
+  gap: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.dashboard-workflow-panel .workflow-link {
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+  box-shadow: inset -1px -1px 0 var(--border-subtle);
+}
+
+.dashboard-workflow-panel .workflow-link:hover {
+  transform: none;
+}
+
 /* Metrics row: big left card + 2x2 right cards */
 .metrics-row {
   display: grid;

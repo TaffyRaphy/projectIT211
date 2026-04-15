@@ -2592,6 +2592,18 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
   margin-bottom: 0;
 }
 
+.page-users .card > h2,
+.page-users .users-table-heading,
+.page-users .add-user-toggle h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 3.2vw, 2.1rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 0;
+  margin-top: 0.1rem;
+  margin-bottom: 0.35rem;
+}
+
 .page-users {
   display: flex;
   flex-direction: column;

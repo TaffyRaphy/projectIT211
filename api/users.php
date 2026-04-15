@@ -110,7 +110,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   <!-- ── Add New User ── -->
   <section class="card users-section users-add-section">
     <div class="add-user-toggle" id="add-user-toggle" onclick="toggleAddUser()" aria-expanded="false">
-      <h2>➕ Add New User</h2>
+      <h2><i class="fas fa-user-plus" aria-hidden="true"></i> Add New User</h2>
       <span id="add-user-chevron" class="add-user-chevron">▼</span>
     </div>
     <div class="create-user-form" id="create-user-form">

@@ -2698,6 +2698,27 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
   margin: 0;
 }
 
+.page-users .add-user-toggle h2 i {
+  margin-right: 0.35rem;
+}
+
+html[data-theme='light'] .page-users .users-filter-section #search,
+html[data-theme='light'] .page-users .users-filter-section #role_filter {
+  background: #dfe5e2;
+  border-color: rgba(88, 113, 122, 0.42);
+  color: var(--text-heading);
+}
+
+html[data-theme='light'] .page-users .users-filter-section #search::placeholder {
+  color: color-mix(in srgb, var(--text-muted) 88%, #ffffff 12%);
+}
+
+html[data-theme='light'] .page-users .users-filter-section .filter-form .btn.btn-primary,
+html[data-theme='light'] .page-users .users-filter-section .filter-form .btn.btn-primary:hover,
+html[data-theme='light'] .page-users .users-filter-section .filter-form .btn.btn-primary:focus-visible {
+  color: #ffffff;
+}
+
 .page-users .add-user-chevron {
   font-size: 1.2rem;
   transition: transform 0.2s;

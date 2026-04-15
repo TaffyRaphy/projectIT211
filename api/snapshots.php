@@ -71,15 +71,14 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   <?php if ($ok !== ''): ?><p class="alert alert-success"><?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 
-  <h2>📸 Metric Snapshots</h2>
+  <h2><i class="fas fa-camera" aria-hidden="true"></i> Metric Snapshots</h2>
   <p class="snapshot-intro">
     Snapshots are point-in-time captures of system KPIs. Click "Capture Snapshot" to save current metrics.
   </p>
 
   <!-- Actions -->
   <div class="snapshot-actions">
-    <a href="/api/actions/snapshot_daily.php" class="btn btn-primary">📸 Capture Snapshot Now</a>
-    <a href="/api/reports.php" class="btn btn-secondary">← Back to Reports</a>
+    <a href="/api/actions/snapshot_daily.php" class="btn btn-primary"><i class="fas fa-camera" aria-hidden="true"></i> Capture Snapshot Now</a>
   </div>
 
   <!-- Date Filter -->
@@ -102,7 +101,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   <?php if (count($snapshots) === 0): ?>
     <p class="empty-state">
       No snapshots captured in this date range.<br>
-      <a href="/api/actions/snapshot_daily.php" class="btn btn-primary snapshot-empty-action">📸 Capture First Snapshot</a>
+      <a href="/api/actions/snapshot_daily.php" class="btn btn-primary snapshot-empty-action"><i class="fas fa-camera" aria-hidden="true"></i> Capture First Snapshot</a>
     </p>
   <?php else: ?>
     <p class="snapshot-count"><?= count($snapshots) ?> snapshot(s) found</p>
@@ -110,7 +109,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
     <?php $m = is_string($snap['new_values']) ? json_decode($snap['new_values'], true) : []; ?>
     <div class="snapshot-card">
       <div class="snapshot-when">
-        📅 <?= h(utc_to_ph($snap['created_at'], 'M d, Y h:i A')) ?>
+        <i class="fas fa-calendar-alt" aria-hidden="true"></i> <?= h(utc_to_ph($snap['created_at'], 'M d, Y h:i A')) ?>
         &nbsp;·&nbsp; Captured by: <strong><?= h($snap['captured_by']) ?></strong>
         <span class="badge snapshot-role-badge <?= $snap['captured_role'] === 'admin' ? 'badge-warning' : 'badge-info' ?>"><?= h(ucfirst($snap['captured_role'])) ?></span>
       </div>

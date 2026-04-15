@@ -2806,6 +2806,21 @@ html[data-theme='light'] .page-users .users-filter-section .filter-form .btn.btn
   margin-bottom: 1.5rem;
 }
 
+.page-snapshots > h2,
+.page-snapshots .snapshot-filter-card > h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 3.2vw, 2.1rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 0;
+  margin-top: 0.1rem;
+  margin-bottom: 0.35rem;
+}
+
+.page-snapshots > h2 i {
+  margin-right: 0.35rem;
+}
+
 .page-snapshots .snapshot-actions {
   display: flex;
   gap: 0.75rem;
@@ -2813,8 +2828,31 @@ html[data-theme='light'] .page-users .users-filter-section .filter-form .btn.btn
   flex-wrap: wrap;
 }
 
+html[data-theme='light'] .page-snapshots .snapshot-actions .btn.btn-primary,
+html[data-theme='light'] .page-snapshots .snapshot-actions .btn.btn-primary:hover,
+html[data-theme='light'] .page-snapshots .snapshot-actions .btn.btn-primary:focus-visible,
+html[data-theme='light'] .page-snapshots .snapshot-empty-action.btn.btn-primary,
+html[data-theme='light'] .page-snapshots .snapshot-empty-action.btn.btn-primary:hover,
+html[data-theme='light'] .page-snapshots .snapshot-empty-action.btn.btn-primary:focus-visible {
+  color: #ffffff;
+}
+
 .page-snapshots .snapshot-filter-card {
   margin-bottom: 1.5rem;
+}
+
+html[data-theme='light'] .page-snapshots .snapshot-filter-card input[type='date'] {
+  background: #dfe5e2;
+  border-color: rgba(88, 113, 122, 0.42);
+  color: var(--text-muted);
+}
+
+html[data-theme='light'] .page-snapshots .snapshot-filter-card input[type='date']::-webkit-datetime-edit,
+html[data-theme='light'] .page-snapshots .snapshot-filter-card input[type='date']::-webkit-datetime-edit-text,
+html[data-theme='light'] .page-snapshots .snapshot-filter-card input[type='date']::-webkit-datetime-edit-month-field,
+html[data-theme='light'] .page-snapshots .snapshot-filter-card input[type='date']::-webkit-datetime-edit-day-field,
+html[data-theme='light'] .page-snapshots .snapshot-filter-card input[type='date']::-webkit-datetime-edit-year-field {
+  color: var(--text-muted);
 }
 
 .page-snapshots .snapshot-empty-action {

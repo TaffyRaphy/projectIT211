@@ -97,288 +97,6 @@ $validTypes = ['scheduled' => 'Scheduled', 'repair' => 'Repair'];
   <title>Maintenance Management – Equipment System</title>
   <meta name="description" content="Schedule, log, and track equipment maintenance.">
   <link rel="stylesheet" href="/assets/style.css">
-  <style>
-    /* ── Page layout ── */
-    .maint-page {
-      width: min(1100px, 94%);
-      margin: 0 auto;
-      padding: 1.5rem 0 4rem;
-    }
-
-    /* ── Section cards ── */
-    .maint-section {
-      background: var(--surface-1);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-lg);
-      padding: 1.5rem 1.75rem;
-      margin-bottom: 1.5rem;
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      box-shadow: var(--shadow-standard);
-      transition: border-color .25s;
-    }
-    .maint-section:hover { border-color: var(--border-strong); }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 1.25rem;
-      cursor: pointer;
-      user-select: none;
-    }
-    .section-header h2 {
-      margin: 0;
-      font-size: 1.15rem;
-      font-family: var(--font-heading);
-      color: var(--text-heading);
-      display: flex;
-      align-items: center;
-      gap: .6rem;
-    }
-    .section-chevron {
-      font-size: .9rem;
-      color: var(--text-muted);
-      transition: transform .25s;
-    }
-    .section-chevron.open { transform: rotate(180deg); }
-    .section-body { display: none; }
-    .section-body.open { display: block; }
-
-    /* ── Alert cards ── */
-    .alert-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-      gap: 1rem;
-    }
-    .maint-alert-card {
-      border-radius: var(--radius-md);
-      padding: 1rem 1.25rem;
-      border-left: 4px solid;
-      background: var(--surface-2);
-      border-color: var(--border-subtle);
-      position: relative;
-    }
-    .maint-alert-card.overdue {
-      border-color: var(--accent-danger);
-      background: color-mix(in srgb, var(--accent-danger) 6%, var(--surface-2));
-    }
-    .maint-alert-card.due-today {
-      border-color: var(--accent-warning);
-      background: color-mix(in srgb, var(--accent-warning) 6%, var(--surface-2));
-    }
-    .maint-alert-card.upcoming {
-      border-color: var(--accent-primary);
-      background: color-mix(in srgb, var(--accent-primary) 4%, var(--surface-2));
-    }
-    .alert-card-title {
-      font-weight: 700;
-      font-size: .95rem;
-      color: var(--text-heading);
-      margin-bottom: .3rem;
-    }
-    .alert-card-meta {
-      font-size: .8rem;
-      color: var(--text-muted);
-      line-height: 1.6;
-    }
-    .alert-urgency {
-      font-size: .72rem;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      padding: .15rem .5rem;
-      border-radius: 999px;
-      display: inline-block;
-      margin-bottom: .4rem;
-    }
-    .urgency-overdue  { background: color-mix(in srgb, var(--accent-danger) 16%, transparent); color: var(--accent-danger); }
-    .urgency-today    { background: color-mix(in srgb, var(--accent-warning) 18%, transparent); color: var(--accent-warning); }
-    .urgency-upcoming { background: color-mix(in srgb, var(--accent-primary) 14%, transparent); color: var(--accent-primary); }
-
-    /* ── Schedule form ── */
-    .schedule-form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-    @media (max-width: 600px) { .schedule-form-grid { grid-template-columns: 1fr; } }
-    .form-group { display: flex; flex-direction: column; gap: .35rem; }
-    .span-2 { grid-column: 1 / -1; }
-
-    /* ── Log cards ── */
-    .log-list { display: flex; flex-direction: column; gap: .9rem; }
-    .log-card {
-      background: var(--surface-2);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      padding: 1rem 1.25rem;
-      transition: border-color .2s;
-    }
-    .log-card:hover { border-color: var(--border-strong); }
-    .log-card-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: .75rem;
-      flex-wrap: wrap;
-      margin-bottom: .5rem;
-    }
-    .log-card-title {
-      font-weight: 700;
-      font-size: .95rem;
-      color: var(--text-heading);
-    }
-    .log-card-meta { font-size: .8rem; color: var(--text-muted); line-height: 1.7; }
-
-    /* ── Status chips ── */
-    .chip {
-      display: inline-block;
-      font-size: .72rem;
-      font-weight: 700;
-      letter-spacing: .07em;
-      text-transform: uppercase;
-      padding: .15rem .55rem;
-      border-radius: 999px;
-    }
-    .chip-scheduled  { background: color-mix(in srgb, var(--accent-warning) 16%, transparent); color: var(--accent-warning); }
-    .chip-completed  { background: color-mix(in srgb, var(--accent-primary) 14%, transparent); color: var(--accent-primary); }
-    .chip-cancelled  { background: color-mix(in srgb, var(--text-muted) 16%, transparent);    color: var(--text-muted); }
-    .chip-overdue    { background: color-mix(in srgb, var(--accent-danger) 16%, transparent);  color: var(--accent-danger); }
-    .chip-maintenance{ background: color-mix(in srgb, var(--accent-warning) 14%, transparent); color: var(--accent-warning); }
-    .chip-type       { background: color-mix(in srgb, var(--accent-teal) 12%, transparent);    color: var(--accent-teal); }
-
-    /* ── Completion form (inline expand) ── */
-    .complete-form-wrap { display: none; margin-top: 1rem; border-top: 1px dashed var(--border-subtle); padding-top: 1rem; }
-    .complete-form-wrap.open { display: block; }
-    .complete-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
-    @media (max-width: 540px) { .complete-form-grid { grid-template-columns: 1fr; } }
-
-    /* ── Log actions ── */
-    .log-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .75rem; }
-    .btn-sm {
-      font-size: .75rem;
-      padding: .45rem 1rem;
-      border-radius: 999px;
-      font-family: var(--font-label);
-      font-weight: 700;
-      letter-spacing: .07em;
-      text-transform: uppercase;
-      cursor: pointer;
-      border: 1px solid transparent;
-      display: inline-flex;
-      align-items: center;
-      gap: .35rem;
-      transition: var(--spring);
-    }
-    .btn-complete {
-      background: linear-gradient(135deg, color-mix(in srgb, var(--accent-primary) 90%, #fff), var(--accent-primary-strong));
-      color: #01130b;
-      border-color: color-mix(in srgb, var(--accent-primary) 48%, transparent);
-      box-shadow: 0 4px 12px color-mix(in srgb, var(--accent-primary) 20%, transparent);
-    }
-    .btn-complete:hover { transform: translateY(-1px); box-shadow: 0 6px 16px color-mix(in srgb, var(--accent-primary) 28%, transparent); }
-    .btn-cancel {
-      background: color-mix(in srgb, var(--accent-danger) 10%, transparent);
-      color: var(--accent-danger);
-      border-color: color-mix(in srgb, var(--accent-danger) 30%, transparent);
-    }
-    .btn-cancel:hover { background: color-mix(in srgb, var(--accent-danger) 18%, transparent); transform: translateY(-1px); }
-    .btn-secondary {
-      background: var(--surface-3);
-      color: var(--text-main);
-      border-color: var(--border-subtle);
-    }
-    .btn-secondary:hover { border-color: var(--border-strong); transform: translateY(-1px); }
-
-    /* ── History table ── */
-    .hist-table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
-    th, td { padding: .6rem .85rem; text-align: left; border-bottom: 1px solid var(--border-subtle); }
-    th { font-family: var(--font-label); font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); font-weight: 600; }
-    tr:hover td { background: color-mix(in srgb, var(--accent-primary) 4%, transparent); }
-    td { color: var(--text-main); }
-
-    /* ── Empty state ── */
-    .empty-state {
-      text-align: center;
-      padding: 2rem 1rem;
-      color: var(--text-muted);
-      font-style: italic;
-    }
-
-    /* ── Stats mini row ── */
-    .stats-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .75rem;
-      margin-bottom: 1.5rem;
-    }
-    .stat-pill {
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-      background: var(--surface-2);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      padding: .6rem 1.1rem;
-      font-size: .85rem;
-    }
-    .stat-pill .sp-val {
-      font-size: 1.3rem;
-      font-weight: 800;
-      line-height: 1;
-    }
-    .stat-pill .sp-label { color: var(--text-muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
-    .sp-overdue  .sp-val { color: var(--accent-danger); }
-    .sp-today    .sp-val { color: var(--accent-warning); }
-    .sp-upcoming .sp-val { color: var(--accent-teal); }
-    .sp-done     .sp-val { color: var(--accent-primary); }
-
-    /* ── Page heading ── */
-    .page-heading {
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--border-subtle);
-    }
-    .page-heading h1 {
-      font-size: clamp(1.5rem, 3vw, 2rem);
-      font-family: var(--font-display);
-      background: linear-gradient(135deg, var(--text-heading), color-mix(in srgb, var(--text-heading) 68%, var(--accent-primary)));
-      background-clip: text;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: .25rem;
-    }
-    .page-heading p { margin: 0; font-size: .9rem; }
-
-    /* ── History select row ── */
-    .history-select-row {
-      display: flex;
-      gap: .75rem;
-      align-items: flex-end;
-      flex-wrap: wrap;
-      margin-bottom: 1.25rem;
-    }
-    .history-select-row select { flex: 1; min-width: 200px; }
-    .history-select-row button { flex-shrink: 0; }
-
-    /* ── Overdue banner ── */
-    .overdue-banner {
-      display: flex;
-      align-items: center;
-      gap: .75rem;
-      background: color-mix(in srgb, var(--accent-danger) 10%, var(--surface-2));
-      border: 1px solid color-mix(in srgb, var(--accent-danger) 35%, transparent);
-      border-radius: var(--radius-md);
-      padding: .85rem 1.25rem;
-      margin-bottom: 1.25rem;
-      animation: slideIn .4s ease-out;
-    }
-    .overdue-banner .ob-icon { font-size: 1.4rem; }
-    .overdue-banner .ob-text { font-size: .88rem; color: var(--accent-danger); font-weight: 600; }
-  </style>
 </head>
 <body>
 
@@ -551,7 +269,7 @@ $validTypes = ['scheduled' => 'Scheduled', 'repair' => 'Repair'];
             <textarea id="notes" name="notes" placeholder="Describe what needs to be done, special instructions..."></textarea>
           </div>
         </div>
-        <div style="margin-top: 1rem;">
+        <div class="schedule-submit-row">
           <button type="submit" id="schedule-submit-btn">🗓️ Schedule Maintenance</button>
         </div>
       </form>
@@ -583,14 +301,14 @@ $validTypes = ['scheduled' => 'Scheduled', 'repair' => 'Repair'];
                 <div class="log-card-title">
                   #<?= (int) $log['id'] ?> — <?= h((string) $log['equipment_name']) ?>
                 </div>
-                <div style="margin-top:.3rem; display:flex; gap:.4rem; flex-wrap:wrap;">
+                <div class="log-card-badges">
                   <span class="chip chip-type"><?= h((string) $log['maintenance_type']) ?></span>
                   <span class="chip chip-<?= $isOverdue ? 'overdue' : 'scheduled' ?>">
                     <?= $isOverdue ? 'Overdue ' . abs($diff) . 'd' : ($isDueToday ? 'Due Today' : 'Scheduled') ?>
                   </span>
                 </div>
               </div>
-              <div style="text-align:right; font-size:.8rem; color:var(--text-muted); flex-shrink:0;">
+              <div class="log-card-side">
                 📅 <?= h((string) $log['schedule_date']) ?><br>
                 👤 <?= h((string) $log['scheduled_by']) ?>
               </div>
@@ -608,7 +326,7 @@ $validTypes = ['scheduled' => 'Scheduled', 'repair' => 'Repair'];
                 onclick="toggleCompleteForm(<?= (int) $log['id'] ?>)">
                 ✅ Mark Completed
               </button>
-              <form action="/api/actions/maintenance_cancel.php?id=<?= (int) $log['id'] ?>" method="post" style="margin:0;"
+              <form action="/api/actions/maintenance_cancel.php?id=<?= (int) $log['id'] ?>" method="post" class="form-zero"
                     onsubmit="return confirm('Cancel this maintenance task? Equipment status will be restored if no other tasks remain.')">
                 <button type="submit" class="btn-sm btn-cancel">✖ Cancel Task</button>
               </form>
@@ -639,7 +357,7 @@ $validTypes = ['scheduled' => 'Scheduled', 'repair' => 'Repair'];
                             type="number" min="0" step="0.01" placeholder="Leave blank to keep estimated cost">
                   </div>
                 </div>
-                <div class="log-actions" style="margin-top:.75rem;">
+                <div class="log-actions log-actions-top">
                   <button type="submit" class="btn-sm btn-complete">💾 Submit Completion Log</button>
                   <button type="button" class="btn-sm btn-secondary"
                           onclick="toggleCompleteForm(<?= (int) $log['id'] ?>)">Cancel</button>
@@ -665,7 +383,7 @@ $validTypes = ['scheduled' => 'Scheduled', 'repair' => 'Repair'];
     <div class="section-body" id="body-history">
       <form method="get" action="/api/maintenance.php" id="history-form">
         <div class="history-select-row">
-          <div class="form-group" style="flex:1;">
+          <div class="form-group history-eq-group">
             <label for="history_eq">Select Equipment</label>
             <select id="history_eq" name="history_eq">
               <option value="">— Choose equipment to view history —</option>
@@ -706,7 +424,7 @@ $validTypes = ['scheduled' => 'Scheduled', 'repair' => 'Repair'];
                   <td><?= h((string) $h['schedule_date']) ?></td>
                   <td><?= h((string) ($h['completed_date'] ?? '—')) ?></td>
                   <td><span class="chip chip-<?= h((string) $h['status']) ?>"><?= h((string) $h['status']) ?></span></td>
-                  <td style="max-width:200px; word-break:break-word;"><?= h((string) ($h['notes'] ?? '—')) ?></td>
+                  <td class="note-cell"><?= h((string) ($h['notes'] ?? '—')) ?></td>
                   <td><?= $h['cost'] !== null ? '₱' . number_format((float) $h['cost'], 2) : '—' ?></td>
                   <td><?= h((string) $h['scheduled_by']) ?></td>
                 </tr>
@@ -752,7 +470,7 @@ $validTypes = ['scheduled' => 'Scheduled', 'repair' => 'Repair'];
                 <td><span class="chip chip-type"><?= h((string) $log['maintenance_type']) ?></span></td>
                 <td><?= h((string) $log['schedule_date']) ?></td>
                 <td><?= h((string) ($log['completed_date'] ?? '—')) ?></td>
-                <td style="max-width:200px; word-break:break-word;"><?= h((string) ($log['notes'] ?? '—')) ?></td>
+                <td class="note-cell"><?= h((string) ($log['notes'] ?? '—')) ?></td>
                 <td><?= $log['cost'] !== null ? '₱' . number_format((float) $log['cost'], 2) : '—' ?></td>
               </tr>
               <?php endforeach; ?>
@@ -763,7 +481,7 @@ $validTypes = ['scheduled' => 'Scheduled', 'repair' => 'Repair'];
     </div>
   </div>
 
-  <p style="margin-top:1rem;"><a href="/api/dashboard.php">← Back to Dashboard</a></p>
+  <p class="back-link maint-back-link"><a href="/api/dashboard.php">← Back to Dashboard</a></p>
 </div>
 
 <script>

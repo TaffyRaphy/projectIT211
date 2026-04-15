@@ -41,28 +41,6 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   <title>Metric Snapshots – Equipment Management System</title>
   <meta name="description" content="View captured daily metric snapshots for equipment KPI tracking.">
   <link rel="stylesheet" href="/assets/style.css">
-  <style>
-    .snapshot-card {
-      background: var(--card-bg, #1a1a1a);
-      border: 1px solid var(--border-color, #2a2a2a);
-      border-radius: 12px;
-      padding: 1.2rem 1.4rem;
-      margin-bottom: 1rem;
-    }
-    .snapshot-when { font-size: .82rem; color: var(--text-muted); margin-bottom: .6rem; }
-    .snapshot-metrics { display: flex; flex-wrap: wrap; gap: .75rem; }
-    .snap-chip {
-      background: var(--bg-alt, #111);
-      border: 1px solid var(--border-color, #2a2a2a);
-      border-radius: 8px;
-      padding: .4rem .8rem;
-      font-size: .82rem;
-    }
-    .snap-chip strong { color: var(--accent, #cafd00); font-size: 1.1rem; display: block; }
-    .snap-chip span   { color: var(--text-muted); font-size: .73rem; }
-    .snap-chip.warn strong { color: #f59e0b; }
-    .snap-chip.danger strong { color: #ef4444; }
-  </style>
 </head>
 <body>
 <header class="dashboard-topbar">
@@ -89,23 +67,23 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   </div>
 </header>
 
-<main class="page">
+<main class="page page-snapshots">
   <?php if ($ok !== ''): ?><p class="alert alert-success"><?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 
   <h2>📸 Metric Snapshots</h2>
-  <p style="color: var(--text-muted); margin-bottom:1.5rem;">
+  <p class="snapshot-intro">
     Snapshots are point-in-time captures of system KPIs. Click "Capture Snapshot" to save current metrics.
   </p>
 
   <!-- Actions -->
-  <div style="display:flex; gap:.75rem; margin-bottom:1.5rem; flex-wrap:wrap;">
+  <div class="snapshot-actions">
     <a href="/api/actions/snapshot_daily.php" class="btn btn-primary">📸 Capture Snapshot Now</a>
     <a href="/api/reports.php" class="btn btn-secondary">← Back to Reports</a>
   </div>
 
   <!-- Date Filter -->
-  <section class="card" style="margin-bottom: 1.5rem;">
+  <section class="card snapshot-filter-card">
     <h2>Filter by Date Range</h2>
     <form method="post" class="filter-form">
       <div class="form-group">
@@ -124,17 +102,17 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   <?php if (count($snapshots) === 0): ?>
     <p class="empty-state">
       No snapshots captured in this date range.<br>
-      <a href="/api/actions/snapshot_daily.php" class="btn btn-primary" style="margin-top: 1rem; display:inline-block;">📸 Capture First Snapshot</a>
+      <a href="/api/actions/snapshot_daily.php" class="btn btn-primary snapshot-empty-action">📸 Capture First Snapshot</a>
     </p>
   <?php else: ?>
-    <p style="color: var(--text-muted); font-size: .85rem;"><?= count($snapshots) ?> snapshot(s) found</p>
+    <p class="snapshot-count"><?= count($snapshots) ?> snapshot(s) found</p>
     <?php foreach ($snapshots as $snap): ?>
     <?php $m = is_string($snap['new_values']) ? json_decode($snap['new_values'], true) : []; ?>
     <div class="snapshot-card">
       <div class="snapshot-when">
         📅 <?= h(utc_to_ph($snap['created_at'], 'M d, Y h:i A')) ?>
         &nbsp;·&nbsp; Captured by: <strong><?= h($snap['captured_by']) ?></strong>
-        <span class="badge <?= $snap['captured_role'] === 'admin' ? 'badge-warning' : 'badge-info' ?>" style="font-size:.7rem; margin-left:.3rem;"><?= h(ucfirst($snap['captured_role'])) ?></span>
+        <span class="badge snapshot-role-badge <?= $snap['captured_role'] === 'admin' ? 'badge-warning' : 'badge-info' ?>"><?= h(ucfirst($snap['captured_role'])) ?></span>
       </div>
       <div class="snapshot-metrics">
         <div class="snap-chip">

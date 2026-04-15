@@ -31,7 +31,7 @@ $error = query_param('error');
       <?php if ($error !== ''): ?><p class="alert alert-error">Login Error: <?= h($error) ?></p><?php endif; ?>
 
       <form class="login-form" action="/api/actions/login.php" method="post">
-        <p><label for="email">Email address</label></p>
+        <p><label for="email">Email Address</label></p>
         <p><input id="email" name="email" type="email" required></p>
 
         <p><label for="password">Password</label></p>

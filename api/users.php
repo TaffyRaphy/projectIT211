@@ -63,40 +63,6 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   <title>User Management – Equipment Management System</title>
   <meta name="description" content="View and manage all system users, roles, and activity.">
   <link rel="stylesheet" href="/assets/style.css">
-  <style>
-    .user-stats { display: flex; gap: .5rem; flex-wrap: wrap; }
-    .user-stat-chip {
-      background: var(--card-bg, #1e1e1e);
-      border: 1px solid var(--border-color, #2a2a2a);
-      padding: .15rem .5rem;
-      border-radius: 6px;
-      font-size: .78rem;
-      color: var(--text-muted, #888);
-    }
-    .user-stat-chip span { font-weight: 700; color: var(--text-color, #eee); }
-    .user-row-email { font-size: .82rem; color: var(--text-muted, #888); }
-    .user-row-meta  { font-size: .78rem; color: var(--text-muted, #888); }
-    .summary-bar {
-      display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;
-    }
-    .summary-chip {
-      background: var(--card-bg, #1a1a1a);
-      border: 1px solid var(--border-color, #2a2a2a);
-      padding: .4rem .9rem;
-      border-radius: 8px;
-      font-size: .85rem;
-    }
-    .summary-chip strong { color: var(--accent, #cafd00); font-size: 1.1rem; }
-    .add-user-toggle {
-      display: flex; align-items: center; gap: .5rem;
-      cursor: pointer; user-select: none;
-    }
-    .add-user-toggle h2 { margin: 0; }
-    .create-user-form { display: none; }
-    .create-user-form.open { display: block; }
-    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    @media (max-width: 640px) { .form-grid-2 { grid-template-columns: 1fr; } }
-  </style>
 </head>
 <body>
 <header class="dashboard-topbar">
@@ -123,7 +89,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   </div>
 </header>
 
-<main class="page">
+<main class="page page-users">
   <?php if ($ok !== ''): ?><p class="alert alert-success"><?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 
@@ -142,13 +108,12 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   </div>
 
   <!-- ── Add New User ── -->
-  <section class="card">
+  <section class="card users-section users-add-section">
     <div class="add-user-toggle" id="add-user-toggle" onclick="toggleAddUser()" aria-expanded="false">
-      <h2>➕ Add New User</h2>
-      <span id="add-user-chevron" style="font-size:1.2rem; transition: transform .2s;">▼</span>
+      <h2><i class="fas fa-user-plus" aria-hidden="true"></i> Add New User</h2>
+      <span id="add-user-chevron" class="add-user-chevron">▼</span>
     </div>
     <div class="create-user-form" id="create-user-form">
-      <br>
       <form action="/api/actions/user_create.php" method="post" class="form">
         <div class="form-grid-2">
           <div class="form-group">
@@ -181,7 +146,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
             <input type="text" id="cu_job_title" name="job_title" placeholder="e.g. IT Technician">
           </div>
         </div>
-        <p style="font-size:.82rem; color: var(--text-muted, #888); margin-top:.5rem;">
+        <p class="create-help">
           💡 An Employee ID will be automatically generated upon creation. The user will be prompted to complete their profile on first login.
         </p>
         <div class="form-actions">
@@ -193,7 +158,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   </section>
 
   <!-- Search + Filter -->
-  <section class="card">
+  <section class="card users-section users-filter-section">
     <h2>Search Users</h2>
     <form method="post" class="filter-form">
       <div class="form-group">
@@ -215,12 +180,12 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
   </section>
 
   <!-- Users Table -->
-  <h2>All Users (<?= count($users) ?>)</h2>
+  <h2 class="users-table-heading">All Users (<?= count($users) ?>)</h2>
   <?php if (count($users) === 0): ?>
     <p class="empty-state">No users found.</p>
   <?php else: ?>
-  <div class="table-responsive">
-    <table class="table">
+  <div class="table-responsive users-table-wrap">
+    <table class="table users-table">
       <thead>
         <tr>
           <th>Emp ID</th>
@@ -229,18 +194,17 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
           <th>Role</th>
           <th>Dept / Title</th>
           <th>Activity</th>
-          <th>Joined</th>
-          <th>Actions</th>
+          <th class="users-col-actions">Actions</th>
         </tr>
       </thead>
       <tbody>
         <?php foreach ($users as $u): ?>
         <tr>
-          <td style="font-size:.82rem; font-weight:600; color:var(--accent);"><?= h($u['employee_id'] ?? '—') ?></td>
+          <td class="employee-id-cell"><?= h($u['employee_id'] ?? '—') ?></td>
           <td>
             <strong><?= h($u['full_name']) ?></strong>
             <?php if ((int) $u['id'] === $userId): ?>
-              <span class="badge badge-info" style="font-size:.7rem;">You</span>
+              <span class="badge badge-info badge-you">You</span>
             <?php endif; ?>
           </td>
           <td class="user-row-email"><?= h($u['email']) ?></td>
@@ -254,10 +218,10 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
               <div><?= h($u['department']) ?></div>
             <?php endif; ?>
             <?php if (!empty($u['job_title'])): ?>
-              <div style="color: var(--text-muted);"><?= h($u['job_title']) ?></div>
+              <div class="job-title-muted"><?= h($u['job_title']) ?></div>
             <?php endif; ?>
             <?php if (empty($u['department']) && empty($u['job_title'])): ?>
-              <span style="color: var(--text-muted);">—</span>
+              <span class="meta-dash">—</span>
             <?php endif; ?>
           </td>
           <td>
@@ -269,9 +233,8 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
               <?php endif; ?>
             </div>
           </td>
-          <td><?= h(utc_to_ph($u['created_at'], 'Y-m-d')) ?></td>
-          <td>
-            <a href="/api/profile.php?id=<?= (int) $u['id'] ?>" class="btn btn-secondary" style="font-size:.8rem; padding:.2rem .6rem;">
+          <td class="users-col-actions">
+            <a href="/api/profile.php?id=<?= (int) $u['id'] ?>" class="btn btn-secondary user-action-link">
               View Profile
             </a>
           </td>

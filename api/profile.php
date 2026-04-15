@@ -96,69 +96,6 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($currentUserId
   <title><?= h($profileUser['full_name']) ?> – Profile</title>
   <meta name="description" content="User profile and activity history for <?= h($profileUser['full_name']) ?>.">
   <link rel="stylesheet" href="/assets/style.css">
-  <style>
-    .profile-header {
-      display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
-      background: var(--card-bg, #1a1a1a);
-      border: 1px solid var(--border-color, #2a2a2a);
-      border-radius: 14px;
-      padding: 1.5rem 2rem;
-      margin-bottom: 1.5rem;
-    }
-    .profile-avatar {
-      width: 80px; height: 80px;
-      border-radius: 50%;
-      background: var(--accent, #cafd00);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2.2rem; font-weight: 700; color: #111;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .profile-info h1 { margin: 0 0 .3rem; font-size: 1.4rem; }
-    .profile-info p  { margin: 0; font-size: .9rem; color: var(--text-muted, #888); }
-    .profile-info .info-row { display: flex; gap: 1.2rem; flex-wrap: wrap; margin-top: .4rem; }
-    .profile-info .info-chip {
-      font-size: .82rem; color: var(--text-muted, #888);
-      background: var(--bg-alt, #111);
-      border: 1px solid var(--border-color, #2a2a2a);
-      border-radius: 6px; padding: .15rem .55rem;
-    }
-    .profile-info .info-chip strong { color: var(--text-color, #eee); margin-right: .3rem; }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: .75rem;
-      margin-bottom: 1.5rem;
-    }
-    .stat-card {
-      background: var(--card-bg, #1a1a1a);
-      border: 1px solid var(--border-color, #2a2a2a);
-      border-radius: 10px;
-      padding: .9rem 1rem;
-      text-align: center;
-    }
-    .stat-card .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent, #cafd00); }
-    .stat-card .stat-label { font-size: .78rem; color: var(--text-muted, #888); margin-top: .2rem; }
-    .audit-row td:first-child { font-size: 1.1rem; text-align: center; }
-    .audit-action { text-transform: capitalize; font-weight: 600; }
-    .mandatory-banner {
-      background: linear-gradient(135deg, #1a1a1a, #111);
-      border: 2px solid var(--accent, #cafd00);
-      border-radius: 14px;
-      padding: 1.5rem 2rem;
-      margin-bottom: 1.5rem;
-      text-align: center;
-    }
-    .mandatory-banner h2 { color: var(--accent, #cafd00); margin: 0 0 .5rem; }
-    .mandatory-banner p  { color: var(--text-muted, #888); margin: 0 0 1rem; }
-    .edit-form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-    @media (max-width: 640px) { .edit-form-grid { grid-template-columns: 1fr; } }
-  </style>
 </head>
 <body>
 <header class="dashboard-topbar">
@@ -185,7 +122,7 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($currentUserId
   </div>
 </header>
 
-<main class="page">
+<main class="page page-profile">
   <?php if ($ok !== ''): ?><p class="alert alert-success"><?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 
@@ -214,12 +151,12 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($currentUserId
         <span class="info-chip"><strong>Title:</strong><?= h($profileUser['job_title']) ?></span>
         <?php endif; ?>
       </div>
-      <p style="margin-top:.5rem;">
+      <p class="profile-role-row">
         <span class="badge <?= match($profileUser['role']) { 'admin' => 'badge-warning', 'maintenance' => 'badge-success', default => 'badge-info' } ?>">
           <?= match($profileUser['role']) { 'admin' => '👑', 'maintenance' => '🔧', default => '👤' } ?>
           <?= h(ucfirst($profileUser['role'])) ?>
         </span>
-        <span style="margin-left:.5rem; font-size:.82rem; color: var(--text-muted, #888);">
+        <span class="member-since">
           Member since <?= h(utc_to_ph($profileUser['created_at'], 'M d, Y')) ?>
         </span>
       </p>
@@ -364,25 +301,25 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($currentUserId
         </thead>
         <tbody>
           <?php foreach ($auditRows as $entry): ?>
-          <tr>
+          <tr class="audit-row">
             <td><?= $actionTypeIcon[$entry['action_type']] ?? '📌' ?></td>
             <td class="audit-action"><?= h($entry['action_type']) ?></td>
             <td><code><?= h($entry['table_name']) ?></code></td>
             <td><?= (int) $entry['record_id'] ?></td>
-            <td style="max-width: 260px; font-size: .8rem; color: var(--text-muted); white-space: pre-wrap; word-break: break-all;">
+            <td class="audit-details-cell">
               <?php
                 $newVals = is_string($entry['new_values']) ? json_decode($entry['new_values'], true) : null;
                 if (is_array($newVals)) {
                     $show = array_filter($newVals, fn($k) => in_array($k, ['status', 'name', 'equipment_name', 'role', 'email', 'full_name', 'staff_name', 'maintenance_type', 'schedule_date', 'completed_date', 'qty_requested', 'qty_allocated', 'qty_returned', 'expected_return_date', 'cancelled_by', 'action', 'category', 'location', 'code', 'work_done', 'purpose']), ARRAY_FILTER_USE_KEY);
                     if (!empty($show)) {
                         foreach ($show as $k => $v) {
-                            echo '<span style="margin-right:.4rem;"><strong>' . h($k) . ':</strong> ' . h((string)$v) . '</span>';
+                            echo '<span class="audit-detail-item"><strong>' . h($k) . ':</strong> ' . h((string)$v) . '</span>';
                         }
                     } else {
-                        echo '<span style="color:var(--text-muted)">—</span>';
+                        echo '<span class="audit-detail-empty">—</span>';
                     }
                 } else {
-                    echo '<span style="color:var(--text-muted)">—</span>';
+                    echo '<span class="audit-detail-empty">—</span>';
                 }
               ?>
             </td>

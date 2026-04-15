@@ -10,25 +10,13 @@ $dashboardTitle = 'Equipment Reports';
 $ok = query_param('ok');
 $error = query_param('error');
 
-// Filters
-$categoryFilter = post_string('category_filter') ?: query_param('category_filter');
-$statusFilter = post_string('status_filter') ?: query_param('status_filter');
-
-// Get distinct categories for filter dropdown
-$categoryStmt = db()->query("SELECT DISTINCT category FROM equipment WHERE category IS NOT NULL ORDER BY category");
-$categories = $categoryStmt->fetchAll(PDO::FETCH_COLUMN);
-
-// Build category filter where clause
-$categoryWhere = $categoryFilter !== '' ? 'AND e.category = ' . db()->quote($categoryFilter) : '';
-$statusWhere = $statusFilter !== '' ? 'AND e.status = ' . db()->quote($statusFilter) : '';
-
 // Inventory by category
 $inventoryRows = db()->query(
     "SELECT category, COUNT(*)::text AS items, COALESCE(SUM(quantity_total), 0)::text AS total_qty,
             COALESCE(SUM(quantity_available), 0)::text AS available_qty,
             COALESCE(SUM(quantity_total - quantity_available), 0)::text AS allocated_qty
      FROM equipment
-     WHERE category IS NOT NULL $categoryWhere
+  WHERE category IS NOT NULL
      GROUP BY category
      ORDER BY category ASC"
 )->fetchAll();
@@ -46,7 +34,6 @@ $usageRows = db()->query(
             ), 0)::text AS overdue_count
      FROM equipment e
      LEFT JOIN allocations a ON a.equipment_id = e.id
-     WHERE 1=1 $categoryWhere $statusWhere
      GROUP BY e.id, e.name, e.quantity_available
      ORDER BY e.name ASC"
 )->fetchAll();
@@ -62,7 +49,6 @@ $maintenanceRows = db()->query(
             COALESCE(SUM(CASE WHEN m.status = 'completed'  THEN m.cost ELSE 0 END), 0)::text AS completed_cost
      FROM equipment e
      LEFT JOIN maintenance_logs m ON m.equipment_id = e.id
-     WHERE 1=1 $categoryWhere $statusWhere
      GROUP BY e.name
      ORDER BY e.name ASC"
 )->fetchAll();
@@ -140,40 +126,6 @@ try {
     <p class="alert alert-error">Error: <?= h($error) ?></p>
   <?php endif; ?>
 
-  <!-- Filters Section -->
-  <section class="card">
-    <h2>Filters</h2>
-    <form method="post" class="filter-form">
-      <div class="form-group">
-        <label for="category_filter">Category:</label>
-        <select id="category_filter" name="category_filter">
-          <option value="">All Categories</option>
-          <?php foreach ($categories as $cat): ?>
-            <option value="<?= h($cat) ?>" <?= $categoryFilter === $cat ? 'selected' : '' ?>>
-              <?= h(ucfirst($cat)) ?>
-            </option>
-          <?php endforeach; ?>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="status_filter">Status:</label>
-        <select id="status_filter" name="status_filter">
-          <option value="">All Statuses</option>
-          <option value="available" <?= $statusFilter === 'available' ? 'selected' : '' ?>>Available</option>
-          <option value="allocated" <?= $statusFilter === 'allocated' ? 'selected' : '' ?>>Allocated</option>
-          <option value="maintenance" <?= $statusFilter === 'maintenance' ? 'selected' : '' ?>>Under Maintenance</option>
-          <option value="retired" <?= $statusFilter === 'retired' ? 'selected' : '' ?>>Retired</option>
-        </select>
-      </div>
-
-      <div class="filter-actions">
-        <button type="submit" class="btn btn-primary">Apply Filters</button>
-        <a href="/api/reports.php" class="btn btn-secondary">Clear</a>
-      </div>
-    </form>
-  </section>
-
   <!-- SLA & Performance Metrics -->
   <section class="card">
     <h2>Performance Metrics</h2>
@@ -232,7 +184,7 @@ try {
 
   <!-- Equipment Usage Summary -->
   <h2>Equipment Usage Summary</h2>
-  <p style="color:var(--text-muted); font-size:.88rem; margin-bottom:.75rem;">Active allocations only. Historical total includes returned equipment.</p>
+  <p class="table-note">Active allocations only. Historical total includes returned equipment.</p>
   <div class="table-responsive">
     <table class="table">
       <thead>
@@ -270,7 +222,7 @@ try {
 
   <!-- Maintenance History & Cost Summary -->
   <h2>Maintenance Summary</h2>
-  <p style="color:var(--text-muted); font-size:.88rem; margin-bottom:.75rem;">Costs exclude cancelled tasks. Total Tasks includes all historical records.</p>
+  <p class="table-note">Costs exclude cancelled tasks. Total Tasks includes all historical records.</p>
   <div class="table-responsive">
     <table class="table">
       <thead>
@@ -306,8 +258,8 @@ try {
   <!-- Admin Tools -->
   <!-- Audit Trail Report -->
   <hr>
-  <h2>Audit Trail <small style="font-size:.8rem; font-weight:400;">(Last 50 — <a href="/api/audit_trail.php" style="color:var(--accent)">View Full Trail →</a>)</small></h2>
-  <p style="color: var(--text-muted, #888); margin-bottom: 1rem;">Recent system actions across all users.</p>
+  <h2>Audit Trail <small class="audit-title-inline">(Last 50 — <a href="/api/audit_trail.php" class="audit-link">View Full Trail →</a>)</small></h2>
+  <p class="audit-intro">Recent system actions across all users.</p>
   <?php
     $auditRows = [];
     try {
@@ -352,17 +304,17 @@ try {
           <td><?= $actionTypeIcon[$entry['action_type']] ?? '📌' ?></td>
           <td>
             <strong><?= h($entry['user_name']) ?></strong><br>
-            <small style="color:var(--text-muted)"><?= h($entry['user_email']) ?></small>
+            <small class="audit-user-email"><?= h($entry['user_email']) ?></small>
           </td>
           <td>
             <span class="badge <?= match($entry['user_role']) { 'admin' => 'badge-warning', 'maintenance' => 'badge-success', default => 'badge-info' } ?>">
               <?= h(ucfirst($entry['user_role'])) ?>
             </span>
           </td>
-          <td style="text-transform:capitalize; font-weight:600;"><?= h($entry['action_type']) ?></td>
+          <td class="audit-action-cell"><?= h($entry['action_type']) ?></td>
           <td><code><?= h($entry['table_name']) ?></code></td>
           <td><?= (int) $entry['record_id'] ?></td>
-          <td style="max-width:220px; font-size:.8rem; color:var(--text-muted);">
+          <td class="audit-detail-cell">
             <?php
               $nv = is_string($entry['new_values']) ? json_decode($entry['new_values'], true) : null;
               if (is_array($nv)) {
@@ -396,17 +348,17 @@ try {
       <a href="/api/users.php"                           class="btn btn-secondary"><i class="fas fa-users"></i> User Management</a>
       <a href="/api/actions/test_email.php"              class="btn btn-warning"><i class="fas fa-envelope"></i> Test Resend Email</a>
     </div>
-    <div style="margin-top:1rem; padding:1rem; background:var(--bg-alt,#111); border:1px solid var(--border-color,#2a2a2a); border-radius:8px; display:inline-flex; align-items:center; gap:.75rem; flex-wrap:wrap;">
-      <span style="font-size:.88rem; font-weight:600;">📄 Export Summary (HTML)</span>
-      <form action="/api/actions/generate_report_pdf.php" method="get" style="display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;">
+    <div class="export-wrap">
+      <span class="export-label">📄 Export Summary (HTML)</span>
+      <form action="/api/actions/generate_report_pdf.php" method="get" class="export-form">
         <input type="hidden" name="report_type" value="summary">
-        <label for="trend_metric_export" style="font-size:.82rem; white-space:nowrap;">Trend metric:</label>
-        <select id="trend_metric_export" name="trend_metric" style="font-size:.82rem; padding:.25rem .5rem; border-radius:5px; border:1px solid var(--border-color,#2a2a2a); background:var(--card-bg,#1a1a1a); color:inherit;">
+        <label for="trend_metric_export" class="export-field-label">Trend metric:</label>
+        <select id="trend_metric_export" name="trend_metric" class="export-field-select">
           <option value="cost">Maintenance Cost</option>
           <option value="utilization">Equipment Utilization Rate</option>
           <option value="requests">Total Requests</option>
         </select>
-        <button type="submit" class="btn btn-primary" style="font-size:.82rem; padding:.3rem .9rem;">Export</button>
+        <button type="submit" class="btn btn-primary export-btn">Export</button>
       </form>
     </div>
   </section>

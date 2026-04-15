@@ -115,12 +115,12 @@ $typeIcons = [
   </div>
 </header>
 
-<div class="container">
+<div class="container page-notification-logs">
   <?php if ($ok !== ''): ?><p class="alert alert-success"><?= h($ok) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="alert alert-error">Error: <?= h($error) ?></p><?php endif; ?>
 
   <!-- Summary cards -->
-  <div class="metrics-grid" style="margin-bottom: 1.5rem;">
+  <div class="metrics-grid metrics-summary">
     <div class="metric-card">
       <p class="metric-label">Total Notifications</p>
       <p class="metric-value"><?= $totalNotifs ?></p>
@@ -197,7 +197,7 @@ $typeIcons = [
             </td>
             <td>
               <strong><?= h($log['recipient_name']) ?></strong><br>
-              <small style="color:var(--text-muted)"><?= h($log['recipient_email']) ?></small>
+              <small class="recipient-email"><?= h($log['recipient_email']) ?></small>
             </td>
             <td>
               <span class="badge <?= match($log['recipient_role']) { 'admin' => 'badge-warning', 'maintenance' => 'badge-success', default => 'badge-info' } ?>">
@@ -211,7 +211,7 @@ $typeIcons = [
                 <span class="badge badge-error">● Unread</span>
               <?php endif; ?>
             </td>
-            <td style="max-width: 280px; font-size:.85rem; word-break: break-word;">
+            <td class="message-cell">
               <?= h($log['message']) ?>
             </td>
           </tr>
@@ -249,7 +249,7 @@ $typeIcons = [
   <!-- Settings links -->
   <section class="card">
     <h2>Notification Actions</h2>
-    <p>
+    <p class="actions-row">
       <a href="/api/actions/test_email.php"                        class="btn btn-primary">Test Resend Email</a>
       <a href="/api/actions/check_overdue_allocations.php"         class="btn btn-secondary">Check Overdue Returns Now</a>
       <a href="/api/my_notifications.php"                          class="btn btn-secondary">My Notification Inbox</a>

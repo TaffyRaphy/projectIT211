@@ -5,6 +5,11 @@ require dirname(__DIR__, 2) . '/includes/bootstrap.php';
 require_role(['admin']);
 $requestId = int_query_param('id', 0);
 $adminId   = (int) require_login()['id'];
+$remarks   = post_string('remarks');
+
+if (strlen($remarks) > 255) {
+    $remarks = substr($remarks, 0, 255);
+}
 
 if ($requestId <= 0) {
     redirect_to('api/admin_requests.php', ['error' => 'Invalid rejection input']);
@@ -41,6 +46,7 @@ log_audit('reject', 'equipment_requests', $requestId, $adminId,
         'qty_requested'  => $request ? (int) $request['qty_requested'] : null,
         'staff_name'     => $request ? $request['full_name'] : null,
         'email'          => $request ? $request['email'] : null,
+        'remarks'        => $remarks,
     ]
 );
 
@@ -51,10 +57,13 @@ if ($request) {
         $request['email'],
         (int) $request['staff_id'],
         [
+            'request_id'     => $requestId,
             'staff_name'     => $request['full_name'],
             'equipment_name' => $request['equipment_name'],
+            'status'         => 'Rejected',
+            'qty_requested'  => (int) $request['qty_requested'],
             'qty_available'  => (int) $request['quantity_available'],
-            'request_link'   => 'View Request Details',
+            'remarks'        => $remarks !== '' ? $remarks : 'No additional remarks provided.',
         ]
     );
 }

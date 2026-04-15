@@ -26,6 +26,16 @@
             <p>Hello {staff_name},</p>
             
             <p>Unfortunately, your equipment request could not be approved at this time.</p>
+
+            <div class="detail">
+                <div class="label">Request ID:</div>
+                <div class="value">#{request_id}</div>
+            </div>
+
+            <div class="detail">
+                <div class="label">Status:</div>
+                <div class="value">{status}</div>
+            </div>
             
             <div class="detail">
                 <div class="label">Equipment Requested:</div>
@@ -40,6 +50,11 @@
             <div class="info-box">
                 <strong>Available Quantity:</strong> {qty_available}
             </div>
+
+            <div class="detail">
+                <div class="label">Admin Remarks:</div>
+                <div class="value">{remarks}</div>
+            </div>
             
             <p>The requested quantity is not currently available. You may:</p>
             <ul>
@@ -47,10 +62,6 @@
                 <li>Submit a new request later when inventory is replenished</li>
                 <li>Contact an administrator for alternative solutions</li>
             </ul>
-            
-            <p>
-
-            </p>
         </div>
         
         <div class="footer">

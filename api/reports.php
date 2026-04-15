@@ -262,14 +262,21 @@ try {
   <p class="audit-intro">Recent system actions across all users.</p>
   <?php
     $auditRows = [];
+    $auditPreviewTotal = 0;
+    $auditPreviewPages = 1;
     try {
+        $auditPreviewTotal = (int) db()->query("SELECT COUNT(*) FROM audit_logs")->fetchColumn();
+        $auditPreviewPages = max(1, (int) ceil($auditPreviewTotal / $auditPreviewPerPage));
+        $auditPreviewPage = min($auditPreviewPage, $auditPreviewPages);
+        $auditPreviewOffset = ($auditPreviewPage - 1) * $auditPreviewPerPage;
+
         $auditRows = db()->query(
             "SELECT al.id, al.action_type, al.table_name, al.record_id, al.new_values, al.created_at,
                     u.full_name AS user_name, u.email AS user_email, u.role AS user_role
-             FROM audit_logs al
-             JOIN users u ON u.id = al.user_id
-             ORDER BY al.created_at DESC
-             LIMIT 50"
+              FROM audit_logs al
+              JOIN users u ON u.id = al.user_id
+              ORDER BY al.created_at DESC
+              LIMIT {$auditPreviewPerPage} OFFSET {$auditPreviewOffset}"
         )->fetchAll();
     } catch (Throwable $e) {
         error_log('Audit trail query error: ' . $e->getMessage());
@@ -331,6 +338,21 @@ try {
       </tbody>
     </table>
   </div>
+  <?php if ($auditPreviewPages > 1): ?>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:.75rem; margin-top:.8rem; flex-wrap:wrap;">
+      <p style="margin:0; color:var(--text-muted); font-size:.85rem;">
+        Page <?= (int) $auditPreviewPage ?> of <?= (int) $auditPreviewPages ?>
+      </p>
+      <div style="display:flex; gap:.5rem;">
+        <?php if ($auditPreviewPage > 1): ?>
+          <a class="btn btn-secondary btn-sm" href="/api/reports.php?<?= h(http_build_query(['audit_page' => $auditPreviewPage - 1])) ?>#audit-trail">Previous</a>
+        <?php endif; ?>
+        <?php if ($auditPreviewPage < $auditPreviewPages): ?>
+          <a class="btn btn-secondary btn-sm" href="/api/reports.php?<?= h(http_build_query(['audit_page' => $auditPreviewPage + 1])) ?>#audit-trail">Next</a>
+        <?php endif; ?>
+      </div>
+    </div>
+  <?php endif; ?>
   <?php endif; ?>
 
   <hr>

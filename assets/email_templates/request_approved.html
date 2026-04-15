@@ -26,6 +26,16 @@
             <p>Hello {staff_name},</p>
             
             <p>Great news! Your equipment request has been <strong>approved</strong>.</p>
+
+            <div class="detail">
+                <div class="label">Request ID:</div>
+                <div class="value">#{request_id}</div>
+            </div>
+
+            <div class="detail">
+                <div class="label">Status:</div>
+                <div class="value">{status}</div>
+            </div>
             
             <div class="detail">
                 <div class="label">Equipment:</div>
@@ -39,6 +49,11 @@
             
             <div class="important">
                 <strong>Important:</strong> Please ensure you return this equipment by <strong>{expected_return_date}</strong>
+            </div>
+
+            <div class="detail">
+                <div class="label">Admin Remarks:</div>
+                <div class="value">{remarks}</div>
             </div>
             
             <p>You may now proceed to collect the equipment from the designated location on the system.</p>

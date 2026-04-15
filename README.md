@@ -1,100 +1,108 @@
-# Web-Based Equipment Management System (PHP + PostgreSQL)
+# Web-Based Equipment Management System
 
-This repository contains a role-based equipment management web app built with PHP, PostgreSQL, and vanilla JavaScript/CSS.
+---
 
-The implementation aligns with the project scope in `PROJECT_OVERVIEW.md`:
+## Description
 
-1. Authentication and role-based access (`admin`, `staff`, `maintenance`)
-2. Equipment inventory management
-3. Request and allocation workflow
-4. Maintenance scheduling and completion
-5. Reporting views for inventory, usage, and maintenance history
+The **Web-Based Equipment Management System** is a role-based web application designed to streamline the management of equipment within an organization. It enables different types of users — administrators, staff, and maintenance personnel — to interact with the system according to their roles.
 
-## Current Security and Access Model
+The system covers the full equipment lifecycle: from inventory tracking and staff requests, to admin approvals and allocations, all the way through maintenance scheduling and reporting. It is built as a lightweight, server-rendered web app deployed on Vercel.
 
-- Login uses database-backed credential validation (`users.password_hash` + `password_verify`)
-- Session handling is enabled via PHP sessions
-- Authenticated user identity is stored in `$_SESSION['user']`
-- Role checks are enforced server-side by `require_role(...)`
-- Action handlers derive actor identity from session (not from query/form IDs)
-- Logout is handled by `/api/actions/logout.php`
+---
 
-## Tech Stack
+## Features
 
-- PHP 8+
-- PostgreSQL
-- Vercel PHP runtime (`vercel-php`)
-- Vanilla JavaScript for confirmation UX (`assets/app.js`)
-- Shared design system stylesheet (`assets/style.css`)
+- **Role-Based Access Control** — Separate dashboards and permissions for `admin`, `staff`, and `maintenance` roles
+- **User Authentication** — Secure login using database-backed credential validation with hashed passwords
+- **Equipment Inventory Management** — Admins can view, add, and manage all equipment records
+- **Request & Allocation Workflow** — Staff can submit equipment requests; admins can approve, reject, or allocate
+- **Maintenance Scheduling** — Maintenance personnel can schedule and mark completion of maintenance tasks
+- **Reporting** — Admin-accessible reports covering inventory status, usage history, and maintenance summaries
+- **Session Security** — Server-side role enforcement with PHP sessions; identity is never derived from client input
+- **Responsive UI** — Mobile-friendly design with a dark tonal design system (glass/blur panels, glowing buttons, status chips)
 
-## Project Structure
+---
 
-- `api/index.php` - login page
-- `api/dashboard.php` - role-aware dashboard and navigation
-- `api/equipment.php` - equipment inventory management (admin)
-- `api/requests.php` - equipment requests/history (staff)
-- `api/admin_requests.php` - approval/rejection/allocation (admin)
-- `api/maintenance.php` - maintenance scheduling/completion (maintenance)
-- `api/reports.php` - reporting summaries (admin)
-- `api/actions/*.php` - form/action handlers
-- `includes/bootstrap.php` - DB connection, auth/session helpers, utility functions
-- `assets/style.css` - design system implementation
-- `assets/app.js` - client-side confirm prompts
+## Technologies Used
 
-## Database Setup
+| Technology | Purpose |
+|---|---|
+| PHP 8+ | Server-side logic and routing |
+| PostgreSQL | Relational database for all application data |
+| Vercel + `vercel-php` | Hosting and PHP runtime |
+| Vanilla JavaScript | Client-side confirmation UX |
+| CSS (custom design system) | Styling with `Manrope`, `Inter`, and `Space Grotesk` fonts |
 
-1. Set environment variable `DATABASE_URL` (or `POSTGRES_URL`) to your PostgreSQL connection string.
-2. Run schema and seed setup:
+---
 
+## Installation / Setup Guide
+
+### Prerequisites
+
+- PHP 8+ installed locally
+- A PostgreSQL database instance
+- Node.js (for the DB setup script)
+
+### Steps
+
+**1. Clone the repository**
+```bash
+git clone https://github.com/TaffyRaphy/projectIT211.git
+cd projectIT211
+```
+
+**2. Configure your database**
+
+Set your PostgreSQL connection string as an environment variable:
+```bash
+export DATABASE_URL=your_postgresql_connection_string
+# or
+export POSTGRES_URL=your_postgresql_connection_string
+```
+
+**3. Run the database setup**
+
+This will apply the schema and seed default accounts:
 ```bash
 npm run db:setup
 ```
 
-Seeded accounts (password for all):
+**Default seeded accounts** (password for all: `Pass123!`):
+| Role | Email |
+|---|---|
+| Admin | `admin@example.com` |
+| Staff | `staff@example.com` |
+| Maintenance | `maintenance@example.com` |
 
-- `admin@example.com` / `Pass123!`
-- `staff@example.com` / `Pass123!`
-- `maintenance@example.com` / `Pass123!`
-
-## Local Run
-
+**4. Start the local server**
 ```bash
 php -S localhost:8000
 ```
 
-Open `http://localhost:8000`.
+**5. Open in your browser**
 
-## Route Map
+Navigate to [http://localhost:8000](http://localhost:8000) and log in with any of the seeded accounts.
 
-- `/api/index.php` - login
-- `/api/dashboard.php` - dashboard (requires login)
-- `/api/equipment.php` - equipment (admin)
-- `/api/requests.php` - request workflow (staff)
-- `/api/admin_requests.php` - request approval/allocation (admin)
-- `/api/maintenance.php` - maintenance workflow (maintenance)
-- `/api/reports.php` - reports (admin)
-- `/api/actions/logout.php` - logout
+---
 
-## DESIGN.md Compliance Check (Current)
+### Deployment on Vercel
 
-Checked against `DESIGN.md` and implemented in `assets/style.css`:
+1. Set framework preset to **Other**
+2. Add `DATABASE_URL` to your Vercel environment variables
+3. Deploy a preview build first — verify login, sessions, and role-gated routes
+4. Promote to production once verified
+5. ⚠️ Do **not** re-run the DB setup script against production data unless intentional
 
-- Tonal dark layering with no hard divider borders: implemented
-- Primary/secondary/tertiary/error palette usage: implemented
-- Glass/blur panel treatment for main container: implemented
-- Typography system (`Manrope`, `Inter`, `Space Grotesk`): implemented
-- Rounded, glowing CTA buttons with hover glow behavior: implemented
-- Status chips and metric cards with accent glows: implemented
-- Asymmetric dashboard metric layout (hero card + support cards): implemented
-- Mobile responsiveness: implemented
+---
 
-Known browser limitation:
+## Screenshots
 
-- Native select popup rendering can vary by OS/browser engine. Dark dropdown styling is applied, but the OS-level popup can still differ slightly.
+> 📸 Screenshots will be added here. Place images in the `assets/` folder and reference them below.
 
-## Deployment Notes (Vercel)
-
-1. Framework preset: `Other`
-2. Keep `DATABASE_URL` in environment variables
-3. Deploy preview first, verify login/session and role routes, then promote to production
-4. Do not re-run destructive DB setup against production data unless intended
+```markdown
+![Login Page](assets/screenshots/login.png)
+![Admin Dashboard](assets/screenshots/admin-dashboard.png)
+![Equipment Inventory](assets/screenshots/equipment.png)
+![Maintenance View](assets/screenshots/maintenance.png)
+![Reports](assets/screenshots/reports.png)
+```

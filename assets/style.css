@@ -3037,6 +3037,14 @@ html[data-theme='light'] .page-notification-logs button.btn.btn-primary:focus-vi
   background: color-mix(in srgb, var(--surface-2) 60%, transparent);
 }
 
+.page-notification-logs > .maint-back-link {
+  margin-top: 1rem;
+}
+
+html[data-theme='light'] .page-notification-logs > .maint-back-link a {
+  color: #f5fcff;
+}
+
 .page-profile .profile-header {
   display: flex;
   align-items: center;

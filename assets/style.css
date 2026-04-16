@@ -1610,6 +1610,16 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
   padding-bottom: var(--space-xl);
 }
 
+.admin-maint-page {
+  margin-top: 1rem;
+}
+
+html[data-theme='light'] .admin-maint-page > .page-heading h1 {
+  color: #ffffff;
+  background: none;
+  -webkit-text-fill-color: #ffffff;
+}
+
 html[data-theme='light'] .maint-page > .page-heading h1,
 html[data-theme='light'] .maint-page > .maint-back-link a {
   color: #f5fcff;

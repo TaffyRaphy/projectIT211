@@ -108,7 +108,7 @@ function adm_days_diff(string $dateStr): int {
   </div>
 </header>
 
-<div class="maint-page">
+<div class="maint-page admin-maint-page">
 
   <div class="page-heading">
     <h1>🔧 Maintenance Overview</h1>

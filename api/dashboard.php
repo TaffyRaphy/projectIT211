@@ -172,13 +172,6 @@ $unreadCount = NotificationService::getInstance()->getUnreadCount($userId);
     </div>
     <?php endif; ?>
 
-    <?php if ($unreadCount > 0): ?>
-    <div class="metric-card-sm">
-      <div class="mc-label">Unread Notifications</div>
-      <div class="mc-value mc-value-danger"><?= $unreadCount ?></div>
-      <div class="mc-sub"><a href="/api/my_notifications.php" class="mc-sub-link">View all →</a></div>
-    </div>
-    <?php endif; ?>
   </div>
 </section>
 

@@ -2961,6 +2961,29 @@ html[data-theme='light'] .page-snapshots .snapshot-filter-card input[type='date'
   margin-bottom: 1.5rem;
 }
 
+.page-notification-logs .card {
+  margin-bottom: 1.25rem;
+}
+
+.page-notification-logs .card > h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 3.2vw, 2.1rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 0;
+  margin-top: 0.1rem;
+  margin-bottom: 0.85rem;
+}
+
+html[data-theme='light'] .page-notification-logs .btn.btn-primary,
+html[data-theme='light'] .page-notification-logs .btn.btn-primary:hover,
+html[data-theme='light'] .page-notification-logs .btn.btn-primary:focus-visible,
+html[data-theme='light'] .page-notification-logs button.btn.btn-primary,
+html[data-theme='light'] .page-notification-logs button.btn.btn-primary:hover:not(:disabled),
+html[data-theme='light'] .page-notification-logs button.btn.btn-primary:focus-visible {
+  color: #ffffff;
+}
+
 .page-notification-logs .recipient-email {
   color: var(--text-muted);
 }

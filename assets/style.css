@@ -1620,6 +1620,13 @@ html[data-theme='light'] .admin-maint-page > .page-heading h1 {
   -webkit-text-fill-color: #ffffff;
 }
 
+html[data-theme='light'] .admin-maint-page .history-select-row button,
+html[data-theme='light'] .admin-maint-page .history-select-row button:hover:not(:disabled),
+html[data-theme='light'] .admin-maint-page .history-select-row button:focus,
+html[data-theme='light'] .admin-maint-page .history-select-row button:focus-visible {
+  color: #ffffff;
+}
+
 html[data-theme='light'] .maint-page > .page-heading h1,
 html[data-theme='light'] .maint-page > .maint-back-link a {
   color: #f5fcff;

@@ -256,9 +256,7 @@ $typeIcons = [
     </p>
   </section>
 
-  <nav class="breadcrumb">
-    <a href="/api/dashboard.php">← Back to Dashboard</a>
-  </nav>
+  <p class="back-link maint-back-link"><a href="/api/dashboard.php">← Back to Dashboard</a></p>
 </div>
 
 <script src="/assets/app.js"></script>

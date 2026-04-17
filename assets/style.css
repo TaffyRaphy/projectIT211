@@ -695,10 +695,10 @@ button[data-confirm*='Reject']:hover {
 .filter-form select {
   min-width: 0;
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--border-color, #2a2a2a);
+  border: 1px solid var(--border-subtle);
   border-radius: 6px;
-  background: var(--input-bg, #0a0a0a);
-  color: var(--text);
+  background: var(--surface-3);
+  color: var(--text-main);
   font-size: 0.9rem;
 }
 
@@ -1599,10 +1599,45 @@ html[data-theme='light'] .page-admin-requests .inline-form button[type='submit']
   color: var(--text-muted);
 }
 
+.filter-form input, .filter-form select {
+  background: var(--surface-1);
+  color: var(--text-main);
+}
+
 .maint-page {
-  width: min(1100px, 94%);
+  width: min(1000px, 92%);
   margin: 0 auto;
-  padding: 1.5rem 0 4rem;
+  padding-bottom: var(--space-xl);
+}
+
+.admin-maint-page {
+  margin-top: 1rem;
+}
+
+html[data-theme='light'] .admin-maint-page > .page-heading h1 {
+  color: #ffffff;
+  background: none;
+  -webkit-text-fill-color: #ffffff;
+}
+
+html[data-theme='light'] .admin-maint-page .history-select-row button,
+html[data-theme='light'] .admin-maint-page .history-select-row button:hover:not(:disabled),
+html[data-theme='light'] .admin-maint-page .history-select-row button:focus,
+html[data-theme='light'] .admin-maint-page .history-select-row button:focus-visible {
+  color: #ffffff;
+}
+
+html[data-theme='light'] .maint-page > .page-heading h1,
+html[data-theme='light'] .maint-page > .maint-back-link a {
+  color: #f5fcff;
+}
+
+html[data-theme='light'] .maint-page > .page-heading p {
+  color: rgba(245, 252, 255, 0.85);
+}
+
+html[data-theme='light'] .maint-page > .admin-note {
+  color: var(--text-heading);
 }
 
 .maint-page .maint-section {
@@ -2926,6 +2961,29 @@ html[data-theme='light'] .page-snapshots .snapshot-filter-card input[type='date'
   margin-bottom: 1.5rem;
 }
 
+.page-notification-logs .card {
+  margin-bottom: 1.25rem;
+}
+
+.page-notification-logs .card > h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 3.2vw, 2.1rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 0;
+  margin-top: 0.1rem;
+  margin-bottom: 0.85rem;
+}
+
+html[data-theme='light'] .page-notification-logs .btn.btn-primary,
+html[data-theme='light'] .page-notification-logs .btn.btn-primary:hover,
+html[data-theme='light'] .page-notification-logs .btn.btn-primary:focus-visible,
+html[data-theme='light'] .page-notification-logs button.btn.btn-primary,
+html[data-theme='light'] .page-notification-logs button.btn.btn-primary:hover:not(:disabled),
+html[data-theme='light'] .page-notification-logs button.btn.btn-primary:focus-visible {
+  color: #ffffff;
+}
+
 .page-notification-logs .recipient-email {
   color: var(--text-muted);
 }
@@ -2940,6 +2998,51 @@ html[data-theme='light'] .page-snapshots .snapshot-filter-card input[type='date'
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+}
+
+.page-notification-logs .table-responsive {
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--surface-2);
+  box-shadow: var(--shadow-soft);
+}
+
+.page-notification-logs .table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.page-notification-logs .table thead th {
+  background: var(--surface-2);
+  color: var(--text-heading);
+  text-align: left;
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.8rem 1rem;
+  border-bottom: 2px solid var(--border-subtle);
+}
+
+.page-notification-logs .table tbody td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.85rem;
+  vertical-align: middle;
+  color: var(--text-main);
+}
+
+.page-notification-logs .table tbody tr:hover {
+  background: color-mix(in srgb, var(--surface-2) 60%, transparent);
+}
+
+.page-notification-logs > .maint-back-link {
+  margin-top: 1rem;
+}
+
+html[data-theme='light'] .page-notification-logs > .maint-back-link a {
+  color: #f5fcff;
 }
 
 .page-profile .profile-header {

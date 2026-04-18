@@ -260,6 +260,7 @@ function closeNotificationPopup() {
 
 function closeAuditModal() {
   if (!(auditModalRoot instanceof HTMLElement)) return;
+  document.body.classList.remove('audit-modal-open');
   if (auditModalRoot.hasAttribute('hidden')) return;
 
   auditModalRoot.setAttribute('hidden', '');
@@ -294,6 +295,7 @@ function openAuditModal(row) {
   });
 
   auditLastFocusedRow = row;
+  document.body.classList.add('audit-modal-open');
   auditModalRoot.removeAttribute('hidden');
   auditModalRoot.setAttribute('aria-hidden', 'false');
 

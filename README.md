@@ -97,11 +97,19 @@ Navigate to [http://localhost:8000](http://localhost:8000) and log in with any o
 
 ## Screenshots
 
-> 📸 Screenshots will be added here. Place images in the `assets/` folder and reference them below.
-
-markdown
+### Login Page
 ![Login Page](assets/screenshots/login.png)
+
+### Admin Dashboard
 ![Admin Dashboard](assets/screenshots/admin-dashboard.png)
+
+### Equipment Inventory
 ![Equipment Inventory](assets/screenshots/equipment.png)
+
+### Maintenance View
 ![Maintenance View](assets/screenshots/maintenance.png)
+
+### Reports
 ![Reports](assets/screenshots/reports.png)
+
+> **Note:** The background gradient may appear clipped or misaligned in the Reports view — this is a known cosmetic issue caused by viewport height rendering and does not affect functionality.

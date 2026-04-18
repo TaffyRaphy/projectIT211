@@ -2407,7 +2407,7 @@ html[data-theme='light'] .maint-page > .admin-note {
   padding: 1.2rem;
   transform-origin: center;
   animation: auditModalPop 0.18s ease-out;
-  transform: translateY(-12vh);
+  transform: translateY(-20vh);
 }
 
 html[data-theme='light'] .page-audit-trail .audit-modal-overlay {

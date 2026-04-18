@@ -99,10 +99,9 @@ Navigate to [http://localhost:8000](http://localhost:8000) and log in with any o
 
 > 📸 Screenshots will be added here. Place images in the `assets/` folder and reference them below.
 
-```markdown
+markdown
 ![Login Page](assets/screenshots/login.png)
 ![Admin Dashboard](assets/screenshots/admin-dashboard.png)
 ![Equipment Inventory](assets/screenshots/equipment.png)
 ![Maintenance View](assets/screenshots/maintenance.png)
 ![Reports](assets/screenshots/reports.png)
-```

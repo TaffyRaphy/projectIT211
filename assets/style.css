@@ -2172,6 +2172,19 @@ html[data-theme='light'] .maint-page > .admin-note {
   margin-bottom: 1.5rem;
 }
 
+.page-audit-trail > h2,
+.page-audit-trail .section-heading {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.page-audit-trail > h2 {
+  font-size: clamp(1.45rem, 3.2vw, 2.1rem);
+  margin-bottom: var(--space-xl);
+}
+
 .page-audit-trail .section-container {
   display: block;
   background: linear-gradient(160deg, color-mix(in srgb, var(--surface-2) 85%, transparent), color-mix(in srgb, var(--surface-1) 98%, #000 2%));
@@ -2186,6 +2199,7 @@ html[data-theme='light'] .maint-page > .admin-note {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+  font-size: clamp(1.2rem, 2.2vw, 1.55rem);
   margin-top: 0;
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
@@ -2367,10 +2381,12 @@ html[data-theme='light'] .maint-page > .admin-note {
   position: fixed;
   inset: 0;
   z-index: 1300;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
   padding: clamp(0.9rem, 2vw, 1.5rem);
-  background: color-mix(in srgb, var(--bg-canvas) 70%, #000 30%);
+  background: rgba(0, 18, 26, 0.48);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -2380,16 +2396,48 @@ html[data-theme='light'] .maint-page > .admin-note {
 }
 
 .page-audit-trail .audit-modal {
-  width: min(760px, 100%);
-  max-height: min(86vh, 860px);
+  width: min(700px, calc(100vw - 2rem));
+  max-height: min(80vh, 720px);
   overflow: auto;
-  border-radius: 14px;
-  border: 1px solid color-mix(in srgb, var(--border-subtle) 78%, rgba(255, 255, 255, 0.25));
-  background: color-mix(in srgb, var(--surface-1) 74%, transparent);
-  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(22px) saturate(1.1);
-  -webkit-backdrop-filter: blur(22px) saturate(1.1);
-  padding: 1.15rem;
+  margin: auto;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--border-subtle) 85%, rgba(255, 255, 255, 0.18));
+  background: var(--surface-2);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.32);
+  padding: 1.2rem;
+  transform-origin: center;
+  animation: auditModalPop 0.18s ease-out;
+  transform: translateY(-20vh);
+}
+
+html[data-theme='light'] .page-audit-trail .audit-modal-overlay {
+  background: rgba(4, 32, 43, 0.32);
+}
+
+html[data-theme='light'] .page-audit-trail .audit-modal {
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 18px 38px rgba(0, 24, 35, 0.2);
+}
+
+@keyframes auditModalPop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+html[data-theme='light'] .page-audit-trail .btn.btn-primary,
+html[data-theme='light'] .page-audit-trail .btn.btn-primary:hover,
+html[data-theme='light'] .page-audit-trail .btn.btn-primary:focus-visible,
+html[data-theme='light'] .page-audit-trail .btn-success,
+html[data-theme='light'] .page-audit-trail .btn-success:hover,
+html[data-theme='light'] .page-audit-trail .btn-success:focus-visible {
+  color: #ffffff;
 }
 
 .page-audit-trail .audit-modal-header {
@@ -3901,7 +3949,8 @@ html[data-theme='light'] .workflow-link:hover {
   border-color: color-mix(in srgb, var(--accent-primary) 72%, transparent);
 }
 
-body.notification-popup-open {
+body.notification-popup-open,
+body.audit-modal-open {
   overflow: hidden;
 }
 

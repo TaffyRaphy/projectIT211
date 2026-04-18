@@ -2384,6 +2384,7 @@ html[data-theme='light'] .maint-page > .admin-note {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 100vh;
   padding: clamp(0.9rem, 2vw, 1.5rem);
   background: rgba(0, 18, 26, 0.48);
   backdrop-filter: blur(8px);
@@ -2398,6 +2399,7 @@ html[data-theme='light'] .maint-page > .admin-note {
   width: min(700px, calc(100vw - 2rem));
   max-height: min(80vh, 720px);
   overflow: auto;
+  margin: auto;
   border-radius: 16px;
   border: 1px solid color-mix(in srgb, var(--border-subtle) 85%, rgba(255, 255, 255, 0.18));
   background: var(--surface-2);
